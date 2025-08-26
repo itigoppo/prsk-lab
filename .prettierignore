@@ -1,0 +1,43 @@
+# Node modules
+node_modules/
+
+# ビルド成果物
+.next/
+out/
+dist/
+
+# 静的アセット
+public/
+
+# 環境設定ファイル（必要に応じて）
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker関連
+Dockerfile
+*.sh
+*.rules
+postgres/data/
+
+# ログファイル
+*.log
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# 設定ファイル（場合によってはフォーマットしたいなら除外）
+*.json
+*.yml
+*.yaml
+
+# その他の無視ファイル
+.vscode/
+.idea/
+.DS_Store
+cli-utils/
+
+tools/
