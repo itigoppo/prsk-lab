@@ -2,7 +2,7 @@ POSTGRES_CONTAINER := prsk-postgres
 
 .PHONY: \
 	docker-up docker-down docker-rebuild docker-logs \
-	run build start install clean \
+	run build start install clean secret-generate \
 	prisma-generate prisma-migrate prisma-reset prisma-studio open-studio \
 	seed fix
 
@@ -41,6 +41,10 @@ install:
 # Clean the project
 clean:
 	rm -rf .next node_modules prisma/node_modules
+
+# Generate secret
+secret-generate:
+	openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
 
 # Generate Prisma client
 prisma-generate:
