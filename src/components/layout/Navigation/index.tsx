@@ -27,30 +27,35 @@ export function Navigation() {
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-4 right-4 z-50 flex size-10 items-center justify-center rounded-full bg-slate-300 text-slate-600 shadow-md backdrop-blur-md transition hover:scale-105 hover:bg-slate-600 hover:text-lime-400 md:top-8 md:right-8 md:size-16"
+        className="fixed top-4 right-4 z-50 flex size-10 items-center justify-center rounded-full bg-slate-300 text-slate-600 shadow-md backdrop-blur-md transition hover:scale-105 hover:bg-slate-600 hover:text-lime-400 lg:top-8 lg:right-8 lg:size-16"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (
-          <IconClose className="size-6 md:size-12" />
+          <IconClose className="size-6 lg:size-12" />
         ) : (
-          <IconMenu className="size-6 md:size-12" />
+          <IconMenu className="size-6 lg:size-12" />
         )}
         <span className="sr-only">メニューを開く</span>
       </Button>
       {isOpen && (
         <div className="fixed top-0 left-0 z-10 flex h-screen w-full justify-between bg-slate-800/50 backdrop-blur-sm">
           <div className="space-y-2 text-teal-400/30 [writing-mode:vertical-rl] md:[writing-mode:horizontal-tb]">
-            <div className={cn(anton.className, "text-4xl tracking-wide md:text-8xl")}>
+            <div className={cn(anton.className, "text-4xl tracking-wide md:text-6xl lg:text-8xl")}>
               Project SEKAI
             </div>
-            <div className={cn(anton.className, "text-6xl tracking-wide md:text-[10rem]")}>
+            <div
+              className={cn(
+                anton.className,
+                "text-6xl tracking-wide md:text-[5.5rem] lg:text-[10rem]"
+              )}
+            >
               COLORFUL STAGE!
             </div>
-            <div className={cn(anton.className, "text-4xl tracking-wide md:text-8xl")}>
+            <div className={cn(anton.className, "text-4xl tracking-wide md:text-6xl lg:text-8xl")}>
               feat. HATSUNE MIKU
             </div>
           </div>
-          <div className="h-full w-1/2 overflow-y-auto bg-slate-200 py-10 pr-5 pl-8 md:w-80 md:py-14 md:pr-8 md:pl-14">
+          <div className="h-full w-1/2 overflow-y-auto bg-slate-200 py-10 pr-5 pl-8 md:w-60 lg:w-80 lg:py-14 lg:pr-8 lg:pl-14">
             <nav>
               <ul className={cn(montserrat.className, "space-y-2 tracking-widest")}>
                 {mainNavigationItems
@@ -71,12 +76,14 @@ export function Navigation() {
                         <Link
                           href={item.href}
                           onClick={() => setIsOpen(false)}
-                          className="text-slate-600 hover:text-lime-400"
+                          className="space-y-1 text-slate-600 hover:text-lime-400"
                         >
-                          <div className="text-lg font-bold uppercase md:text-2xl">
+                          <div className="text-lg font-bold uppercase md:text-sm lg:text-2xl">
                             {item.title}
                           </div>
-                          <div className="text-xs md:text-sm">{item.description}</div>
+                          <div className="text-xs md:text-[10px] lg:text-sm">
+                            {item.description}
+                          </div>
                         </Link>
                       </li>
                     )
@@ -95,7 +102,9 @@ export function Navigation() {
                   height={40}
                 />
               )}
-              <AvatarFallback>{getUserInitials({ name: currentUser?.name ?? "" })}</AvatarFallback>
+              <AvatarFallback className="border-1 border-slate-600 bg-lime-100">
+                {getUserInitials({ name: currentUser?.name ?? "" })}
+              </AvatarFallback>
             </Avatar>
           </div>
         </div>
