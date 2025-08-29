@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 
-export function LoginForm() {
+export function LoginView() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
