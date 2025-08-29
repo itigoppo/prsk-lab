@@ -6,7 +6,7 @@ export function Logo() {
   return (
     <div
       className={cn(
-        "flex items-center space-x-2 rounded-md px-3 py-4 backdrop-blur-md transition-transform",
+        "flex items-center space-x-2 px-3 py-4 backdrop-blur-md transition-transform",
         exo2.className
       )}
     >

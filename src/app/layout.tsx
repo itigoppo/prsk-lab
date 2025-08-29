@@ -32,6 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <Link href="/">
                   <Logo />
                 </Link>
+
                 <Navigation />
               </header>
               <main className="container mx-auto px-4 py-6">{children}</main>
