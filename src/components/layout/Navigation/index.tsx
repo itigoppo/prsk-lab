@@ -11,13 +11,23 @@ import { getUserAvatarUrl, getUserInitials } from "@/lib/utils/user"
 import { UserRole } from "@prisma/client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { LogoutModal } from "../LogoutModal"
 import { mainNavigationItems } from "./navigationItems"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "auto"
+    const originalOverflow = document.body.style.overflow
+
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
   }, [isOpen])
 
   const { currentUser } = useCurrentUser()
@@ -38,7 +48,7 @@ export function Navigation() {
         <span className="sr-only">メニューを開く</span>
       </Button>
       {isOpen && (
-        <div className="fixed top-0 left-0 z-10 flex h-screen w-full justify-between bg-slate-800/50 backdrop-blur-sm">
+        <div className="fixed top-0 left-0 z-40 flex h-screen w-full justify-between bg-slate-800/50 backdrop-blur-sm">
           <div className="space-y-2 text-teal-400/30 [writing-mode:vertical-rl] md:[writing-mode:horizontal-tb]">
             <div className={cn(anton.className, "text-4xl tracking-wide md:text-6xl lg:text-8xl")}>
               Project SEKAI
@@ -92,22 +102,29 @@ export function Navigation() {
             </nav>
           </div>
 
-          <div className="fixed right-4 bottom-4">
+          <div className="fixed right-4 bottom-4 flex items-center gap-2">
             <Avatar>
-              {currentUser?.avatarUrl && (
-                <AvatarImage
-                  src={getUserAvatarUrl(currentUser.discordId, currentUser.avatarUrl)}
-                  alt={currentUser.name ?? ""}
-                  width={40}
-                  height={40}
-                />
+              {currentUser?.avatarUrl ? (
+                <Button size="icon" onClick={() => setIsLogoutModalOpen(true)}>
+                  <AvatarImage
+                    src={getUserAvatarUrl(currentUser.discordId, currentUser.avatarUrl)}
+                    alt={currentUser.name ?? ""}
+                    width={40}
+                    height={40}
+                  />
+                </Button>
+              ) : (
+                <AvatarFallback className="border-1 border-slate-600 bg-lime-100">
+                  {getUserInitials({ name: currentUser?.name ?? "" })}
+                </AvatarFallback>
               )}
-              <AvatarFallback className="border-1 border-slate-600 bg-lime-100">
-                {getUserInitials({ name: currentUser?.name ?? "" })}
-              </AvatarFallback>
             </Avatar>
           </div>
         </div>
+      )}
+
+      {isLogoutModalOpen && currentUser && (
+        <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
       )}
     </>
   )

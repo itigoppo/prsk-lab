@@ -94,7 +94,7 @@ const buttonVariants = cva(
       variant: {
         danger: "bg-rose-500 text-white hover:bg-rose-600",
         default: "bg-slate-500 text-white hover:bg-slate-600",
-        ghost: "rounded-none bg-slate-50 text-slate-700 hover:bg-slate-200",
+        ghost: "bg-transparent text-slate-700 hover:bg-slate-200",
         primary: "bg-teal-500 text-white hover:bg-teal-600",
         secondary: "bg-lime-500 text-white hover:bg-lime-600",
         warning: "bg-amber-500 text-white hover:bg-amber-600",
