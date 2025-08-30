@@ -7,11 +7,11 @@ import { Button } from "../Button"
 
 interface DialogProps {
   children: ReactNode
-  onOpenChange: (open: boolean) => void
   isOpen: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-const Dialog = ({ children, onOpenChange, isOpen }: DialogProps) => {
+const Dialog = ({ children, isOpen, onOpenChange }: DialogProps) => {
   useEffect(() => {
     const originalOverflow = document.body.style.overflow
 

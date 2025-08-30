@@ -4,7 +4,7 @@ import { IconChevronBackward, IconChevronForward } from "@/components/icons"
 import { cn } from "@/lib/utils/common"
 import Image from "next/image"
 import type { ComponentPropsWithoutRef } from "react"
-import { forwardRef, Ref, useEffect, useImperativeHandle, useState } from "react"
+import { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useState } from "react"
 
 export type CarouselHandle = {
   next: () => void
@@ -13,28 +13,28 @@ export type CarouselHandle = {
 
 type CarouselProps = {
   autoPlay?: boolean
+  height?: string
   images: string[]
   interval?: number
   width?: string
-  height?: string
 } & ComponentPropsWithoutRef<"div">
 
 const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
-  ({ className, images, autoPlay = true, interval = 3000, ...props }, ref) => {
+  ({ autoPlay = true, className, images, interval = 3000, ...props }, ref) => {
     const [index, setIndex] = useState(0)
     const length = images.length
 
-    const next = () => {
+    const next = useCallback(() => {
       setIndex((prev) => (prev + 1) % length)
-    }
+    }, [length])
 
-    const prev = () => {
+    const prev = useCallback(() => {
       setIndex((prev) => (prev - 1 + length) % length)
-    }
+    }, [length])
 
-    const goTo = (i: number) => {
+    const goTo = useCallback((i: number) => {
       setIndex(i)
-    }
+    }, [])
 
     useImperativeHandle(ref as Ref<CarouselHandle>, () => ({
       next,
@@ -45,7 +45,7 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
       if (!autoPlay) return
       const timer = setInterval(next, interval)
       return () => clearInterval(timer)
-    }, [autoPlay, interval])
+    }, [autoPlay, interval, next])
 
     return (
       <div
@@ -90,7 +90,7 @@ type ArrowProps = {
 } & ComponentPropsWithoutRef<"button">
 
 const CarouselArrow = forwardRef<HTMLButtonElement, ArrowProps>(
-  ({ direction, className, ...props }, ref) => (
+  ({ className, direction, ...props }, ref) => (
     <button
       ref={ref}
       className={cn(
