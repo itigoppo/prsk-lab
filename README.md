@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrskLab
 
-## Getting Started
+## Overview
 
-First, run the development server:
+プロセカ関係でなんかやりたくなったらつくるところ
+
+## Local Setup
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+- Node.js（推奨バージョン: 20以上 / dev: v20.19.4）
+- PostgreSQL（Dockerコンテナでセットアップされるため、個別にインストールする必要はありません）
+- Discord開発者アカウント（OAuth設定用）
+
+### Set up Environment Variables
+
+`.env.local.example` ファイルをコピーして `.env.local` を作成してください。
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+その後、以下の環境変数を設定してください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Discord OAuth Setup
+NEXTAUTH_SECRET=your_nextauth_secret
+DISCORD_CLIENT_ID=your_discord_client_id
+DISCORD_CLIENT_SECRET=your_discord_client_secret
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `DISCORD_CLIENT_ID` と `DISCORD_CLIENT_SECRET` は、[Discord Developer Portal](https://discord.com/developers/applications)
+  から取得できます。
+  - Discordの開発者ポータルで新しいアプリケーションを作成し、Client IDとClient Secretを確認します。
+  - Client IDとClient Secretは、OAuth認証に使用され、アプリケーションがDiscordのユーザー情報にアクセスするために必要です。
 
-## Learn More
+- `NEXTAUTH_SECRET` は、セッションの暗号化に使用するランダムな文字列です。これはセキュリティ上重要な値なので、安全な方法で生成してください。例えば、以下のようにランダムな文字列を生成できます：
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+make secret-generate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`DATABASE_URL` はDocker Composeに設定されている情報、 `NEXTAUTH_URL` はpackage.jsonに設定された起動ポートをそれぞれ書いているので変更しなくて大丈夫です
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Start Docker Containers
 
-## Deploy on Vercel
+```bash
+make docker-build # 初回のみ
+make docker-up
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Start Development Server
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+make run
+```
+
+Open [http://localhost:30000](http://localhost:30000) with your browser to see the result.
+
+## Tech Stack
+
+- Next.js
+- TypeScript
+- NextAuth
+- Tailwind CSS
+- Hono
+- Docker
+- PostgreSQL

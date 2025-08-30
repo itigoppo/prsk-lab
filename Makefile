@@ -1,7 +1,7 @@
 POSTGRES_CONTAINER := prsk-postgres
 
 .PHONY: \
-	docker-up docker-down docker-rebuild docker-logs \
+	docker-up docker-down docker-build docker-rebuild docker-logs \
 	run build start install clean secret-generate \
 	prisma-generate prisma-migrate prisma-reset prisma-studio open-studio \
 	seed fix
@@ -13,6 +13,10 @@ docker-up:
 # Stop Docker containers
 docker-down:
 	docker compose down
+
+# Build Docker containers
+docker-build:
+	docker compose build
 
 # Rebuild Docker containers
 docker-rebuild:
