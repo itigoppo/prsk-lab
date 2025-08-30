@@ -1,3 +1,5 @@
+export * from "./IconChevronBackward"
+export * from "./IconChevronForward"
 export * from "./IconClose"
 export * from "./IconDiscord"
 export * from "./IconMenu"
