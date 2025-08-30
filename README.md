@@ -42,13 +42,33 @@ DISCORD_CLIENT_SECRET=your_discord_client_secret
 make secret-generate
 ```
 
-`DATABASE_URL` はDocker Composeに設定されている情報、 `NEXTAUTH_URL` はpackage.jsonに設定された起動ポートをそれぞれ書いているので変更しなくて大丈夫です
+`DATABASE_URL` `DIRECT_URL` はDocker Composeに設定されている情報、 `NEXTAUTH_URL` はpackage.jsonに設定された起動ポートをそれぞれ書いているので変更しなくて大丈夫です
+
+`.env.example` ファイルをコピーして `.env.local` を作成してください。
+
+```bash
+cp .env.example .env
+```
+
+Prisma接続用に `.env.local` で設定した `DATABASE_URL` `DIRECT_URL` と同値をいれてください
+
+#### Set up Database on Supabase
+
+[https://supabase.com/docs/guides/database/prisma](https://supabase.com/docs/guides/database/prisma) にアクセスしてuser作成
+
+[https://supabase.com/dashboard/project/\_?showConnect=true](https://supabase.com/dashboard/project/_?showConnect=true) にアクセスして `ORMs` タブを開いて出てくる情報コピーして `.env` と `.env.local` に貼り付け
 
 ### Start Docker Containers
 
 ```bash
 make docker-build # 初回のみ
 make docker-up
+```
+
+### Database migration
+
+```bash
+make prisma-migrate
 ```
 
 ### Start Development Server

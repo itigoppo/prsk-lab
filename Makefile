@@ -3,7 +3,7 @@ POSTGRES_CONTAINER := prsk-postgres
 .PHONY: \
 	docker-up docker-down docker-build docker-rebuild docker-logs \
 	run build start install clean secret-generate \
-	prisma-generate prisma-migrate prisma-reset prisma-studio open-studio \
+	prisma-generate prisma-migrate prisma-deploy prisma-reset prisma-studio open-studio \
 	seed fix
 
 # Start Docker containers
@@ -58,10 +58,15 @@ prisma-generate:
 prisma-migrate:
 	npx prisma migrate dev
 
+prisma-deploy:
+	npx prisma migrate deploy
+
 # Reset Prisma migrations
 prisma-reset:
-	npx prisma migrate reset --force
-	# ⚠️ Destroys all data in your database
+	@read -p "⚠️ Destroys all data in your database and run migration [y,N]:" ans; \
+	if [ "$$ans" = y ]; then  \
+		npx prisma migrate reset --force; \
+	fi
 
 # Run Prisma Studio
 prisma-studio:
