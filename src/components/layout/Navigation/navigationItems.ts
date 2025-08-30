@@ -33,7 +33,7 @@ export const mainNavigationItems: NavigationItem[] = [
   {
     description: "イベントボーナス",
     href: "/calc/event",
-    title: "Event",
+    title: "Event Bonus",
   },
   {
     description: "キャラソート",
@@ -51,15 +51,5 @@ export const mainNavigationItems: NavigationItem[] = [
     href: "/settings",
     isProtected: true,
     title: "Settings",
-  },
-]
-
-// アカウントメニュー（ドロップダウンメニュー）
-export const accountMenuItems: NavigationItem[] = [
-  {
-    href: "/settings",
-    icon: "settings",
-    isProtected: true,
-    title: "設定",
   },
 ]
