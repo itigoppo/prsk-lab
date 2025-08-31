@@ -27,7 +27,6 @@ export const authOptions: AuthOptions = {
       return true
     },
   },
-  debug: true,
   pages: {
     error: "/login",
   },
