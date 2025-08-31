@@ -40,27 +40,27 @@ const buttonVariants = cva(
 
       // === Disabled Variants ===
       {
-        class: "bg-teal-300 text-white/70 hover:bg-teal-300",
+        class: "bg-teal-300 border-teal-500 text-white/70 hover:bg-teal-300",
         disabled: true,
         variant: "primary",
       },
       {
-        class: "bg-lime-300 text-white/70 hover:bg-lime-300",
+        class: "bg-lime-300 border-lime-500 text-white/70 hover:bg-lime-300",
         disabled: true,
         variant: "secondary",
       },
       {
-        class: "bg-rose-300 text-white/70 hover:bg-rose-300",
+        class: "bg-rose-300 border-rose-500 text-white/70 hover:bg-rose-300",
         disabled: true,
         variant: "danger",
       },
       {
-        class: "bg-amber-300 text-white/70 hover:bg-amber-300",
+        class: "bg-amber-300 border-amber-500 text-white/70 hover:bg-amber-300",
         disabled: true,
         variant: "warning",
       },
       {
-        class: "bg-slate-300 text-white/70 hover:bg-slate-300",
+        class: "bg-slate-300 border-slate-500 text-white/70 hover:bg-slate-300",
         disabled: true,
         variant: "default",
       },
@@ -79,7 +79,7 @@ const buttonVariants = cva(
     variants: {
       disabled: {
         false: "cursor-pointer",
-        true: "cursor-not-allowed opacity-50",
+        true: "cursor-not-allowed opacity-50 border",
       },
       outline: {
         false: "border-transparent",
