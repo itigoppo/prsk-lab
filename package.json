@@ -1,5 +1,6 @@
 {
   "name": "prsk-lab",
+  "description": "PrskLab",
   "version": "0.1.0",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -41,11 +42,12 @@
     "ts-node": "^10.9.2",
     "typescript": "^5"
   },
+  "main": "package.json",
   "private": true,
   "scripts": {
     "build": "run-s build:*",
-    "build:prisma": "make prisma-generate",
     "build:next": "next build --turbopack",
+    "build:prisma": "make prisma-generate",
     "dev": "next dev --turbopack --port 30000",
     "fix": "run-p --continue-on-error fix:*",
     "fix:css": "run-s fix:css:prettier",
