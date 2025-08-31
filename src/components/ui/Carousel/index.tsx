@@ -71,7 +71,7 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
             <button
               key={i}
               className={cn(
-                "size-2 rounded-full bg-white/60 hover:bg-white",
+                "size-2 rounded-full bg-white/60 hover:cursor-pointer hover:bg-white",
                 i === index && "bg-white"
               )}
               onClick={() => goTo(i)}
