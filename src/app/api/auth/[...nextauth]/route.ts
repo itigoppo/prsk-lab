@@ -1,8 +1,8 @@
 import { registerUser } from "@/lib/api/users/register-user"
-import NextAuth from "next-auth"
+import NextAuth, { AuthOptions } from "next-auth"
 import DiscordProvider from "next-auth/providers/discord"
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ account, token }) {
       // 初回ログイン時のみアクセストークンをJWTに保存
@@ -27,6 +27,7 @@ const handler = NextAuth({
       return true
     },
   },
+  debug: true,
   pages: {
     error: "/login",
   },
@@ -40,6 +41,8 @@ const handler = NextAuth({
   session: {
     strategy: "jwt",
   },
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
