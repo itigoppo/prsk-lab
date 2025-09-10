@@ -21,3 +21,7 @@ Authorization: Bearer {{bearerToken}}
 GET {{baseUrl}}/users/me
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
+
+### Get characters
+GET {{baseUrl}}/characters
+Accept: application/json
