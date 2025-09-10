@@ -63,10 +63,14 @@ prisma-deploy:
 
 # Reset Prisma migrations
 prisma-reset:
-	@read -p "⚠️ Destroys all data in your database and run migration [y,N]:" ans; \
-	if [ "$$ans" = y ]; then  \
-		npx prisma migrate reset --force; \
+	@read -p "⚠️  Destroys all data in your database and runs seed. Proceed? [y/N]: " ans; \
+	if [ "$$ans" = "y" ]; then \
+		npx prisma db push --force-reset; \
+		make seed; \
+	else \
+		echo "❌ Cancelled."; \
 	fi
+
 
 # Run Prisma Studio
 prisma-studio:
@@ -78,7 +82,7 @@ open-studio:
 
 # Seed the database
 seed:
-	ts-node prisma/seeds
+	npx ts-node --project tsconfig.seed.json prisma/seeds/index.ts
 
 # Fix code
 fix:
