@@ -59,6 +59,7 @@
     "fix:md": "prettier './**/*.md' --write",
     "fix:pack": "fixpack",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "start": "next start"
   }
 }
