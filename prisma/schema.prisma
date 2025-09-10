@@ -21,9 +21,9 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  avatarUrl String?  @map("avatar_url")
-  discordId String   @unique @map("discord_id")
+  id        String   @id @default(cuid()) @db.VarChar(32)
+  avatarUrl String?  @map("avatar_url") @db.VarChar(255)
+  discordId String   @unique @map("discord_id") @db.VarChar(255)
   email     String?  @unique @db.VarChar(255)
   name      String?  @db.VarChar(255)
   role      UserRole @default(Viewer)
@@ -31,4 +31,36 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model Unit {
+  id        String      @id @default(cuid()) @db.VarChar(32)
+  bgColor   String      @map("bg_color") @db.VarChar(10)
+  code      String      @unique @db.VarChar(20)
+  color     String      @db.VarChar(10)
+  name      String      @db.VarChar(20)
+  priority  Int         @default(0)
+  short     String      @db.VarChar(10)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  Character Character[]
+
+  @@map("units")
+}
+
+model Character {
+  id        String   @id @default(cuid()) @db.VarChar(32)
+  avatarUrl String?  @map("avatar_url") @db.VarChar(255)
+  bgColor   String   @map("bg_color") @db.VarChar(10)
+  code      String   @unique @db.VarChar(20)
+  color     String   @db.VarChar(10)
+  name      String   @db.VarChar(20)
+  priority  Int      @default(0)
+  short     String   @db.VarChar(10)
+  unitId    String?  @map("unit_id") @db.VarChar(32)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  unit      Unit?    @relation(fields: [unitId], references: [id])
+
+  @@map("characters")
 }
