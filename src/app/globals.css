@@ -13,6 +13,94 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/** https://www.tints.dev/ */
+/** https://oklch.com/ */
+@theme {
+  --color-prsk-player1-50: oklch(95.88% 0.021 10.3);
+  --color-prsk-player1-100: oklch(91.85% 0.043 9.04);
+  --color-prsk-player1-200: oklch(83.91% 0.091 10.65);
+  --color-prsk-player1-300: oklch(76.75% 0.141 11.1);
+  --color-prsk-player1-400: oklch(68.76% 0.206 12.42);
+  --color-prsk-player1-500: oklch(60.81% 0.243 13.5);
+  --color-prsk-player1-600: oklch(50.83% 0.203 13.47);
+  --color-prsk-player1-700: oklch(41.8% 0.167 13.79);
+  --color-prsk-player1-800: oklch(32.71% 0.131 13.54);
+  --color-prsk-player1-900: oklch(23.64% 0.094 14.19);
+  --color-prsk-player1-950: oklch(18.67% 0.075 13.3);
+
+  --color-prsk-player2-50: oklch(98.29% 0.011 63.39);
+  --color-prsk-player2-100: oklch(95.81% 0.029 67.47);
+  --color-prsk-player2-200: oklch(91.63% 0.063 70.74);
+  --color-prsk-player2-300: oklch(87.48% 0.106 74.84);
+  --color-prsk-player2-400: oklch(83.42% 0.16 79.6);
+  --color-prsk-player2-500: oklch(72.08% 0.149 80.92);
+  --color-prsk-player2-600: oklch(59.77% 0.124 80.71);
+  --color-prsk-player2-700: oklch(48.59% 0.1 80.94);
+  --color-prsk-player2-800: oklch(37.21% 0.077 80.71);
+  --color-prsk-player2-900: oklch(25.27% 0.052 80.76);
+  --color-prsk-player2-950: oklch(19.76% 0.041 80.16);
+
+  --color-prsk-player3-50: oklch(96.91% 0.045 194.69);
+  --color-prsk-player3-100: oklch(93.72% 0.096 194.81);
+  --color-prsk-player3-200: oklch(87.07% 0.147 194.24);
+  --color-prsk-player3-300: oklch(81.87% 0.138 194.2);
+  --color-prsk-player3-400: oklch(76.57% 0.129 194.15);
+  --color-prsk-player3-500: oklch(65.98% 0.111 194.02);
+  --color-prsk-player3-600: oklch(55.86% 0.094 193.84);
+  --color-prsk-player3-700: oklch(44.92% 0.076 193.54);
+  --color-prsk-player3-800: oklch(34.71% 0.058 194.79);
+  --color-prsk-player3-900: oklch(23.62% 0.039 194.81);
+  --color-prsk-player3-950: oklch(18.53% 0.032 194.76);
+
+  --color-prsk-player4-50: oklch(96.51% 0.017 259.43);
+  --color-prsk-player4-100: oklch(93.15% 0.033 255.21);
+  --color-prsk-player4-200: oklch(85.19% 0.075 252.93);
+  --color-prsk-player4-300: oklch(78.28% 0.115 249.13);
+  --color-prsk-player4-400: oklch(70.6% 0.167 243.03);
+  --color-prsk-player4-500: oklch(60.85% 0.147 243.03);
+  --color-prsk-player4-600: oklch(51.37% 0.124 243);
+  --color-prsk-player4-700: oklch(42.07% 0.101 242.41);
+  --color-prsk-player4-800: oklch(32.69% 0.078 242.55);
+  --color-prsk-player4-900: oklch(23.02% 0.056 243.47);
+  --color-prsk-player4-950: oklch(18.74% 0.044 241.75);
+
+  --color-prsk-player5-50: oklch(94.9% 0.02 292.21);
+  --color-prsk-player5-100: oklch(89.96% 0.039 290.36);
+  --color-prsk-player5-200: oklch(79.08% 0.086 289.55);
+  --color-prsk-player5-300: oklch(68.99% 0.13 288.1);
+  --color-prsk-player5-400: oklch(58.44% 0.176 286.48);
+  --color-prsk-player5-500: oklch(51.85% 0.2 285.04);
+  --color-prsk-player5-600: oklch(44.41% 0.2 283.82);
+  --color-prsk-player5-700: oklch(37.12% 0.167 283.46);
+  --color-prsk-player5-800: oklch(29.99% 0.135 283.56);
+  --color-prsk-player5-900: oklch(21.81% 0.097 284.14);
+  --color-prsk-player5-950: oklch(17.19% 0.079 283.61);
+
+  --color-prsk-left-50: oklch(96.7% 0.016 42.45);
+  --color-prsk-left-100: oklch(93.43% 0.032 42.29);
+  --color-prsk-left-200: oklch(86.67% 0.067 45.07);
+  --color-prsk-left-300: oklch(80.29% 0.111 49.43);
+  --color-prsk-left-400: oklch(73.13% 0.156 55.29);
+  --color-prsk-left-500: oklch(63.02% 0.135 55.14);
+  --color-prsk-left-600: oklch(53.46% 0.113 55.55);
+  --color-prsk-left-700: oklch(43.88% 0.094 55.01);
+  --color-prsk-left-800: oklch(33.28% 0.07 55.69);
+  --color-prsk-left-900: oklch(23.6% 0.051 55.74);
+  --color-prsk-left-950: oklch(19.08% 0.042 54.31);
+
+  --color-prsk-right-50: oklch(96.45% 0.023 224.8);
+  --color-prsk-right-100: oklch(92.82% 0.048 223.48);
+  --color-prsk-right-200: oklch(86.26% 0.098 220.85);
+  --color-prsk-right-300: oklch(78.91% 0.14 217.63);
+  --color-prsk-right-400: oklch(72.26% 0.128 217.61);
+  --color-prsk-right-500: oklch(62.79% 0.111 217.98);
+  --color-prsk-right-600: oklch(52.58% 0.093 217.78);
+  --color-prsk-right-700: oklch(43.18% 0.077 217.76);
+  --color-prsk-right-800: oklch(33.24% 0.059 217.72);
+  --color-prsk-right-900: oklch(23.71% 0.042 219.28);
+  --color-prsk-right-950: oklch(18.46% 0.033 216.74);
+}
+
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
