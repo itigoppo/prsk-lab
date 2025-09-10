@@ -31,17 +31,21 @@ export const createUser: Handler = async (c) => {
     const prisma = new PrismaClient()
     const { avatarUrl, email, name } = parsed.data
 
+    const now = new Date()
+
     await prisma.user.upsert({
       create: {
         avatarUrl,
         discordId,
         email,
+        lastLoginAt: now,
         name,
         role: UserRole.Viewer,
       },
       update: {
         avatarUrl,
         email,
+        lastLoginAt: now,
         name,
       },
       where: { discordId },
