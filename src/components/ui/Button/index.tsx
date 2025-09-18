@@ -33,6 +33,31 @@ const buttonVariants = cva(
         variant: "default",
       },
       {
+        class: "text-prsk-player1-400 border-prsk-player1-400 bg-white hover:bg-prsk-player1-100",
+        outline: true,
+        variant: "deck1",
+      },
+      {
+        class: "text-prsk-player2-400 border-prsk-player2-400 bg-white hover:bg-prsk-player2-100",
+        outline: true,
+        variant: "deck2",
+      },
+      {
+        class: "text-prsk-player3-400 border-prsk-player3-400 bg-white hover:bg-prsk-player3-100",
+        outline: true,
+        variant: "deck3",
+      },
+      {
+        class: "text-prsk-player4-400 border-prsk-player4-400 bg-white hover:bg-prsk-player4-100",
+        outline: true,
+        variant: "deck4",
+      },
+      {
+        class: "text-prsk-player5-400 border-prsk-player5-400 bg-white hover:bg-prsk-player5-100",
+        outline: true,
+        variant: "deck5",
+      },
+      {
         class: "border-transparent",
         outline: true,
         variant: "ghost",
@@ -93,6 +118,11 @@ const buttonVariants = cva(
       },
       variant: {
         danger: "bg-rose-500 text-white hover:bg-rose-600",
+        deck1: "bg-prsk-player1-400 text-white hover:bg-prsk-player1-600",
+        deck2: "bg-prsk-player2-400 text-white hover:bg-prsk-player2-600",
+        deck3: "bg-prsk-player3-400 text-white hover:bg-prsk-player3-600",
+        deck4: "bg-prsk-player4-400 text-white hover:bg-prsk-player4-600",
+        deck5: "bg-prsk-player5-400 text-white hover:bg-prsk-player5-600",
         default: "bg-slate-500 text-white hover:bg-slate-600",
         ghost: "bg-transparent text-slate-700 hover:bg-slate-200",
         primary: "bg-teal-500 text-white hover:bg-teal-600",
