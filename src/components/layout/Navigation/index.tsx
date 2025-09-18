@@ -102,7 +102,7 @@ export function Navigation() {
             </nav>
           </div>
 
-          <div className="fixed right-4 bottom-4 flex items-center gap-2">
+          <div className="fixed top-[calc(100dvh-3.5rem)] right-4 flex w-full justify-end lg:top-[calc(100dvh-4.5rem)] lg:right-8">
             <Avatar>
               {currentUser?.avatarUrl ? (
                 <Button size="icon" onClick={() => setIsLogoutModalOpen(true)}>

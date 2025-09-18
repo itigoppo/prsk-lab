@@ -3,7 +3,7 @@ import { Navigation } from "@/components/layout/Navigation"
 import { UserProvider } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils/common"
 import { AuthSessionProvider } from "@/providers/SessionProvider"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono, Inter, M_PLUS_2 } from "next/font/google"
 import Link from "next/link"
 import type { ReactNode } from "react"
@@ -18,6 +18,12 @@ const geistMono = Geist_Mono({ subsets: ["latin"], weight: ["400", "700"] })
 export const metadata: Metadata = {
   description: "プロセカ関係でなんかやったものをおいておくモノオキ",
   title: "PrskLab",
+}
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  viewportFit: "cover",
+  width: "device-width",
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
