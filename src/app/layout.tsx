@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <UserProvider>
             <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-200">
               <header>
-                <Link href="/">
+                <Link href="/" className="inline-block">
                   <Logo />
                 </Link>
 
