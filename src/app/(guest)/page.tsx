@@ -1,5 +1,11 @@
-import { TopView } from "@/components/pages/top/TopView"
+import { MainImage } from "@/components/pages/top/MainImage"
 
 export default function TopPage() {
-  return <TopView />
+  return (
+    <>
+      <div className="h-screen">
+        <MainImage />
+      </div>
+    </>
+  )
 }
