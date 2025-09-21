@@ -56,7 +56,7 @@ prisma-generate:
 
 # Run Prisma migrations
 prisma-migrate:
-	npx prisma migrate dev
+	npx prisma migrate dev $(if $(CREATE_ONLY),--create-only) --name $(NAME)
 
 prisma-deploy:
 	npx prisma migrate deploy

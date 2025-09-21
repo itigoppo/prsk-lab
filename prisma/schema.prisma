@@ -31,20 +31,22 @@ model User {
   lastLoginAt DateTime? @map("last_login_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
+  setting Setting? @relation("UserSetting")
+
   @@map("users")
 }
 
 model Unit {
-  id        String      @id @default(cuid()) @db.VarChar(32)
-  bgColor   String      @map("bg_color") @db.VarChar(10)
-  code      String      @unique @db.VarChar(20)
-  color     String      @db.VarChar(10)
-  name      String      @db.VarChar(20)
-  priority  Int         @default(0)
-  short     String      @db.VarChar(10)
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
-  Character Character[]
+  id         String      @id @default(cuid()) @db.VarChar(32)
+  bgColor    String      @map("bg_color") @db.VarChar(10)
+  code       String      @unique @db.VarChar(20)
+  color      String      @db.VarChar(10)
+  name       String      @db.VarChar(20)
+  priority   Int         @default(0)
+  short      String      @db.VarChar(10)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  characters Character[]
 
   @@map("units")
 }
@@ -61,7 +63,19 @@ model Character {
   unitId    String?  @map("unit_id") @db.VarChar(32)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  unit      Unit?    @relation(fields: [unitId], references: [id])
+  unit      Unit?    @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@map("characters")
+}
+
+model Setting {
+  id             String   @id @default(cuid()) @db.VarChar(32)
+  leaderSheetUrl String?  @map("leader_sheet_url") @db.VarChar(255)
+  userId         String   @unique @map("user_id") @db.VarChar(32)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation("UserSetting", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settings")
 }
