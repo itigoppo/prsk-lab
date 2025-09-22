@@ -62,8 +62,5 @@
     "lint": "eslint",
     "postinstall": "prisma generate --no-engine",
     "start": "next start"
-  },
-  "volta": {
-    "node": "22.19.0"
   }
 }
