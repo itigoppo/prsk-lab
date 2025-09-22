@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client"
+import chalk from "chalk"
 import readline from "readline"
 import { seedCharacters } from "./characters"
 import { seedUnits } from "./units"
@@ -50,9 +51,9 @@ const formatDatabaseInfo = (): string => {
     const database = url.pathname.replace("/", "")
     const schema = url.searchParams.get("schema") || "public"
 
-    return `Datasource "db": ${dbType.toUpperCase()} database "${database}", schema "${schema}" at "${host}:${port}"`
+    return `Datasource ${chalk.cyanBright('"db"')}: ${chalk.greenBright(dbType.toUpperCase())} database ${chalk.bold(`"${database}"`)}, schema ${chalk.yellowBright(`"${schema}"`)} at ${chalk.redBright(`"${host}:${port}"`)}`
   } catch (error) {
-    return `❌ Failed to parse DATABASE_URL: ${error}`
+    return chalk.redBright(`❌ Failed to parse DATABASE_URL: ${error}`)
   }
 }
 
