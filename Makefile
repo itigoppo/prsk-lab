@@ -65,7 +65,7 @@ prisma-deploy:
 prisma-reset:
 	@read -p "⚠️  Destroys all data in your database and runs seed. Proceed? [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-		npx prisma db push --force-reset; \
+		npx prisma migrate reset; \
 		make seed; \
 	else \
 		echo "❌ Cancelled."; \
