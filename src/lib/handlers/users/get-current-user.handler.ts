@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { prisma } from "@/lib/prisma"
 import type { CurrentUserResponse } from "@/types/user"
-import { PrismaClient } from "@prisma/client"
 import type { Handler } from "hono"
 
 export const getCurrentUser: Handler = async (c) => {
@@ -14,8 +14,6 @@ export const getCurrentUser: Handler = async (c) => {
   }
 
   try {
-    const prisma = new PrismaClient()
-
     const user = await prisma.user.findFirstOrThrow({
       select: {
         avatarUrl: true,

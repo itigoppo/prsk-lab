@@ -1,12 +1,11 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { prisma } from "@/lib/prisma"
 import { CharacterListItem, CharacterListResponse, CharacterUnitListItem } from "@/types/character"
-import { Prisma, PrismaClient } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import type { Handler } from "hono"
 
 export const getCharacters: Handler = async (c) => {
   try {
-    const prisma = new PrismaClient()
-
     const characters = await prisma.character.findMany({
       orderBy: {
         priority: Prisma.SortOrder.asc,

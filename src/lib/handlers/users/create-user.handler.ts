@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { prisma } from "@/lib/prisma"
 import { CreateUserSchema, createUserSchema } from "@/lib/schemas/user"
-import { PrismaClient, UserRole } from "@prisma/client"
+import { UserRole } from "@prisma/client"
 import type { Handler } from "hono"
 import { z } from "zod"
 
@@ -28,7 +29,6 @@ export const createUser: Handler = async (c) => {
   }
 
   try {
-    const prisma = new PrismaClient()
     const { avatarUrl, email, name } = parsed.data
 
     const now = new Date()
