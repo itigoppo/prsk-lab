@@ -14,3 +14,14 @@ export interface CurrentUserResponse {
   message: string
   success: boolean
 }
+
+export interface CurrentSettingData {
+  isRegistered: boolean
+  leaderSheetUrl: string | null
+}
+
+export interface CurrentSettingResponse {
+  data?: CurrentSettingData
+  message: string
+  success: boolean
+}

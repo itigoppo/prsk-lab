@@ -25,3 +25,26 @@ Cookie: next-auth.session-token={{sessionToken}};
 ### Get characters
 GET {{baseUrl}}/characters
 Accept: application/json
+
+### Get settings
+GET {{baseUrl}}/users/settings
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Create settings
+POST {{baseUrl}}/users/settings
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+{
+  "leaderSheetUrl": "https://docs.google.com/spreadsheets/d/1234567890/edit"
+}
+
+### Update settings
+PATCH {{baseUrl}}/users/settings
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+{
+  "leaderSheetUrl": null
+}
