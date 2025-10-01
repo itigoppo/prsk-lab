@@ -13,16 +13,17 @@ export const authOptions: AuthOptions = {
     },
     async signIn({ account }) {
       const discordId = account?.providerAccountId
-      if (!discordId) {
+      if (!discordId || !account?.access_token) {
         return false
       }
 
       try {
         // サーバーサイドなのでfetchを直接使用
+        // ミドルウェアがDiscord APIからユーザー情報を取得するため、bodyは不要
         const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:30000"
         const res = await fetch(`${baseUrl}/api/users`, {
           headers: {
-            Authorization: `Bearer ${account?.access_token}`,
+            Authorization: `Bearer ${account.access_token}`,
             "Content-Type": "application/json",
           },
           method: "POST",

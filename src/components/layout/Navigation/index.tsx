@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar/inde
 import { Button } from "@/components/ui/Button"
 import { useCurrentUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils/common"
-import { getUserAvatarUrl, getUserInitials } from "@/lib/utils/user"
+import { getUserInitials } from "@/lib/utils/user"
 import { UserRole } from "@prisma/client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -107,7 +107,7 @@ export function Navigation() {
               {currentUser?.avatarUrl ? (
                 <Button size="icon" onClick={() => setIsLogoutModalOpen(true)}>
                   <AvatarImage
-                    src={getUserAvatarUrl(currentUser.discordId, currentUser.avatarUrl)}
+                    src={currentUser.avatarUrl}
                     alt={currentUser.name ?? ""}
                     width={40}
                     height={40}

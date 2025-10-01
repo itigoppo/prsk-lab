@@ -7,11 +7,7 @@ import { updateSetting } from "@/lib/handlers/users/update-setting.handler"
 import { verifyDiscordToken } from "@/lib/middleware/verify-discord-token"
 import { verifyNextAuthSession } from "@/lib/middleware/verify-nextauth-session"
 import { characterListResponseSchema } from "@/lib/schemas/character"
-import {
-  createSettingDtoSchema,
-  createUserDtoSchema,
-  updateSettingDtoSchema,
-} from "@/lib/schemas/dto"
+import { createSettingDtoSchema, updateSettingDtoSchema } from "@/lib/schemas/dto"
 import { currentSettingResponseSchema, currentUserResponseSchema } from "@/lib/schemas/user"
 import { swaggerUI } from "@hono/swagger-ui"
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
@@ -111,7 +107,7 @@ const createUserRoute = createRoute({
   description: "Register a new user with Discord OAuth",
   method: "post",
   path: "/api/users",
-  request: jsonRequest(createUserDtoSchema),
+  // request bodyは不要（ミドルウェアがDiscord APIから情報を取得）
   responses: {
     ...jsonResponse(201, currentUserResponseSchema, "User created successfully"),
     ...commonResponses.badRequest,

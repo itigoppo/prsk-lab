@@ -48,7 +48,3 @@ export const getUserInitials = (user: UserNameData): string => {
     return user.name.substring(0, 2).toUpperCase()
   }
 }
-
-export const getUserAvatarUrl = (userId: string, avatarUrl: string): string => {
-  return `https://cdn.discordapp.com/avatars/${userId}/${avatarUrl}.png`
-}

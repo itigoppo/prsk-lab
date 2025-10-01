@@ -8,11 +8,18 @@ import type { Handler } from "hono"
 export const createUser: Handler = async (c) => {
   const discordId = c.get("discordId")
   const discordUser = c.get("discordUser")
+
+  // Discord APIからのユーザー情報を使用
+  // avatar: ハッシュ値（CDN URLに変換が必要）
+  const avatarUrl = discordUser.avatar
+    ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+    : null
+
   const body: CreateUserDto = {
-    avatarUrl: discordUser.avatar,
+    avatarUrl: avatarUrl ?? null,
     discordId: discordUser.id,
-    email: discordUser.email,
-    name: discordUser.username,
+    email: discordUser.email ?? null,
+    name: discordUser.username ?? null,
   }
 
   const parsed = createUserDtoSchema.safeParse(body)
@@ -29,13 +36,13 @@ export const createUser: Handler = async (c) => {
   }
 
   try {
-    const { avatarUrl, email, name } = parsed.data
+    const { avatarUrl: validatedAvatarUrl, email, name } = parsed.data
 
     const now = new Date()
 
     await prisma.user.upsert({
       create: {
-        avatarUrl,
+        avatarUrl: validatedAvatarUrl,
         discordId,
         email,
         lastLoginAt: now,
@@ -43,7 +50,7 @@ export const createUser: Handler = async (c) => {
         role: UserRole.Viewer,
       },
       update: {
-        avatarUrl,
+        avatarUrl: validatedAvatarUrl,
         email,
         lastLoginAt: now,
         name,
