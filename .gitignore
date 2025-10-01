@@ -45,3 +45,6 @@ next-env.d.ts
 postgres/data
 
 /src/generated/prisma
+
+# Orval generated files
+src/lib/api/generated/

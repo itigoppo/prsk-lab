@@ -1,5 +1,5 @@
+import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
-import { CharacterListItem } from "@/types/character"
 import { CharacterItem } from "./CharacterItem"
 
 interface RankingProps {

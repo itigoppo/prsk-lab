@@ -1,20 +1,20 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { updateSettingSchema } from "@/lib/schemas/user"
+import { UpdateSettingDto, updateSettingDtoSchema } from "@/lib/schemas/dto"
+import { formatZodErrors } from "@/lib/schemas/utils"
 import type { Handler } from "hono"
-import { z } from "zod"
 
 export const updateSetting: Handler = async (c) => {
   const discordId = c.get("discordId")
 
   const body = await c.req.json()
 
-  const parsed = updateSettingSchema.safeParse(body)
+  const parsed = updateSettingDtoSchema.safeParse(body)
   if (!parsed.success) {
-    const tree = z.treeifyError(parsed.error)
+    const errors = formatZodErrors<UpdateSettingDto>(parsed.error)
     return c.json(
       {
-        errors: tree.properties,
+        errors,
         message: "入力内容に誤りがあります",
         success: false,
       },

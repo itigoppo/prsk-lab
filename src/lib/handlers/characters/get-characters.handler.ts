@@ -1,6 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { CharacterListItem, CharacterListResponse, CharacterUnitListItem } from "@/types/character"
+import {
+  CharacterListItem,
+  CharacterListResponse,
+  CharacterUnitListItem,
+} from "@/lib/schemas/character"
 import { Prisma } from "@prisma/client"
 import type { Handler } from "hono"
 

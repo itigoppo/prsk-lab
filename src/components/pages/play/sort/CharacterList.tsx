@@ -1,4 +1,4 @@
-import { CharacterListItem } from "@/types/character"
+import { CharacterListItem } from "@/lib/schemas/character"
 import { CharacterItem } from "./CharacterItem"
 
 interface CharacterListProps {

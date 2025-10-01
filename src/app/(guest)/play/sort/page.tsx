@@ -7,13 +7,15 @@ import { CharacterList } from "@/components/pages/play/sort/CharacterList"
 import { Ranking } from "@/components/pages/play/sort/Ranking"
 import { Button } from "@/components/ui/Button"
 import { ProgressBar } from "@/components/ui/ProgressBar"
-import { useApiCharacters } from "@/hooks/api/useApiCharacters"
+import { useGetApiCharacters } from "@/lib/api/generated/characters/characters"
 import { SortBattle, SortBattleChoice } from "@/lib/utils/sort-battle"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 
 export default function PlaySortPage() {
-  const { characters, initialError, initialLoading } = useApiCharacters()
+  const { data, error, isLoading } = useGetApiCharacters()
+  const characters = useMemo(() => data?.data?.characters ?? [], [data?.data?.characters])
+  const initialError = error ?? null
 
   const battleRef = useRef<SortBattle | null>(null)
 
@@ -70,7 +72,6 @@ export default function PlaySortPage() {
     initializeBattle()
   }
 
-  const isLoading = initialLoading
   const isError = !!initialError
   const isEmpty = !isLoading && !isError && (!characters || characters.length === 0)
   const isReady = !isLoading && !isError && !isEmpty

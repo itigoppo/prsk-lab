@@ -1,26 +1,26 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { CreateUserSchema, createUserSchema } from "@/lib/schemas/user"
+import { CreateUserDto, createUserDtoSchema } from "@/lib/schemas/dto"
+import { formatZodErrors } from "@/lib/schemas/utils"
 import { UserRole } from "@prisma/client"
 import type { Handler } from "hono"
-import { z } from "zod"
 
 export const createUser: Handler = async (c) => {
   const discordId = c.get("discordId")
   const discordUser = c.get("discordUser")
-  const body: CreateUserSchema = {
+  const body: CreateUserDto = {
     avatarUrl: discordUser.avatar,
     discordId: discordUser.id,
     email: discordUser.email,
     name: discordUser.username,
   }
 
-  const parsed = createUserSchema.safeParse(body)
+  const parsed = createUserDtoSchema.safeParse(body)
   if (!parsed.success) {
-    const tree = z.treeifyError(parsed.error)
+    const errors = formatZodErrors<CreateUserDto>(parsed.error)
     return c.json(
       {
-        errors: tree.properties,
+        errors,
         message: "入力内容に誤りがあります",
         success: false,
       },

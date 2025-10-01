@@ -1,25 +1,19 @@
 import { z } from "zod"
 
-// スキーマからエラー型を自動生成するユーティリティ型
-export type SchemaErrors<T> = {
-  [K in keyof T]?: string
-}
-
-// スキーマからエラーオブジェクトを自動生成する関数
-export const createErrorObject = <T extends z.ZodSchema>(): SchemaErrors<z.infer<T>> => {
-  return {} as SchemaErrors<z.infer<T>>
-}
-
-// Zodエラーをフロントエンド用のエラー形式に変換する共通関数
-export const convertZodErrors = <T extends z.ZodSchema>(
-  zodError: z.ZodError,
-  _schema: T // 型定義用なので未使用だけど消さない
-): SchemaErrors<z.infer<T>> => {
-  const errors = createErrorObject<T>()
+/**
+ * Zodバリデーションエラーをフィールドごとのエラーメッセージに変換
+ * @param zodError - Zodバリデーションエラー
+ * @returns フィールド名をキーとしたエラーメッセージのオブジェクト
+ */
+export const formatZodErrors = <T extends Record<string, unknown>>(
+  zodError: z.ZodError
+): Partial<Record<keyof T, string>> => {
+  const errors: Partial<Record<keyof T, string>> = {}
 
   zodError.issues.forEach((issue) => {
-    const field = issue.path[0] as keyof z.infer<T>
-    if (field) {
+    const field = issue.path[0] as keyof T
+    if (field && !errors[field]) {
+      // 最初のエラーメッセージのみ保持
       errors[field] = issue.message
     }
   })

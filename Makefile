@@ -4,7 +4,7 @@ POSTGRES_CONTAINER := prsk-postgres
 	docker-up docker-down docker-build docker-rebuild docker-logs \
 	run build start install clean secret-generate \
 	prisma-generate prisma-migrate prisma-deploy prisma-reset prisma-studio open-studio \
-	seed fix
+	seed fix open-api-generate
 
 # Start Docker containers
 docker-up:
@@ -87,3 +87,7 @@ seed:
 # Fix code
 fix:
 	npm run fix
+
+# Generate OpenAPI
+open-api-generate:
+	npm run generate:openapi && npm run generate:api

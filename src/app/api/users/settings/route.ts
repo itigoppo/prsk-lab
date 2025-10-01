@@ -1,13 +1,13 @@
-import app from "@/lib/hono/api"
+import { openAPIApp } from "@/lib/hono/openapi"
 
 export const POST = (req: Request) => {
-  return app.fetch(req)
+  return openAPIApp.fetch(req)
 }
 
 export const GET = (req: Request) => {
-  return app.fetch(req)
+  return openAPIApp.fetch(req)
 }
 
 export const PATCH = (req: Request) => {
-  return app.fetch(req)
+  return openAPIApp.fetch(req)
 }

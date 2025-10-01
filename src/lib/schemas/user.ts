@@ -1,36 +1,30 @@
-import z from "zod"
-import { SchemaErrors } from "./utils"
+import { z } from "zod"
+import { createApiDataResponseSchema } from "./api"
 
-// ユーザー登録スキーマ
-export const createUserSchema = z.object({
-  avatarUrl: z.string().trim().nullable(),
-  discordId: z.string().trim().min(1, "Discord IDは必須です"),
-  email: z.string().trim().nullable(),
-  name: z.string().trim().nullable(),
+// ユーザーデータスキーマ
+export const currentUserDataSchema = z.object({
+  avatarUrl: z.string().nullable(),
+  discordId: z.string(),
+  email: z.string().nullable(),
+  id: z.string(),
+  name: z.string().nullable(),
+  role: z.enum(["Admin", "Editor", "Viewer"]),
 })
 
-// スキーマから型作成
-export type CreateUserSchema = z.infer<typeof createUserSchema>
+// ユーザーレスポンススキーマ
+export const currentUserResponseSchema = createApiDataResponseSchema(currentUserDataSchema)
 
-// バリデーションエラーの型（スキーマから自動生成）
-export type CreateUserValidationErrors = SchemaErrors<CreateUserSchema>
-
-// 設定作成スキーマ
-export const createSettingSchema = z.object({
-  leaderSheetUrl: z.string().trim().nullable(),
+// 設定データスキーマ
+export const currentSettingDataSchema = z.object({
+  isRegistered: z.boolean(),
+  leaderSheetUrl: z.string().nullable(),
 })
 
-// スキーマから型作成
-export type CreateSettingSchema = z.infer<typeof createSettingSchema>
+// 設定レスポンススキーマ
+export const currentSettingResponseSchema = createApiDataResponseSchema(currentSettingDataSchema)
 
-// バリデーションエラーの型（スキーマから自動生成）
-export type CreateSettingValidationErrors = SchemaErrors<CreateSettingSchema>
-
-// 設定更新スキーマ
-export const updateSettingSchema = createSettingSchema
-
-// スキーマから型作成
-export type UpdateSettingSchema = z.infer<typeof updateSettingSchema>
-
-// バリデーションエラーの型（スキーマから自動生成）
-export type UpdateSettingValidationErrors = SchemaErrors<UpdateSettingSchema>
+// Zodスキーマから推論される型定義
+export type CurrentUserData = z.infer<typeof currentUserDataSchema>
+export type CurrentUserResponse = z.infer<typeof currentUserResponseSchema>
+export type CurrentSettingData = z.infer<typeof currentSettingDataSchema>
+export type CurrentSettingResponse = z.infer<typeof currentSettingResponseSchema>

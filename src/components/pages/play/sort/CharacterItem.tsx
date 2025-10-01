@@ -1,6 +1,6 @@
 import { IconAwardStar, IconTofu } from "@/components/icons"
+import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
-import { CharacterListItem } from "@/types/character"
 import { cva, type VariantProps } from "class-variance-authority"
 import Image from "next/image"
 

@@ -1,4 +1,3 @@
-import { registerUser } from "@/lib/api/users/register-user"
 import NextAuth, { AuthOptions } from "next-auth"
 import DiscordProvider from "next-auth/providers/discord"
 
@@ -18,13 +17,27 @@ export const authOptions: AuthOptions = {
         return false
       }
 
-      const res = await registerUser(account?.access_token as string)
+      try {
+        // サーバーサイドなのでfetchを直接使用
+        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:30000"
+        const res = await fetch(`${baseUrl}/api/users`, {
+          headers: {
+            Authorization: `Bearer ${account?.access_token}`,
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        })
 
-      if (!res || !res.success) {
+        const json = await res.json()
+
+        if (!res.ok || !json.success) {
+          return false
+        }
+
+        return true
+      } catch {
         return false
       }
-
-      return true
     },
   },
   pages: {

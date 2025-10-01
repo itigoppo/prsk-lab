@@ -1,5 +1,5 @@
-import app from "@/lib/hono/api"
+import { openAPIApp } from "@/lib/hono/openapi"
 
 export const GET = (req: Request) => {
-  return app.fetch(req)
+  return openAPIApp.fetch(req)
 }

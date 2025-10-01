@@ -1,58 +1,36 @@
 "use client"
 
-import { fetchCurrentUser } from "@/lib/api/users/get-current-user"
-import type { CurrentUserData } from "@/types/user"
+import { useGetApiUsersMe } from "@/lib/api/generated/users/users"
+import type { CurrentUserData } from "@/lib/schemas/user"
 import { useSession } from "next-auth/react"
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { createContext, useContext } from "react"
 
 interface UserContextType {
   currentUser: CurrentUserData | null
   initialError: string | null
   initialLoading: boolean
-  refetch: () => Promise<void>
+  refetch: () => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { status } = useSession()
-  const [currentUser, setCurrentUser] = useState<CurrentUserData | null>(null)
-  const [initialLoading, setInitialLoading] = useState(true)
-  const [initialError, setInitialError] = useState<string | null>(null)
+  const isAuthenticated = status === "authenticated"
 
-  const loadCurrentUser = useCallback(async () => {
-    if (status !== "authenticated") {
-      setCurrentUser(null)
-      setInitialLoading(false)
-      return
-    }
+  // 認証済みの場合のみAPIを呼び出す
+  const { data, error, isLoading, refetch } = useGetApiUsersMe({
+    query: {
+      enabled: isAuthenticated,
+    },
+  })
 
-    setInitialLoading(true)
-    setInitialError(null)
-
-    try {
-      const res = await fetchCurrentUser()
-
-      if (res.success && res.data) {
-        setCurrentUser(res.data)
-      } else {
-        setInitialError(res.message || "取得に失敗しました")
-      }
-    } catch {
-      setInitialError("ユーザー情報の取得中にエラーが発生しました")
-    } finally {
-      setInitialLoading(false)
-    }
-  }, [status])
-
-  useEffect(() => {
-    loadCurrentUser()
-  }, [loadCurrentUser])
+  const currentUser = data?.data ?? null
+  const initialError = error ? "ユーザー情報の取得に失敗しました" : null
+  const initialLoading = isAuthenticated ? isLoading : false
 
   return (
-    <UserContext.Provider
-      value={{ currentUser, initialError, initialLoading, refetch: loadCurrentUser }}
-    >
+    <UserContext.Provider value={{ currentUser, initialError, initialLoading, refetch }}>
       {children}
     </UserContext.Provider>
   )

@@ -2,6 +2,7 @@ import { Logo } from "@/components/layout/Logo"
 import { Navigation } from "@/components/layout/Navigation"
 import { UserProvider } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils/common"
+import { ReactQueryProvider } from "@/providers/ReactQueryProvider"
 import { AuthSessionProvider } from "@/providers/SessionProvider"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono, Inter, M_PLUS_2 } from "next/font/google"
@@ -30,21 +31,23 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ja">
       <body className={cn(mPlus2.className, geist.className, geistMono.className, inter.className)}>
-        <AuthSessionProvider>
-          <Toaster />
-          <UserProvider>
-            <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-200">
-              <header>
-                <Link href="/" className="inline-block">
-                  <Logo />
-                </Link>
+        <ReactQueryProvider>
+          <AuthSessionProvider>
+            <Toaster />
+            <UserProvider>
+              <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-200">
+                <header>
+                  <Link href="/" className="inline-block">
+                    <Logo />
+                  </Link>
 
-                <Navigation />
-              </header>
-              <main className="container mx-auto px-4 py-6">{children}</main>
-            </div>
-          </UserProvider>
-        </AuthSessionProvider>
+                  <Navigation />
+                </header>
+                <main className="container mx-auto px-4 py-6">{children}</main>
+              </div>
+            </UserProvider>
+          </AuthSessionProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   )
