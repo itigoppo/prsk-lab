@@ -41,3 +41,6 @@ postgres/data/
 cli-utils/
 
 tools/
+
+# Orval自動生成ファイル
+src/lib/api/generated/

@@ -28,6 +28,7 @@ const eslintConfig = [
       "**/*.yaml",
       "**/*.json",
       "**/*.mjs",
+      "src/lib/api/generated/**", // Orval自動生成ファイル
     ],
   },
 
