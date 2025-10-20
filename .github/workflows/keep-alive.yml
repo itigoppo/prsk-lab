@@ -1,0 +1,30 @@
+name: Keep Database Alive
+
+on:
+  schedule:
+    # Run every 6 hours (0:00, 6:00, 12:00, 18:00 UTC)
+    # Supabase free tier pauses after 7 days of inactivity
+    - cron: "0 */6 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Send health check request
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.APP_DOMAIN }}/api/health)
+
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check successful (HTTP $response)"
+          else
+            echo "❌ Health check failed (HTTP $response)"
+            exit 1
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::warning::Health check failed. Database might be unavailable."
