@@ -3,6 +3,7 @@ import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
 import { cva, type VariantProps } from "class-variance-authority"
 import Image from "next/image"
+import { memo } from "react"
 
 const characterItemVariants = cva("", {
   defaultVariants: {
@@ -21,7 +22,7 @@ interface CharacterItemProps extends VariantProps<typeof characterItemVariants> 
   character: CharacterListItem
 }
 
-export function CharacterItem({ character, size }: CharacterItemProps) {
+function CharacterItemComponent({ character, size }: CharacterItemProps) {
   return (
     <div className="rounded-md bg-white text-center shadow">
       <div className="flex items-center justify-center rounded-t-md bg-slate-50">
@@ -62,3 +63,5 @@ export function CharacterItem({ character, size }: CharacterItemProps) {
     </div>
   )
 }
+
+export const CharacterItem = memo(CharacterItemComponent)

@@ -2,7 +2,7 @@
 
 import { ErrorState } from "@/components/common/ErrorState"
 import { LoadingState } from "@/components/common/LoadingState"
-import BattleCharacter from "@/components/pages/play/sort/BattleCharacter"
+import { BattleCharacter } from "@/components/pages/play/sort/BattleCharacter"
 import { CharacterList } from "@/components/pages/play/sort/CharacterList"
 import { Ranking } from "@/components/pages/play/sort/Ranking"
 import { Button } from "@/components/ui/Button"
@@ -70,6 +70,18 @@ export default function PlaySortPage() {
     [finalResult, isProcessing]
   )
 
+  const handleChoiceLeft = useCallback(() => {
+    handleChoice(SortBattleChoice.LEFT)
+  }, [handleChoice])
+
+  const handleChoiceEqual = useCallback(() => {
+    handleChoice(SortBattleChoice.EQUAL)
+  }, [handleChoice])
+
+  const handleChoiceRight = useCallback(() => {
+    handleChoice(SortBattleChoice.RIGHT)
+  }, [handleChoice])
+
   const handleReset = useCallback(() => {
     initializeBattle()
   }, [initializeBattle])
@@ -113,15 +125,15 @@ export default function PlaySortPage() {
                   <BattleCharacter
                     left
                     character={characters[currentPair[0]]}
-                    onClick={() => handleChoice(SortBattleChoice.LEFT)}
+                    onClick={handleChoiceLeft}
                   />
 
-                  <BattleCharacter onClick={() => handleChoice(SortBattleChoice.EQUAL)} />
+                  <BattleCharacter onClick={handleChoiceEqual} />
 
                   <BattleCharacter
                     right
                     character={characters[currentPair[1]]}
-                    onClick={() => handleChoice(SortBattleChoice.RIGHT)}
+                    onClick={handleChoiceRight}
                   />
                 </>
               )}

@@ -1,11 +1,12 @@
 import { CharacterListItem } from "@/lib/schemas/character"
+import { memo } from "react"
 import { CharacterItem } from "./CharacterItem"
 
 interface CharacterListProps {
   characters: CharacterListItem[]
 }
 
-export function CharacterList({ characters }: CharacterListProps) {
+function CharacterListComponent({ characters }: CharacterListProps) {
   return (
     <div className="space-y-4 text-sm">
       <div>チェック対象メンバー {characters.length} 名</div>
@@ -17,3 +18,5 @@ export function CharacterList({ characters }: CharacterListProps) {
     </div>
   )
 }
+
+export const CharacterList = memo(CharacterListComponent)

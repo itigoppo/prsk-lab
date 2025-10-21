@@ -2,6 +2,7 @@ import { IconTofu } from "@/components/icons"
 import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
 import Image from "next/image"
+import { memo } from "react"
 
 interface BattleCharacterProps {
   character?: CharacterListItem
@@ -10,7 +11,7 @@ interface BattleCharacterProps {
   right?: boolean
 }
 
-export default function BattleCharacter({ character, left, onClick, right }: BattleCharacterProps) {
+function BattleCharacterComponent({ character, left, onClick, right }: BattleCharacterProps) {
   return (
     <div
       className={cn(
@@ -63,3 +64,5 @@ export default function BattleCharacter({ character, left, onClick, right }: Bat
     </div>
   )
 }
+
+export const BattleCharacter = memo(BattleCharacterComponent)

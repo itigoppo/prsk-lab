@@ -1,5 +1,6 @@
 import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
+import { memo } from "react"
 import { CharacterItem } from "./CharacterItem"
 
 interface RankingProps {
@@ -7,7 +8,7 @@ interface RankingProps {
   groupedResult: number[][]
 }
 
-export function Ranking({ characters, groupedResult }: RankingProps) {
+function RankingComponent({ characters, groupedResult }: RankingProps) {
   return (
     <div>
       <div className="flex h-10 w-full items-center space-x-1 rounded-t-md border border-slate-600 bg-slate-100 px-2 text-xs font-bold md:px-8">
@@ -33,3 +34,5 @@ export function Ranking({ characters, groupedResult }: RankingProps) {
     </div>
   )
 }
+
+export const Ranking = memo(RankingComponent)
