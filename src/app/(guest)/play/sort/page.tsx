@@ -13,9 +13,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 
 export default function PlaySortPage() {
-  const { data, error, isLoading } = useGetApiCharacters()
+  const { data, error, isLoading, refetch } = useGetApiCharacters()
   const characters = useMemo(() => data?.data?.characters ?? [], [data?.data?.characters])
-  const initialError = error ?? null
 
   const battleRef = useRef<SortBattle | null>(null)
 
@@ -43,36 +42,43 @@ export default function PlaySortPage() {
     initializeBattle()
   }, [initializeBattle])
 
-  const handleChoice = (choice: SortBattleChoice) => {
-    const battle = battleRef.current
-    if (!battle || finalResult || isProcessing) return
+  const handleChoice = useCallback(
+    (choice: SortBattleChoice) => {
+      const battle = battleRef.current
+      if (!battle || finalResult || isProcessing) return
 
-    setIsProcessing(true)
+      setIsProcessing(true)
 
-    try {
-      battle.choose(choice)
+      try {
+        battle.choose(choice)
 
-      setProgress(battle.getProgress())
-      setBattleCount(battle.getCurrentBattleCount())
+        setProgress(battle.getProgress())
+        setBattleCount(battle.getCurrentBattleCount())
 
-      if (battle.getIsCompleted()) {
-        setFinalResult(battle.getResult().ranking)
-        setCurrentPair(null)
-      } else {
-        setCurrentPair(battle.getCurrentPair())
+        if (battle.getIsCompleted()) {
+          setFinalResult(battle.getResult().ranking)
+          setCurrentPair(null)
+        } else {
+          setCurrentPair(battle.getCurrentPair())
+        }
+      } catch {
+        toast.error("エラーが発生しました。ページをリロードするか、リセットしてください。")
       }
-    } catch {
-      toast.error("エラーが発生しました。ページをリロードするか、リセットしてください。")
-    }
 
-    setTimeout(() => setIsProcessing(false), 50)
-  }
+      setTimeout(() => setIsProcessing(false), 50)
+    },
+    [finalResult, isProcessing]
+  )
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     initializeBattle()
-  }
+  }, [initializeBattle])
 
-  const isError = !!initialError
+  const handleRetry = useCallback(async () => {
+    await refetch()
+  }, [refetch])
+
+  const isError = !!error
   const isEmpty = !isLoading && !isError && (!characters || characters.length === 0)
   const isReady = !isLoading && !isError && !isEmpty
 
@@ -83,8 +89,8 @@ export default function PlaySortPage() {
         <div>キャラクターソート</div>
       </div>
       {isLoading && <LoadingState />}
-      {isError && <ErrorState error={initialError} onRetry={handleReset} />}
-      {isEmpty && <ErrorState error="比較対象のキャラクターがありません" onRetry={handleReset} />}
+      {isError && <ErrorState error={error} onRetry={handleRetry} />}
+      {isEmpty && <ErrorState error="比較対象のキャラクターがありません" onRetry={handleRetry} />}
 
       {!isLoading && !isError && !isEmpty && (
         <>
@@ -102,14 +108,6 @@ export default function PlaySortPage() {
             <ProgressBar value={progress} />
 
             <div className="flex justify-center">
-              {isEmpty && (
-                <>
-                  <BattleCharacter left />
-                  <BattleCharacter />
-                  <BattleCharacter right />
-                </>
-              )}
-
               {isReady && currentPair && (
                 <>
                   <BattleCharacter
