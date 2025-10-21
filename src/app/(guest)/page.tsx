@@ -1,4 +1,4 @@
-import { MainImage } from "@/components/pages/top/MainImage"
+import { MainImage } from "./_components/MainImage"
 
 export default function TopPage() {
   return (

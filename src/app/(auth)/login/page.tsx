@@ -1,5 +1,5 @@
-import { LoginView } from "@/components/pages/login/LoginView"
 import { Suspense } from "react"
+import { LoginView } from "./_components/LoginView"
 
 export default function LoginPage() {
   return (
