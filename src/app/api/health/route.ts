@@ -19,6 +19,7 @@ export async function GET() {
       { status: 200 }
     )
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Health check failed:", error)
 
     return NextResponse.json(

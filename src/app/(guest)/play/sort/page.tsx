@@ -4,13 +4,13 @@ import { ErrorState } from "@/components/common/ErrorState"
 import { LoadingState } from "@/components/common/LoadingState"
 import { Button } from "@/components/ui/Button"
 import { ProgressBar } from "@/components/ui/ProgressBar"
-import { BattleCharacter } from "./_components/BattleCharacter"
-import { CharacterList } from "./_components/CharacterList"
-import { Ranking } from "./_components/Ranking"
 import { useGetApiCharacters } from "@/lib/api/generated/characters/characters"
 import { SortBattle, SortBattleChoice } from "@/lib/utils/sort-battle"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
+import { BattleCharacter } from "./_components/BattleCharacter"
+import { CharacterList } from "./_components/CharacterList"
+import { Ranking } from "./_components/Ranking"
 
 export default function PlaySortPage() {
   const { data, error, isLoading, refetch } = useGetApiCharacters()
