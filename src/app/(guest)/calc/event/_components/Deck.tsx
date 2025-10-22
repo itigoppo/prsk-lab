@@ -1,6 +1,13 @@
 import { Button, ButtonProps } from "@/components/ui/Button"
 import { ButtonGroup } from "@/components/ui/ButtonGroup"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
+import { memo } from "react"
+import {
+  BONUS_CHARACTER_LABELS,
+  BONUS_TYPE_LABELS,
+  MASTER_RANK_LABELS,
+  RARE_LABELS,
+} from "./constants"
 
 interface DeckProps {
   buttonVariant: ButtonProps["variant"]
@@ -16,7 +23,7 @@ interface DeckProps {
   title: string
 }
 
-export function Deck({
+function DeckComponent({
   buttonVariant,
   description,
   onChangeBonusCharacterIndex,
@@ -45,7 +52,7 @@ export function Deck({
             onChange={onChangeRareIndex}
             variant={buttonVariant}
           >
-            {["PU★4", "既存★4", "BD", "★3", "★2", "★1"].map((item, index) => (
+            {RARE_LABELS.map((item, index) => (
               <Button key={`rare-${index}`}>{item}</Button>
             ))}
           </ButtonGroup>
@@ -58,7 +65,7 @@ export function Deck({
             onChange={onChangeMasterRankIndex}
             variant={buttonVariant}
           >
-            {["0", "1", "2", "3", "4", "5"].map((item, index) => (
+            {MASTER_RANK_LABELS.map((item, index) => (
               <Button key={`master-rank-${index}`}>{item}</Button>
             ))}
           </ButtonGroup>
@@ -71,7 +78,7 @@ export function Deck({
             onChange={onChangeBonusTypeIndex}
             variant={buttonVariant}
           >
-            {["一致", "不一致"].map((item, index) => (
+            {BONUS_TYPE_LABELS.map((item, index) => (
               <Button key={`bonus-type-${index}`}>{item}</Button>
             ))}
           </ButtonGroup>
@@ -84,7 +91,7 @@ export function Deck({
             onChange={onChangeBonusCharacterIndex}
             variant={buttonVariant}
           >
-            {["一致", "無印バチャシン", "不一致"].map((item, index) => (
+            {BONUS_CHARACTER_LABELS.map((item, index) => (
               <Button key={`bonus-character-${index}`}>{item}</Button>
             ))}
           </ButtonGroup>
@@ -93,3 +100,5 @@ export function Deck({
     </Card>
   )
 }
+
+export const Deck = memo(DeckComponent)

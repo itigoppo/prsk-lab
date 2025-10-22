@@ -1,15 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import React from "react"
+import React, { memo } from "react"
 import {
   BOUNS_CHARACTER,
   BOUNS_CHARACTER_VS,
   BOUNS_TYPE,
   MASTER_RANK_RATE,
   PU_CHARACTER,
+  RANK_DISPLAY_ORDER,
   RANK_NAMES,
 } from "./constants"
 
-export function Bonus({ totalBonus }: { totalBonus: number }) {
+function BonusComponent({ totalBonus }: { totalBonus: number }) {
   return (
     <>
       <Card>
@@ -33,7 +34,7 @@ export function Bonus({ totalBonus }: { totalBonus: number }) {
             <dt>マスランボーナス</dt>
             <dd className="pl-2">
               <dl className="grid grid-cols-[50px_1fr] gap-y-2">
-                {["star4", "bd", "star3", "star2", "star1"].map((rank) => (
+                {RANK_DISPLAY_ORDER.map((rank) => (
                   <React.Fragment key={rank}>
                     <dt>{RANK_NAMES[rank]}</dt>
                     <dd>+ {MASTER_RANK_RATE[rank].join(" / ")} %</dd>
@@ -47,3 +48,5 @@ export function Bonus({ totalBonus }: { totalBonus: number }) {
     </>
   )
 }
+
+export const Bonus = memo(BonusComponent)
