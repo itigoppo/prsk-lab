@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils/common"
 import type { ReactNode } from "react"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { Button } from "../Button"
 
 interface DialogProps {
@@ -12,6 +12,10 @@ interface DialogProps {
 }
 
 const Dialog = ({ children, isOpen, onOpenChange }: DialogProps) => {
+  const handleClose = useCallback(() => {
+    onOpenChange(false)
+  }, [onOpenChange])
+
   useEffect(() => {
     const originalOverflow = document.body.style.overflow
 
@@ -27,7 +31,7 @@ const Dialog = ({ children, isOpen, onOpenChange }: DialogProps) => {
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onOpenChange(false)
+        handleClose()
       }
     }
 
@@ -38,13 +42,13 @@ const Dialog = ({ children, isOpen, onOpenChange }: DialogProps) => {
     return () => {
       document.removeEventListener("keydown", handleEscape)
     }
-  }, [isOpen, onOpenChange])
+  }, [isOpen, handleClose])
 
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" data-dialog-open="true">
-      <div className="fixed inset-0 bg-black/80" onClick={() => onOpenChange(false)} />
+      <div className="fixed inset-0 bg-black/80" onClick={handleClose} />
       {children}
     </div>
   )
@@ -78,12 +82,16 @@ interface DialogHeaderProps {
 }
 
 const DialogHeader = ({ children, className, onOpenChange }: DialogHeaderProps) => {
+  const handleClose = useCallback(() => {
+    onOpenChange?.(false)
+  }, [onOpenChange])
+
   return (
     <div className={cn("text-center md:text-left", className)}>
       <div className="flex flex-1 flex-col space-y-1.5">{children}</div>
       {onOpenChange && (
         <div className="absolute top-2 right-2">
-          <Button size="icon" variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button size="icon" variant="ghost" onClick={handleClose}>
             <span className="material-symbols-outlined">close</span>
           </Button>
         </div>

@@ -68,14 +68,7 @@ const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
 
         <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
           {images.map((_, i) => (
-            <button
-              key={i}
-              className={cn(
-                "size-2 rounded-full bg-white/60 hover:cursor-pointer hover:bg-white",
-                i === index && "bg-white"
-              )}
-              onClick={() => goTo(i)}
-            />
+            <CarouselIndicator key={i} isActive={i === index} onClick={() => goTo(i)} />
           ))}
         </div>
       </div>
@@ -109,5 +102,20 @@ const CarouselArrow = forwardRef<HTMLButtonElement, ArrowProps>(
   )
 )
 CarouselArrow.displayName = "CarouselArrow"
+
+type IndicatorProps = {
+  isActive: boolean
+  onClick: () => void
+}
+
+const CarouselIndicator = ({ isActive, onClick }: IndicatorProps) => (
+  <button
+    className={cn(
+      "size-2 rounded-full bg-white/60 hover:cursor-pointer hover:bg-white",
+      isActive && "bg-white"
+    )}
+    onClick={onClick}
+  />
+)
 
 export { Carousel }

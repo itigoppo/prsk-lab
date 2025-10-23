@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils/common"
 import {
   Children,
@@ -7,6 +9,8 @@ import {
   isValidElement,
   ReactElement,
   ReactNode,
+  useCallback,
+  useMemo,
 } from "react"
 import { ButtonProps } from "../Button"
 
@@ -37,9 +41,20 @@ const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
   ) => {
     const childArray = Children.toArray(children)
 
-    return (
-      <div ref={ref} className={cn("inline-flex", className)} role="group" {...props}>
-        {childArray.map((child, index) => {
+    const handleClick = useCallback(
+      (index: number, originalOnClick?: (e: React.MouseEvent<HTMLButtonElement>) => void) =>
+        (e: React.MouseEvent<HTMLButtonElement>) => {
+          originalOnClick?.(e)
+          if (!disabled && onChange) {
+            onChange(index)
+          }
+        },
+      [disabled, onChange]
+    )
+
+    const renderedChildren = useMemo(
+      () =>
+        childArray.map((child, index) => {
           if (!isValidElement(child)) return null
 
           const element = child as ReactElement<ButtonProps>
@@ -66,17 +81,18 @@ const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
           return cloneElement(element, {
             className: cn(element.props.className, extraClass),
             disabled: appliedDisabled,
-            onClick: (e) => {
-              element.props.onClick?.(e)
-              if (!appliedDisabled && onChange) {
-                onChange(index)
-              }
-            },
+            onClick: handleClick(index, element.props.onClick),
             outline: appliedOutline,
             size: appliedSize,
             variant: appliedVariant,
           })
-        })}
+        }),
+      [childArray, activeIndex, outline, variant, disabled, size, handleClick]
+    )
+
+    return (
+      <div ref={ref} className={cn("inline-flex", className)} role="group" {...props}>
+        {renderedChildren}
       </div>
     )
   }

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils/common"
 import type { ComponentPropsWithoutRef } from "react"
-import { forwardRef } from "react"
+import { forwardRef, useMemo } from "react"
 
 interface ProgressBarProps extends ComponentPropsWithoutRef<"div"> {
   label?: string
@@ -9,6 +9,8 @@ interface ProgressBarProps extends ComponentPropsWithoutRef<"div"> {
 
 const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
   ({ className, label, value, ...props }, ref) => {
+    const progressStyle = useMemo(() => ({ width: `${value}%` }), [value])
+
     return (
       <div ref={ref} className={cn("w-full", className)} {...props}>
         {label && <div className="mb-1 text-center text-sm text-gray-700">{label}</div>}
@@ -20,7 +22,7 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
               "bg-prsk-player1-400 flex h-full items-center justify-center text-xs text-white transition-all duration-300",
               value === 0 && "min-w-4 bg-slate-600"
             )}
-            style={{ width: `${value}%` }}
+            style={progressStyle}
           >
             {value}%
           </div>
