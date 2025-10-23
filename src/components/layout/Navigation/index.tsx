@@ -10,13 +10,29 @@ import { cn } from "@/lib/utils/common"
 import { getUserInitials } from "@/lib/utils/user"
 import { UserRole } from "@prisma/client"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { LogoutModal } from "../LogoutModal"
 import { mainNavigationItems } from "./navigationItems"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+
+  const toggleMenu = useCallback(() => {
+    setIsOpen((prev) => !prev)
+  }, [])
+
+  const closeMenu = useCallback(() => {
+    setIsOpen(false)
+  }, [])
+
+  const openLogoutModal = useCallback(() => {
+    setIsLogoutModalOpen(true)
+  }, [])
+
+  const closeLogoutModal = useCallback(() => {
+    setIsLogoutModalOpen(false)
+  }, [])
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow
@@ -32,13 +48,29 @@ export function Navigation() {
 
   const { currentUser } = useCurrentUser()
 
+  const filteredNavigationItems = useMemo(
+    () =>
+      mainNavigationItems.filter((item) => {
+        // 管理者専用ページの場合は管理者のみ表示
+        if (item.isAdmin && currentUser?.role !== UserRole.Admin) {
+          return false
+        }
+        // 認証が必要なページの場合は未ログインの場合は表示しない
+        if (item.isProtected && !currentUser) {
+          return false
+        }
+        return true
+      }),
+    [currentUser]
+  )
+
   return (
     <>
       <Button
         variant="ghost"
         size="icon"
         className="fixed top-4 right-4 z-50 flex size-10 items-center justify-center rounded-full bg-slate-300 text-slate-600 shadow-md backdrop-blur-md transition hover:scale-105 hover:bg-slate-600 hover:text-lime-400 lg:top-8 lg:right-8 lg:size-16"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleMenu}
       >
         {isOpen ? (
           <IconClose className="size-6 lg:size-12" />
@@ -68,36 +100,22 @@ export function Navigation() {
           <div className="h-full w-1/2 overflow-y-auto bg-slate-200 py-10 pr-5 pl-8 md:w-60 lg:w-80 lg:py-14 lg:pr-8 lg:pl-14">
             <nav>
               <ul className={cn(montserrat.className, "space-y-2 tracking-widest")}>
-                {mainNavigationItems
-                  .filter((item) => {
-                    // 管理者専用ページの場合は管理者のみ表示
-                    if (item.isAdmin && currentUser?.role !== UserRole.Admin) {
-                      return false
-                    }
-                    // 認証が必要なページの場合は未ログインの場合は表示しない
-                    if (item.isProtected && !currentUser) {
-                      return false
-                    }
-                    return true
-                  })
-                  .map((item, index) => {
-                    return (
-                      <li key={`main-nav-${index}`}>
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className="space-y-1 text-slate-600 hover:text-lime-400"
-                        >
-                          <div className="text-lg font-bold uppercase md:text-sm lg:text-2xl">
-                            {item.title}
-                          </div>
-                          <div className="text-xs md:text-[10px] lg:text-sm">
-                            {item.description}
-                          </div>
-                        </Link>
-                      </li>
-                    )
-                  })}
+                {filteredNavigationItems.map((item, index) => {
+                  return (
+                    <li key={`main-nav-${index}`}>
+                      <Link
+                        href={item.href}
+                        onClick={closeMenu}
+                        className="space-y-1 text-slate-600 hover:text-lime-400"
+                      >
+                        <div className="text-lg font-bold uppercase md:text-sm lg:text-2xl">
+                          {item.title}
+                        </div>
+                        <div className="text-xs md:text-[10px] lg:text-sm">{item.description}</div>
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
             </nav>
           </div>
@@ -105,7 +123,7 @@ export function Navigation() {
           <div className="fixed top-[calc(100dvh-3.5rem)] right-4 flex w-full justify-end lg:top-[calc(100dvh-4.5rem)] lg:right-8">
             <Avatar>
               {currentUser?.avatarUrl ? (
-                <Button size="icon" onClick={() => setIsLogoutModalOpen(true)}>
+                <Button size="icon" onClick={openLogoutModal}>
                   <AvatarImage
                     src={currentUser.avatarUrl}
                     alt={currentUser.name ?? ""}
@@ -124,7 +142,7 @@ export function Navigation() {
       )}
 
       {isLogoutModalOpen && currentUser && (
-        <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
+        <LogoutModal isOpen={isLogoutModalOpen} onClose={closeLogoutModal} />
       )}
     </>
   )

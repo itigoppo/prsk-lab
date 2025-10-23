@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/Button"
 import {
   Dialog,
@@ -7,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/Dialog"
 import { signOut } from "next-auth/react"
+import { useCallback } from "react"
 
 interface LogoutModalProps {
   isOpen: boolean
@@ -14,12 +17,13 @@ interface LogoutModalProps {
 }
 
 export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await signOut()
-  }
-  const handleCancel = () => {
+  }, [])
+
+  const handleCancel = useCallback(() => {
     onClose()
-  }
+  }, [onClose])
 
   return (
     <Dialog isOpen={isOpen} onOpenChange={onClose}>
