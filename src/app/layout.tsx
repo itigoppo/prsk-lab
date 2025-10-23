@@ -1,5 +1,5 @@
-import { Logo } from "@/components/layout/Logo"
-import { Navigation } from "@/components/layout/Navigation"
+import { Logo } from "./_components/Logo"
+import { Navigation } from "./_components/Navigation"
 import { UserProvider } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils/common"
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider"
