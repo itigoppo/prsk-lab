@@ -1,3 +1,5 @@
+"use client"
+
 import { Alert, AlertDescription } from "@/components/ui/Alert"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
