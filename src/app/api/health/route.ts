@@ -1,34 +1,30 @@
+// src/app/api/health/route.ts
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
-/**
- * Health check endpoint to prevent Supabase free tier from pausing
- * This endpoint performs a lightweight database query to keep the connection alive
- */
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+export const runtime = "nodejs" // Prismaはedge不可
+
 export async function GET() {
   try {
-    // Perform a lightweight query to verify database connectivity
     await prisma.$queryRaw`SELECT 1`
-
-    return NextResponse.json(
-      {
-        message: "Health check successful",
-        status: "ok",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 200 }
-    )
+    return new NextResponse(null, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" },
+      status: 204,
+    })
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Health check failed:", error)
+    return NextResponse.json({ status: "error" }, { status: 500 })
+  }
+}
 
-    return NextResponse.json(
-      {
-        message: "Health check failed",
-        status: "error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    )
+export async function HEAD() {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    return new NextResponse(null, { headers: { "Cache-Control": "no-store" }, status: 204 })
+  } catch {
+    return new NextResponse(null, { status: 500 })
   }
 }
