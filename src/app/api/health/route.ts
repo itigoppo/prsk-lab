@@ -7,7 +7,17 @@ export const runtime = "nodejs" // Prismaはedge不可
 
 export async function GET() {
   try {
-    await prisma.$queryRaw`SELECT 1`
+    await prisma.heartbeat.upsert({
+      create: {
+        lastSeen: new Date(),
+      },
+      update: {
+        lastSeen: new Date(),
+      },
+      where: {
+        id: 1,
+      },
+    })
     return new NextResponse(null, {
       headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" },
       status: 204,
@@ -21,7 +31,17 @@ export async function GET() {
 
 export async function HEAD() {
   try {
-    await prisma.$queryRaw`SELECT 1`
+    await prisma.heartbeat.upsert({
+      create: {
+        lastSeen: new Date(),
+      },
+      update: {
+        lastSeen: new Date(),
+      },
+      where: {
+        id: 1,
+      },
+    })
     return new NextResponse(null, { headers: { "Cache-Control": "no-store" }, status: 204 })
   } catch {
     return new NextResponse(null, { status: 500 })
