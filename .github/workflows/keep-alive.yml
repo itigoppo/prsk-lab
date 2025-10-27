@@ -13,14 +13,15 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Send health check request
+      - name: Send health check (HEAD)
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.APP_DOMAIN }}/api/health)
-
-          if [ "$response" = "200" ]; then
-            echo "✅ Health check successful (HTTP $response)"
+          set -euo pipefail
+          URL="https://${{ secrets.APP_DOMAIN }}/api/health"
+          # 2xx 以外は失敗扱いにする（204もOKになる）
+          if curl -sS -I --fail --connect-timeout 5 --max-time 10 "$URL" > /dev/null; then
+            echo "✅ Health check ok (2xx)"
           else
-            echo "❌ Health check failed (HTTP $response)"
+            echo "❌ Health check failed (non-2xx)"
             exit 1
           fi
 
