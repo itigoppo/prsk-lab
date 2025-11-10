@@ -2,17 +2,18 @@
 
 import { anton } from "@/components/fonts/anton"
 import { montserrat } from "@/components/fonts/montserrat"
-import { IconClose, IconMenu } from "@/components/icons"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar/index"
-import { Button } from "@/components/ui/Button"
+import { IconClose } from "@/components/icons/close"
+import { IconMenu } from "@/components/icons/menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils/common"
 import { getUserInitials } from "@/lib/utils/user"
 import { UserRole } from "@prisma/client"
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LogoutModal } from "../LogoutModal"
-import { mainNavigationItems } from "./navigationItems"
+import { LogoutModal } from "./logout-modal"
+import { mainNavigationItems } from "./navigation-items"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)

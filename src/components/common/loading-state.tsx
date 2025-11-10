@@ -1,4 +1,4 @@
-import { IconTofu } from "@/components/icons"
+import { IconTofu } from "@/components/icons/tofu"
 
 export function LoadingState() {
   return (

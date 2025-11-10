@@ -1,5 +1,5 @@
 import { exo2 } from "@/components/fonts/exo2"
-import { IconWandStars } from "@/components/icons"
+import { IconWandStars } from "@/components/icons/wand-stars"
 import { cn } from "@/lib/utils/common"
 
 export function Logo() {

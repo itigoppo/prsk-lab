@@ -1,16 +1,16 @@
 "use client"
 
-import { ErrorState } from "@/components/common/ErrorState"
-import { LoadingState } from "@/components/common/LoadingState"
-import { Button } from "@/components/ui/Button"
-import { ProgressBar } from "@/components/ui/ProgressBar"
+import { ErrorState } from "@/components/common/error-state"
+import { LoadingState } from "@/components/common/loading-state"
+import { Button } from "@/components/ui/button"
+import { ProgressBar } from "@/components/ui/progress-bar"
 import { useGetApiCharacters } from "@/lib/api/generated/characters/characters"
 import { SortBattle, SortBattleChoice } from "@/lib/utils/sort-battle"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
-import { BattleCharacter } from "./_components/BattleCharacter"
-import { CharacterList } from "./_components/CharacterList"
-import { Ranking } from "./_components/Ranking"
+import { BattleCharacter } from "./_components/battle-character"
+import { CharacterList } from "./_components/character-list"
+import { Ranking } from "./_components/ranking"
 
 export default function PlaySortPage() {
   const { data, error, isLoading, refetch } = useGetApiCharacters()

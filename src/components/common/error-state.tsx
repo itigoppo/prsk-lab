@@ -1,8 +1,8 @@
 "use client"
 
-import { Alert, AlertDescription } from "@/components/ui/Alert"
-import { Button } from "@/components/ui/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils/common"
 
 interface ErrorStateProps {

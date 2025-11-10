@@ -1,4 +1,5 @@
-import { IconAwardStar, IconTofu } from "@/components/icons"
+import { IconAwardStar } from "@/components/icons/award-star"
+import { IconTofu } from "@/components/icons/tofu"
 import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
 import { cva, type VariantProps } from "class-variance-authority"

@@ -1,6 +1,6 @@
-import { Button, ButtonProps } from "@/components/ui/Button"
-import { ButtonGroup } from "@/components/ui/ButtonGroup"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Button, ButtonProps } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { memo } from "react"
 import {
   BONUS_CHARACTER_LABELS,

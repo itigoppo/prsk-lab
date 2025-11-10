@@ -1,8 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { Bonus } from "./Bonus"
-import { Deck } from "./Deck"
+import { Bonus } from "./bonus"
 import {
   BONUS_CHARACTER_KEYS,
   BONUS_TYPE_KEYS,
@@ -15,6 +14,7 @@ import {
   PU_CHARACTER,
   RARE_KEYS,
 } from "./constants"
+import { Deck } from "./deck"
 
 export function DeckList() {
   const [decks, setDecks] = useState(

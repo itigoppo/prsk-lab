@@ -1,4 +1,4 @@
-import { DeckList } from "./_components/DeckList"
+import { DeckList } from "./_components/deck-list"
 
 export default function EventCalcPage() {
   return (

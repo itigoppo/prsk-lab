@@ -1,13 +1,13 @@
 "use client"
 
-import { Button } from "@/components/ui/Button"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/Dialog"
+} from "@/components/ui/dialog"
 import { signOut } from "next-auth/react"
 import { useCallback } from "react"
 

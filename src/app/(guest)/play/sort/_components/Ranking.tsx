@@ -1,7 +1,7 @@
 import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
 import { memo } from "react"
-import { CharacterItem } from "./CharacterItem"
+import { CharacterItem } from "./character-item"
 
 interface RankingProps {
   characters: CharacterListItem[]

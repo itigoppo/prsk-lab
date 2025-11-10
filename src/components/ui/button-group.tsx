@@ -12,7 +12,7 @@ import {
   useCallback,
   useMemo,
 } from "react"
-import { ButtonProps } from "../Button"
+import { ButtonProps } from "./button"
 
 export interface ButtonGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   activeIndex?: number

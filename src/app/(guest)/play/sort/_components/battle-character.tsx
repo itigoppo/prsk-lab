@@ -1,4 +1,4 @@
-import { IconTofu } from "@/components/icons"
+import { IconTofu } from "@/components/icons/tofu"
 import { CharacterListItem } from "@/lib/schemas/character"
 import { cn } from "@/lib/utils/common"
 import Image from "next/image"

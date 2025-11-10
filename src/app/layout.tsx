@@ -1,5 +1,3 @@
-import { Logo } from "./_components/Logo"
-import { Navigation } from "./_components/Navigation"
 import { UserProvider } from "@/contexts/UserContext"
 import { cn } from "@/lib/utils/common"
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider"
@@ -9,6 +7,8 @@ import { Geist, Geist_Mono, Inter, M_PLUS_2 } from "next/font/google"
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { Toaster } from "react-hot-toast"
+import { Logo } from "./_layouts/logo"
+import { Navigation } from "./_layouts/navigation"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] })

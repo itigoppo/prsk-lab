@@ -1,6 +1,7 @@
 "use client"
 
-import { IconChevronBackward, IconChevronForward } from "@/components/icons"
+import { IconChevronBackward } from "@/components/icons/chevron-backward"
+import { IconChevronForward } from "@/components/icons/chevron-forward"
 import { cn } from "@/lib/utils/common"
 import Image from "next/image"
 import type { ComponentPropsWithoutRef } from "react"

@@ -1,6 +1,6 @@
 "use client"
 
-import { Carousel } from "@/components/ui/Carousel"
+import { Carousel } from "@/components/ui/carousel"
 
 export function MainImage() {
   return (

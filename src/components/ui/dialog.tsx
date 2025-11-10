@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils/common"
 import type { ReactNode } from "react"
 import { useCallback, useEffect } from "react"
-import { Button } from "../Button"
+import { Button } from "./button"
 
 interface DialogProps {
   children: ReactNode

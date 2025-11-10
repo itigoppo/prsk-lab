@@ -1,6 +1,6 @@
 import { CharacterListItem } from "@/lib/schemas/character"
 import { memo } from "react"
-import { CharacterItem } from "./CharacterItem"
+import { CharacterItem } from "./character-item"
 
 interface CharacterListProps {
   characters: CharacterListItem[]

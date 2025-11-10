@@ -1,9 +1,9 @@
 "use client"
 
-import { IconDiscord } from "@/components/icons"
-import { Alert, AlertDescription } from "@/components/ui/Alert"
-import { Button } from "@/components/ui/Button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
+import { IconDiscord } from "@/components/icons/discord"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 
