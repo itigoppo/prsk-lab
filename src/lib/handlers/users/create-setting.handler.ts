@@ -2,6 +2,7 @@ import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
 import { CreateSettingDto, createSettingDtoSchema } from "@/lib/schemas/dto"
 import { formatZodErrors } from "@/lib/schemas/utils"
+import { validateCsvUrl } from "@/lib/utils/csv-validator"
 import type { Handler } from "hono"
 
 export const createSetting: Handler = async (c) => {
@@ -24,6 +25,20 @@ export const createSetting: Handler = async (c) => {
 
   try {
     const { leaderSheetUrl } = parsed.data
+
+    // URLが設定されている場合はCSVの検証を行う
+    if (leaderSheetUrl) {
+      const validation = await validateCsvUrl(leaderSheetUrl)
+      if (!validation.success) {
+        return c.json(
+          {
+            message: validation.error || "URLの検証に失敗しました",
+            success: false,
+          },
+          HTTP_STATUS.BAD_REQUEST
+        )
+      }
+    }
 
     const user = await prisma.user.findFirstOrThrow({
       select: {

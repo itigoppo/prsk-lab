@@ -2,12 +2,26 @@ import { z } from "zod"
 
 // 設定作成DTOスキーマ
 export const createSettingDtoSchema = z.object({
-  leaderSheetUrl: z.string().trim().nullable(),
+  leaderSheetUrl: z
+    .string()
+    .trim()
+    .refine((val) => val === "" || z.url().safeParse(val).success, {
+      message: "有効なURLを入力してください",
+    })
+    .transform((val) => (val === "" ? null : val))
+    .nullable(),
 })
 
 // 設定更新DTOスキーマ
 export const updateSettingDtoSchema = z.object({
-  leaderSheetUrl: z.string().trim().nullable(),
+  leaderSheetUrl: z
+    .string()
+    .trim()
+    .refine((val) => val === "" || z.url().safeParse(val).success, {
+      message: "有効なURLを入力してください",
+    })
+    .transform((val) => (val === "" ? null : val))
+    .nullable(),
 })
 
 // Zodスキーマから推論される型定義（Single Source of Truth）
