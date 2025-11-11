@@ -4,7 +4,8 @@ POSTGRES_CONTAINER := prsk-postgres
 	docker-up docker-down docker-build docker-rebuild docker-logs \
 	run build start install clean secret-generate \
 	prisma-generate prisma-migrate prisma-deploy prisma-reset prisma-studio open-studio \
-	seed fix open-api-generate
+	seed fix open-api-generate \
+	test test-all test-unit test-integration
 
 # Start Docker containers
 docker-up:
@@ -91,3 +92,20 @@ fix:
 # Generate OpenAPI
 open-api-generate:
 	npm run generate:openapi && npm run generate:api
+
+# Run all tests (unit + integration)
+test:
+	npm run test:all
+
+# Run all tests (alias for test)
+test-all:
+	npm run test:all
+
+# Run unit tests only
+test-unit:
+	npm run test:unit
+
+# Run integration tests only
+test-integration:
+	npm run test:integration
+

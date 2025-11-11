@@ -40,7 +40,7 @@ export const createUser: Handler = async (c) => {
 
     const now = new Date()
 
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       create: {
         avatarUrl: validatedAvatarUrl,
         discordId,
@@ -58,10 +58,14 @@ export const createUser: Handler = async (c) => {
       where: { discordId },
     })
 
-    return c.json({
-      message: "ユーザー登録が完了しました",
-      success: true,
-    })
+    return c.json(
+      {
+        data: { user },
+        message: "ユーザー登録が完了しました",
+        success: true,
+      },
+      HTTP_STATUS.CREATED
+    )
   } catch {
     return c.json(
       { message: "登録中にエラーが発生しました", success: false },
