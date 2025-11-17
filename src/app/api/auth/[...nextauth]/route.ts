@@ -4,12 +4,24 @@ import DiscordProvider from "next-auth/providers/discord"
 export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ account, token }) {
-      // 初回ログイン時のみアクセストークンをJWTに保存
-      if (account?.access_token) {
-        token.accessToken = account.access_token
+      // NextAuthがデフォルトでDiscord ID (providerAccountId) を token.sub に保存
+      // 機密情報（access_token等）は保存しない
+      if (account) {
+        token.sub = account.providerAccountId
       }
 
       return token
+    },
+    async session({ session, token }) {
+      // クライアントに返すsessionには最小限の情報のみ含める
+      // ユーザー情報はサーバー側でuserテーブルから取得するため、
+      // sessionにはDiscord IDのみを含める
+      return {
+        expires: session.expires,
+        user: {
+          id: token.sub as string, // Discord ID
+        },
+      }
     },
     async signIn({ account }) {
       const discordId = account?.providerAccountId
@@ -18,9 +30,10 @@ export const authOptions: AuthOptions = {
       }
 
       try {
-        // サーバーサイドなのでfetchを直接使用
-        // ミドルウェアがDiscord APIからユーザー情報を取得するため、bodyは不要
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:30000"
+        // ログイン時に毎回Discord APIからユーザー情報を取得するためaccess_tokenを使用
+        // このトークンはJWTに保存されず、この処理でのみ一時的に使用される
+        // 新規ユーザーなら作成、既存ユーザーなら情報を更新（upsert）
+        const baseUrl = process.env.NEXTAUTH_URL || "https://prsk-lab.vercel.app"
         const res = await fetch(`${baseUrl}/api/users`, {
           headers: {
             Authorization: `Bearer ${account.access_token}`,
