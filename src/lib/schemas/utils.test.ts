@@ -270,7 +270,7 @@ describe("formatZodErrors", () => {
 
     it("真偽値のバリデーションエラー", () => {
       const schema = z.object({
-        terms: z.literal(true, { errorMap: () => ({ message: "利用規約に同意してください" }) }),
+        terms: z.literal(true, { message: "利用規約に同意してください" }),
       })
 
       const result = schema.safeParse({ terms: false })
