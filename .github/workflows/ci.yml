@@ -29,6 +29,9 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate --no-engine
 
+      - name: Generate API Client
+        run: npm run generate:api
+
       - name: Run ESLint
         run: npm run lint
 
