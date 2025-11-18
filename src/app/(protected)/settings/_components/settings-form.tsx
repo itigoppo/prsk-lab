@@ -65,13 +65,15 @@ export function SettingsForm() {
             data: { leaderSheetUrl: values.leaderSheetUrl },
           })
         }
+        // キャッシュを更新
+        await refetch()
         toast.success("設定を保存しました")
       } catch (error) {
         const errorMessage = getApiErrorMessage(error, "設定の保存に失敗しました")
         toast.error(errorMessage)
       }
     },
-    [settings?.isRegistered, patchMutation, postMutation]
+    [settings?.isRegistered, patchMutation, postMutation, refetch]
   )
 
   const handleRetry = useCallback(async () => {
