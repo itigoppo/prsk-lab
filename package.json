@@ -54,6 +54,7 @@
     "prisma": "^6.16.2",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5",
     "vitest": "^4.0.8"
   },
@@ -86,7 +87,7 @@
     "start": "next start",
     "test": "vitest",
     "test:all": "vitest run --reporter=verbose",
-    "test:check-coverage": "ts-node scripts/check-handler-tests.ts",
+    "test:check-coverage": "tsx scripts/check-handler-tests.ts",
     "test:integration": "vitest run --reporter=verbose src/__tests__/integration",
     "test:run": "vitest run --reporter=verbose",
     "test:ui": "vitest --ui",
