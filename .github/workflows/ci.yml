@@ -35,6 +35,9 @@ jobs:
       - name: Run type check
         run: npx tsc --noEmit
 
+      - name: Check test coverage
+        run: npm run test:check-coverage
+
       - name: Run tests
         run: npm run test:all
         env:

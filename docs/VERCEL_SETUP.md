@@ -50,8 +50,9 @@ DISCORD_CLIENT_SECRET=your_client_secret
 
 1. ✅ **ESLint**: コード品質チェック
 2. ✅ **Type Check**: TypeScript型チェック
-3. ✅ **Tests**: ユニットテスト＋統合テスト（259テスト）
-4. ✅ **Build**: Next.jsビルドチェック
+3. ✅ **Test Coverage**: 全ハンドラーにユニットテスト＋統合テストが存在するかチェック
+4. ✅ **Tests**: ユニットテスト＋統合テスト（259テスト）
+5. ✅ **Build**: Next.jsビルドチェック
 
 ### 失敗時の動作
 

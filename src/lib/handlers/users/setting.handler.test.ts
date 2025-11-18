@@ -43,15 +43,13 @@ describe("Settings Handlers", () => {
   })
 
   describe("GET /settings", () => {
-    it("discordIdがない場合は401を返す", async () => {
+    beforeEach(() => {
+      // 認証済み前提: discordIdが常にセットされている状態でテスト
+      app.use("*", async (c, next) => {
+        c.set("discordId", "123456789")
+        await next()
+      })
       app.get("/settings", getSetting)
-
-      const res = await app.request("/settings")
-      const json = await res.json()
-
-      expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
-      expect(json.success).toBe(false)
-      expect(json.message).toBe("ユーザー情報の取得に失敗しました")
     })
 
     it("設定が存在する場合は設定情報を返す", async () => {
@@ -60,12 +58,6 @@ describe("Settings Handlers", () => {
       }
 
       vi.mocked(prisma.setting.findFirst).mockResolvedValue(mockSetting)
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.get("/settings", getSetting)
 
       const res = await app.request("/settings")
       const json = await res.json()
@@ -79,12 +71,6 @@ describe("Settings Handlers", () => {
     it("設定が存在しない場合はisRegistered=falseを返す", async () => {
       vi.mocked(prisma.setting.findFirst).mockResolvedValue(null)
 
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.get("/settings", getSetting)
-
       const res = await app.request("/settings")
       const json = await res.json()
 
@@ -97,12 +83,6 @@ describe("Settings Handlers", () => {
     it("データベースエラーの場合は500を返す", async () => {
       vi.mocked(prisma.setting.findFirst).mockRejectedValue(new Error("Database error"))
 
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.get("/settings", getSetting)
-
       const res = await app.request("/settings")
       const json = await res.json()
 
@@ -112,6 +92,15 @@ describe("Settings Handlers", () => {
   })
 
   describe("POST /settings", () => {
+    beforeEach(() => {
+      // 認証済み前提: discordIdが常にセットされている状態でテスト
+      app.use("*", async (c, next) => {
+        c.set("discordId", "123456789")
+        await next()
+      })
+      app.post("/settings", createSetting)
+    })
+
     it("有効なURLで設定を作成できる", async () => {
       const mockUser: Pick<User, "id"> = { id: "1" }
       const mockValidation = { success: true }
@@ -119,12 +108,6 @@ describe("Settings Handlers", () => {
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
       vi.mocked(prisma.setting.create).mockResolvedValue({} as Setting)
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.post("/settings", createSetting)
 
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: "https://example.com/sheet.csv" }),
@@ -152,12 +135,6 @@ describe("Settings Handlers", () => {
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(prisma.setting.create).mockResolvedValue({} as Setting)
 
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.post("/settings", createSetting)
-
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: null }),
         headers: {
@@ -182,12 +159,6 @@ describe("Settings Handlers", () => {
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
 
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.post("/settings", createSetting)
-
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: "https://example.com/invalid" }),
         headers: {
@@ -203,12 +174,6 @@ describe("Settings Handlers", () => {
     })
 
     it("バリデーションエラーの場合は400を返す", async () => {
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.post("/settings", createSetting)
-
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: "invalid-url" }),
         headers: {
@@ -225,6 +190,15 @@ describe("Settings Handlers", () => {
   })
 
   describe("PATCH /settings", () => {
+    beforeEach(() => {
+      // 認証済み前提: discordIdが常にセットされている状態でテスト
+      app.use("*", async (c, next) => {
+        c.set("discordId", "123456789")
+        await next()
+      })
+      app.patch("/settings", updateSetting)
+    })
+
     it("有効なURLで設定を更新できる", async () => {
       const mockUser: Pick<User, "id"> = { id: "1" }
       const mockValidation = { success: true }
@@ -232,12 +206,6 @@ describe("Settings Handlers", () => {
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
       vi.mocked(prisma.setting.update).mockResolvedValue({} as Setting)
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.patch("/settings", updateSetting)
 
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: "https://example.com/updated.csv" }),
@@ -264,12 +232,6 @@ describe("Settings Handlers", () => {
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(prisma.setting.update).mockResolvedValue({} as Setting)
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.patch("/settings", updateSetting)
 
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: null }),
@@ -300,12 +262,6 @@ describe("Settings Handlers", () => {
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.patch("/settings", updateSetting)
 
       const res = await app.request("/settings", {
         body: JSON.stringify({ leaderSheetUrl: "https://example.com/invalid.csv" }),

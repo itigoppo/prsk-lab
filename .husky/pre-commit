@@ -1,0 +1,37 @@
+#!/bin/sh
+# Pre-commit hook: Run lint, tests, and coverage checks before committing
+
+echo "🔍 Running pre-commit checks..."
+echo ""
+
+# 1. Run lint
+echo "📝 Running lint..."
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Lint failed. Please fix linting errors before committing."
+  exit 1
+fi
+echo "✅ Lint passed"
+echo ""
+
+# 2. Run all tests
+echo "🧪 Running tests..."
+npm run test:run
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Please fix failing tests before committing."
+  exit 1
+fi
+echo "✅ Tests passed"
+echo ""
+
+# 3. Check handler test coverage
+echo "📊 Checking test coverage..."
+npm run test:check-coverage
+if [ $? -ne 0 ]; then
+  echo "❌ Test coverage check failed. Please add missing tests before committing."
+  exit 1
+fi
+echo "✅ Test coverage check passed"
+echo ""
+
+echo "🎉 All pre-commit checks passed!"

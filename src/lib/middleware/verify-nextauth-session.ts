@@ -2,19 +2,14 @@ import { HTTP_STATUS } from "@/constants/http-status"
 import { MiddlewareHandler } from "hono"
 import { jwtDecrypt } from "jose"
 import { deriveKey } from "../crypto/hkdf"
+import { parseCookies } from "../utils/cookie-parser"
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!
 
 export const verifyNextAuthSession: MiddlewareHandler = async (c, next) => {
   // Hono の Request から Cookie を取得
   const cookieHeader = c.req.header("Cookie") || ""
-
-  const cookies = Object.fromEntries(
-    cookieHeader
-      .split(";")
-      .map((v) => v.trim().split("="))
-      .filter(([key, value]) => !!key && !!value)
-  )
+  const cookies = parseCookies(cookieHeader)
 
   const isSecure = process.env.NODE_ENV === "production"
   const cookieName = isSecure ? "__Secure-next-auth.session-token" : "next-auth.session-token"

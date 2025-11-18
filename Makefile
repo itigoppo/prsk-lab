@@ -5,7 +5,7 @@ POSTGRES_CONTAINER := prsk-postgres
 	run build start install clean secret-generate \
 	prisma-generate prisma-migrate prisma-deploy prisma-reset prisma-studio open-studio \
 	seed fix open-api-generate \
-	test test-all test-unit test-integration
+	test test-all test-unit test-integration test-coverage
 
 # Start Docker containers
 docker-up:
@@ -109,3 +109,6 @@ test-unit:
 test-integration:
 	npm run test:integration
 
+# Run test coverage check
+test-coverage:
+	npm run test:check-coverage

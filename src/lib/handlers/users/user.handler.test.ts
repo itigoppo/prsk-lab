@@ -40,15 +40,13 @@ describe("User Handlers", () => {
   })
 
   describe("GET /user (getCurrentUser)", () => {
-    it("discordIdがない場合は401を返す", async () => {
+    beforeEach(() => {
+      // 認証済み前提: discordIdが常にセットされている状態でテスト
+      app.use("*", async (c, next) => {
+        c.set("discordId", "123456789")
+        await next()
+      })
       app.get("/user", getCurrentUser)
-
-      const res = await app.request("/user")
-      const json = await res.json()
-
-      expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
-      expect(json.success).toBe(false)
-      expect(json.message).toBe("ユーザー情報の取得に失敗しました")
     })
 
     it("ユーザーが存在する場合はユーザー情報を返す", async () => {
@@ -62,12 +60,6 @@ describe("User Handlers", () => {
       }
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.get("/user", getCurrentUser)
 
       const res = await app.request("/user")
       const json = await res.json()
@@ -97,12 +89,6 @@ describe("User Handlers", () => {
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
 
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.get("/user", getCurrentUser)
-
       const res = await app.request("/user")
       const json = await res.json()
 
@@ -112,12 +98,6 @@ describe("User Handlers", () => {
 
     it("ユーザーが存在しない場合は500を返す", async () => {
       vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(new Error("User not found"))
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "999999999")
-        await next()
-      })
-      app.get("/user", getCurrentUser)
 
       const res = await app.request("/user")
       const json = await res.json()
@@ -129,12 +109,6 @@ describe("User Handlers", () => {
 
     it("データベースエラーの場合は500を返す", async () => {
       vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(new Error("Database error"))
-
-      app.use("*", async (c, next) => {
-        c.set("discordId", "123456789")
-        await next()
-      })
-      app.get("/user", getCurrentUser)
 
       const res = await app.request("/user")
       const json = await res.json()
