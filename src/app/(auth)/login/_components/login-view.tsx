@@ -36,7 +36,7 @@ export function LoginView() {
           </Alert>
         )}
         <Button onClick={handleSignIn} outline className="w-full">
-          <IconDiscord className="h-4 w-4" />
+          <IconDiscord className="size-4" />
           <span>Discordでログイン</span>
         </Button>
       </CardContent>

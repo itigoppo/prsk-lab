@@ -18,6 +18,7 @@ export const mainNavigationItems: NavigationItem[] = [
   {
     description: "とうふの森",
     href: "/mysekai",
+    isProtected: true,
     title: "My SEKAI",
   },
   {

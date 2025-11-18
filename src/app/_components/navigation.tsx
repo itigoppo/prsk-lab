@@ -12,12 +12,14 @@ import { getUserInitials } from "@/lib/utils/user"
 import { UserRole } from "@prisma/client"
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { LoginModal } from "./login-modal"
 import { LogoutModal } from "./logout-modal"
 import { mainNavigationItems } from "./navigation-items"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const toggleMenu = useCallback(() => {
     setIsOpen((prev) => !prev)
@@ -33,6 +35,14 @@ export function Navigation() {
 
   const closeLogoutModal = useCallback(() => {
     setIsLogoutModalOpen(false)
+  }, [])
+
+  const openLoginModal = useCallback(() => {
+    setIsLoginModalOpen(true)
+  }, [])
+
+  const closeLoginModal = useCallback(() => {
+    setIsLoginModalOpen(false)
   }, [])
 
   useEffect(() => {
@@ -123,23 +133,35 @@ export function Navigation() {
 
           <div className="fixed top-[calc(100dvh-3.5rem)] right-4 flex w-full justify-end lg:top-[calc(100dvh-4.5rem)] lg:right-8">
             <Avatar>
-              {currentUser?.avatarUrl ? (
+              {currentUser ? (
                 <Button size="icon" onClick={openLogoutModal}>
-                  <AvatarImage
-                    src={currentUser.avatarUrl}
-                    alt={currentUser.name ?? ""}
-                    width={40}
-                    height={40}
-                  />
+                  {currentUser.avatarUrl ? (
+                    <AvatarImage
+                      src={currentUser.avatarUrl}
+                      alt={currentUser.name ?? ""}
+                      width={40}
+                      height={40}
+                    />
+                  ) : (
+                    <AvatarFallback className="border-1 border-slate-600 bg-lime-100 text-slate-600">
+                      {getUserInitials({ name: currentUser?.name ?? "" })}
+                    </AvatarFallback>
+                  )}
                 </Button>
               ) : (
-                <AvatarFallback className="border-1 border-slate-600 bg-lime-100">
-                  {getUserInitials({ name: currentUser?.name ?? "" })}
-                </AvatarFallback>
+                <Button size="icon" onClick={openLoginModal}>
+                  <AvatarFallback className="border-1 border-slate-600 bg-lime-100 text-slate-600">
+                    {getUserInitials({ name: "Guest" })}
+                  </AvatarFallback>
+                </Button>
               )}
             </Avatar>
           </div>
         </div>
+      )}
+
+      {isLoginModalOpen && !currentUser && (
+        <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
       )}
 
       {isLogoutModalOpen && currentUser && (
