@@ -5,7 +5,8 @@ POSTGRES_CONTAINER := prsk-postgres
 	run build start install clean secret-generate \
 	prisma-generate prisma-migrate prisma-deploy prisma-reset prisma-studio open-studio \
 	seed fix open-api-generate \
-	test test-all test-unit test-integration test-coverage
+	test test-all test-unit test-integration test-coverage \
+	check check-coverage check-lint check-type
 
 # Start Docker containers
 docker-up:
@@ -72,7 +73,6 @@ prisma-reset:
 		echo "❌ Cancelled."; \
 	fi
 
-
 # Run Prisma Studio
 prisma-studio:
 	npx prisma studio
@@ -95,7 +95,7 @@ open-api-generate:
 
 # Run all tests (unit + integration)
 test:
-	npm run test:all
+	npm run test:all && npm run test:check-coverage
 
 # Run all tests (alias for test)
 test-all:
@@ -112,3 +112,19 @@ test-integration:
 # Run test coverage check
 test-coverage:
 	npm run test:check-coverage
+
+# Run check
+check:
+	npm run check
+
+# Run check:coverage
+check-coverage:
+	npm run test:check-coverage
+
+# Run check:lint
+check-lint:
+	npm run lint
+
+# Run check:type
+check-type:
+	npm run check:type

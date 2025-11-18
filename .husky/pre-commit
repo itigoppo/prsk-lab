@@ -1,5 +1,5 @@
 #!/bin/sh
-# Pre-commit hook: Run lint, tests, and coverage checks before committing
+# Pre-commit hook: Run lint, type check, tests, and coverage checks before committing
 
 echo "🔍 Running pre-commit checks..."
 echo ""
@@ -14,7 +14,17 @@ fi
 echo "✅ Lint passed"
 echo ""
 
-# 2. Run all tests
+# 2. Run type check
+echo "🔍 Running type check..."
+npm run check:type
+if [ $? -ne 0 ]; then
+  echo "❌ Type check failed. Please fix type errors before committing."
+  exit 1
+fi
+echo "✅ Type check passed"
+echo ""
+
+# 3. Run all tests
 echo "🧪 Running tests..."
 npm run test:run
 if [ $? -ne 0 ]; then
@@ -24,7 +34,7 @@ fi
 echo "✅ Tests passed"
 echo ""
 
-# 3. Check handler test coverage
+# 4. Check handler test coverage
 echo "📊 Checking test coverage..."
 npm run test:check-coverage
 if [ $? -ne 0 ]; then
