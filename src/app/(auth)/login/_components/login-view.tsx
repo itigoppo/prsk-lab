@@ -32,7 +32,7 @@ export function LoginView() {
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive">
-            <AlertDescription>ログインに失敗しました</AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         <Button onClick={handleSignIn} outline className="w-full">

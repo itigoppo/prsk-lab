@@ -1,6 +1,7 @@
 "use client"
 
 import { IconDiscord } from "@/components/icons/discord"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { signIn } from "next-auth/react"
+import { useSearchParams } from "next/navigation"
 import { useCallback } from "react"
 
 interface LoginModalProps {
@@ -18,9 +20,13 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const searchParams = useSearchParams()
+  const error = searchParams.get("error")
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+
   const handleSignIn = useCallback(async () => {
-    await signIn("discord")
-  }, [])
+    await signIn("discord", { callbackUrl })
+  }, [callbackUrl])
 
   const handleCancel = useCallback(() => {
     onClose()
@@ -34,6 +40,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <DialogTitle>ログイン</DialogTitle>
             <DialogDescription>アカウントにログインしますか？</DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           <Button onClick={handleSignIn} variant="primary" className="w-full">
             <IconDiscord className="size-4" />
