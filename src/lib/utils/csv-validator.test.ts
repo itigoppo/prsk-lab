@@ -3,7 +3,7 @@ import { validateCsvUrl } from "./csv-validator"
 
 describe("validateCsvUrl", () => {
   const validHeaders =
-    ",vs_miku,vs_rin,vs_len,vs_luka,vs_meiko,vs_kaito,ln_ichica,ln_saki,ln_honami,ln_shiho,mmj_minori,mmj_haruka,mmj_airi,mmj_shizuku,vbs_kohane,vbs_an,vbs_akito,vbs_toya,ws_tsukasa,ws_emu,ws_nene,ws_rui,25_kanade,25_mafuyu,25_ena,25_mizuki"
+    ",vs_miku,vs_rin,vs_len,vs_luka,vs_meiko,vs_kaito,leoneed_ichica,leoneed_saki,leoneed_honami,leoneed_shiho,mmj_minori,mmj_haruka,mmj_airi,mmj_shizuku,vbs_kohane,vbs_an,vbs_akito,vbs_toya,ws_tsukasa,ws_emu,ws_nene,ws_rui,oclock_kanade,oclock_mafuyu,oclock_ena,oclock_mizuki"
 
   const validDataRow =
     "2024/01/01,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600"
@@ -204,7 +204,7 @@ describe("validateCsvUrl", () => {
 
     it("ヘッダー名が不正な場合はエラーを返す", async () => {
       const invalidHeader =
-        ",vs_miku,wrong_name,vs_len,vs_luka,vs_meiko,vs_kaito,ln_ichica,ln_saki,ln_honami,ln_shiho,mmj_minori,mmj_haruka,mmj_airi,mmj_shizuku,vbs_kohane,vbs_an,vbs_akito,vbs_toya,ws_tsukasa,ws_emu,ws_nene,ws_rui,25_kanade,25_mafuyu,25_ena,25_mizuki"
+        ",vs_miku,wrong_name,vs_len,vs_luka,vs_meiko,vs_kaito,leoneed_ichica,leoneed_saki,leoneed_honami,leoneed_shiho,mmj_minori,mmj_haruka,mmj_airi,mmj_shizuku,vbs_kohane,vbs_an,vbs_akito,vbs_toya,ws_tsukasa,ws_emu,ws_nene,ws_rui,oclock_kanade,oclock_mafuyu,oclock_ena,oclock_mizuki"
 
       vi.mocked(global.fetch).mockResolvedValue({
         headers: {
