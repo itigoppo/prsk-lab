@@ -22,14 +22,9 @@ export const mainNavigationItems: NavigationItem[] = [
     title: "My SEKAI",
   },
   {
-    description: "4.5周年キャンペーン",
-    href: "/anniv/4-5th",
-    title: "4.5th Anniversary",
-  },
-  {
-    description: "4周年キャンペーン",
-    href: "/anniv/4th",
-    title: "4th Anniversary",
+    description: "周年キャンペーン",
+    href: "/anniv",
+    title: "Anniversary",
   },
   {
     description: "イベントボーナス",

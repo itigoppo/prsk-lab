@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { DeckList } from "./_components/deck-list"
+
+export const metadata: Metadata = {
+  description: "プロジェクトセカイの基本イベントボーナスの計算機",
+  title: "イベントボーナス計算機",
+}
 
 export default function EventCalcPage() {
   return (

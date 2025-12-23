@@ -1,3 +1,5 @@
+import { Logo } from "@/components/layouts/prsk-lab/logo"
+import { Navigation } from "@/components/layouts/prsk-lab/navigation"
 import { UserProvider } from "@/contexts/user-context"
 import { cn } from "@/lib/utils/common"
 import { ReactQueryProvider } from "@/providers/react-query-provider"
@@ -8,8 +10,6 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 import { Toaster } from "react-hot-toast"
 import "./globals.css"
-import { Logo } from "@/components/layouts/prsk-lab/logo"
-import { Navigation } from "@/components/layouts/prsk-lab/navigation"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] })
 const mPlus2 = M_PLUS_2({ subsets: ["latin"], weight: ["400", "700"] })
@@ -18,7 +18,10 @@ const geistMono = Geist_Mono({ subsets: ["latin"], weight: ["400", "700"] })
 
 export const metadata: Metadata = {
   description: "プロセカ関係でなんかやったものをおいておくモノオキ",
-  title: "PrskLab",
+  title: {
+    default: "PrskLab",
+    template: "%s | PrskLab",
+  },
 }
 
 export const viewport: Viewport = {

@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { CharacterSortGame } from "./_components/character-sort-game"
+
+export const metadata: Metadata = {
+  description: "プロジェクトセカイのキャラクターで行うソートゲーム",
+  title: "キャラクターソート",
+}
 
 export default function PlaySortPage() {
   return (
