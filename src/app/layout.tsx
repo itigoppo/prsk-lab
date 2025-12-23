@@ -7,9 +7,9 @@ import { Geist, Geist_Mono, Inter, M_PLUS_2 } from "next/font/google"
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { Toaster } from "react-hot-toast"
-import { Logo } from "./_components/logo"
-import { Navigation } from "./_components/navigation"
 import "./globals.css"
+import { Logo } from "@/components/layouts/prsk-lab/logo"
+import { Navigation } from "@/components/layouts/prsk-lab/navigation"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] })
 const mPlus2 = M_PLUS_2({ subsets: ["latin"], weight: ["400", "700"] })
