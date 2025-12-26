@@ -7,7 +7,7 @@ services:
       - ./postgres/data:/var/lib/postgresql/data
     working_dir: /home/postgres
     ports:
-      - "5432:5432"
+      - "15432:5432"
     tty: true
     environment:
       POSTGRES_USER: devuser
