@@ -50,14 +50,14 @@ describe("User Handlers", () => {
     })
 
     it("ユーザーが存在する場合はユーザー情報を返す", async () => {
-      const mockUser: Pick<User, "id" | "discordId" | "name" | "email" | "avatarUrl" | "role"> = {
+      const mockUser = {
         avatarUrl: "https://example.com/avatar.png",
         discordId: "123456789",
         email: "test@example.com",
         id: "user-1",
         name: "Test User",
         role: "Viewer",
-      }
+      } as User
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
 
@@ -78,14 +78,14 @@ describe("User Handlers", () => {
     })
 
     it("avatarUrlがnullの場合も正しく返す", async () => {
-      const mockUser: Pick<User, "id" | "discordId" | "name" | "email" | "avatarUrl" | "role"> = {
+      const mockUser = {
         avatarUrl: null,
         discordId: "123456789",
         email: "test@example.com",
         id: "user-1",
         name: "Test User",
         role: "Viewer",
-      }
+      } as User
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
 

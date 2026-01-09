@@ -53,9 +53,9 @@ describe("Settings Handlers", () => {
     })
 
     it("設定が存在する場合は設定情報を返す", async () => {
-      const mockSetting: Pick<Setting, "leaderSheetUrl"> = {
+      const mockSetting = {
         leaderSheetUrl: "https://example.com/sheet.csv",
-      }
+      } as Setting
 
       vi.mocked(prisma.setting.findFirst).mockResolvedValue(mockSetting)
 
@@ -102,7 +102,7 @@ describe("Settings Handlers", () => {
     })
 
     it("有効なURLで設定を作成できる", async () => {
-      const mockUser: Pick<User, "id"> = { id: "1" }
+      const mockUser = { id: "1" } as User
       const mockValidation = { success: true }
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
@@ -130,7 +130,7 @@ describe("Settings Handlers", () => {
     })
 
     it("nullのURLでも設定を作成できる", async () => {
-      const mockUser: Pick<User, "id"> = { id: "1" }
+      const mockUser = { id: "1" } as User
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(prisma.setting.create).mockResolvedValue({} as Setting)
@@ -150,7 +150,7 @@ describe("Settings Handlers", () => {
     })
 
     it("無効なURLの場合は400を返す", async () => {
-      const mockUser: Pick<User, "id"> = { id: "1" }
+      const mockUser = { id: "1" } as User
       const mockValidation = {
         error: "URLがCSV形式ではありません",
         success: false,
@@ -200,7 +200,7 @@ describe("Settings Handlers", () => {
     })
 
     it("有効なURLで設定を更新できる", async () => {
-      const mockUser: Pick<User, "id"> = { id: "1" }
+      const mockUser = { id: "1" } as User
       const mockValidation = { success: true }
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
@@ -228,7 +228,7 @@ describe("Settings Handlers", () => {
     })
 
     it("nullにクリアできる", async () => {
-      const mockUser: Pick<User, "id"> = { id: "1" }
+      const mockUser = { id: "1" } as User
 
       vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
       vi.mocked(prisma.setting.update).mockResolvedValue({} as Setting)
@@ -254,7 +254,7 @@ describe("Settings Handlers", () => {
     })
 
     it("無効なURLの場合は400を返す", async () => {
-      const mockUser: Pick<User, "id"> = { id: "1" }
+      const mockUser = { id: "1" } as User
       const mockValidation = {
         error: "CSVのカラム数が正しくありません",
         success: false,

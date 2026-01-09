@@ -5,7 +5,7 @@ import pg from "pg"
 
 const isLocal = process.env.NODE_ENV !== "production"
 
-const createPrismaClient = () => {
+const createPrismaClient = (): PrismaClient => {
   if (isLocal) {
     const connectionString = process.env["DIRECT_URL"] || process.env["DATABASE_URL"]
     const pool = new pg.Pool({ connectionString })
@@ -36,7 +36,7 @@ const createPrismaClient = () => {
 }
 
 const basePrisma = createPrismaClient()
-const prisma = basePrisma.$extends(withAccelerate())
+const prisma = basePrisma.$extends(withAccelerate()) as unknown as PrismaClient
 
 type GlobalPrisma = {
   prisma?: typeof prisma
