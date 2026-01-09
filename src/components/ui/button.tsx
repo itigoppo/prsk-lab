@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { ComponentPropsWithoutRef, forwardRef } from "react"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 gap-2",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 gap-1",
   {
     compoundVariants: [
       // === Outline Variants ===
