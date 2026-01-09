@@ -1,7 +1,16 @@
+import { PrismaPg } from "@prisma/adapter-pg"
 import { PrismaClient } from "@prisma/client"
+import dotenv from "dotenv"
+import pg from "pg"
+
 import { runInit } from "./lib"
 
-export const prismaForSeed = new PrismaClient()
+dotenv.config()
+
+const connectionString = process.env["DIRECT_URL"] || process.env["DATABASE_URL"]
+const pool = new pg.Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+export const prismaForSeed = new PrismaClient({ adapter })
 
 runInit(prismaForSeed)
   .catch(async (e) => {
@@ -11,4 +20,5 @@ runInit(prismaForSeed)
   })
   .finally(async () => {
     await prismaForSeed.$disconnect()
+    await pool.end()
   })
