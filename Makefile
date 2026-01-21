@@ -30,19 +30,19 @@ docker-logs:
 
 # Run the development server
 run:
-	npm run dev
+	pnpm dev
 
 # Build the project
 build:
-	npm run build
+	pnpm build
 
 # Start the project
 start:
-	npm run start
+	pnpm start
 
 # Install dependencies
 install:
-	npm install
+	pnpm install
 
 # Clean the project
 clean:
@@ -87,44 +87,44 @@ seed:
 
 # Fix code
 fix:
-	npm run fix
+	pnpm fix
 
 # Generate OpenAPI
 open-api-generate:
-	npm run generate:openapi && npm run generate:api
+	pnpm generate:openapi && pnpm generate:api
 
 # Run all tests (unit + integration)
 test:
-	npm run test:all && npm run test:check-coverage
+	pnpm test:all && pnpm test:check-coverage
 
 # Run all tests (alias for test)
 test-all:
-	npm run test:all
+	pnpm test:all
 
 # Run unit tests only
 test-unit:
-	npm run test:unit
+	pnpm test:unit
 
 # Run integration tests only
 test-integration:
-	npm run test:integration
+	pnpm test:integration
 
 # Run test coverage check
 test-coverage:
-	npm run test:check-coverage
+	pnpm test:check-coverage
 
 # Run check
 check:
-	npm run check
+	pnpm check
 
 # Run check:coverage
 check-coverage:
-	npm run test:check-coverage
+	pnpm test:check-coverage
 
 # Run check:lint
 check-lint:
-	npm run lint
+	pnpm lint
 
 # Run check:type
 check-type:
-	npm run check:type
+	pnpm check:type

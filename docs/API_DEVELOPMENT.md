@@ -322,13 +322,13 @@ export const POST = (req: Request) => {
 
 ```bash
 # 開発サーバーを起動（別ターミナル）
-npm run dev
+pnpm dev
 
 # OpenAPI定義をダウンロード
-npm run generate:openapi
+pnpm generate:openapi
 
 # React QueryフックとTypeScript型を自動生成
-npm run generate:api
+pnpm generate:api
 ```
 
 生成されるファイル:
@@ -444,8 +444,8 @@ export default function TodoList() {
 **A.** OpenAPI定義を再生成してください
 
 ```bash
-npm run generate:openapi
-npm run generate:api
+pnpm generate:openapi
+pnpm generate:api
 ```
 
 ### Q. 型エラーが発生する
@@ -454,7 +454,7 @@ npm run generate:api
 
 ```bash
 # TypeScript型チェック
-npm run build
+pnpm build
 ```
 
 ### Q. サーバーサイドでOrval関数が動かない

@@ -17,38 +17,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: pnpm exec prisma generate
 
       - name: Generate API Client
-        run: npm run generate:api
+        run: pnpm generate:api
 
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm lint
 
       - name: Run type check
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
 
       - name: Check test coverage
-        run: npm run test:check-coverage
+        run: pnpm test:check-coverage
 
       - name: Run tests
-        run: npm run test:all
+        run: pnpm test:all
         env:
           DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci_test"
           DIRECT_URL: "postgresql://ci:ci@localhost:5432/ci_test"
 
       - name: Build check
-        run: npm run build
+        run: pnpm build
         env:
           DATABASE_URL: "prisma://accelerate.prisma-data.net/?api_key=dummy_key_for_ci_build"
           DIRECT_URL: "postgresql://ci:ci@localhost:5432/ci_test"
@@ -69,17 +74,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: pnpm add -g vercel@latest
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}

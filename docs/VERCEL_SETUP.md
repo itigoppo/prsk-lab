@@ -151,7 +151,7 @@ mainブランチを保護し、CIが通らないとマージできないよう�
 2. **ローカルでビルドテスト**
 
    ```bash
-   npm run build
+   pnpm build
    ```
 
 3. **Vercelのログを確認**
