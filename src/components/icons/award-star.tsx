@@ -1,8 +1,6 @@
-import type { FC, SVGProps } from "react"
+import type { SVGProps } from "react"
 
-type Props = SVGProps<SVGSVGElement>
-
-export const IconAwardStar: FC<Props> = (props) => {
+export function IconAwardStar(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
