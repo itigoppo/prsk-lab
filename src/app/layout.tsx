@@ -4,11 +4,11 @@ import { UserProvider } from "@/contexts/user-context"
 import { cn } from "@/lib/utils/common"
 import { ReactQueryProvider } from "@/providers/react-query-provider"
 import { AuthSessionProvider } from "@/providers/session-provider"
+import { ToastProvider } from "@/providers/toast-provider"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono, Inter, M_PLUS_2 } from "next/font/google"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { Toaster } from "react-hot-toast"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] })
@@ -36,9 +36,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={cn(mPlus2.className, geist.className, geistMono.className, inter.className)}>
         <ReactQueryProvider>
           <AuthSessionProvider>
-            <Toaster />
+            <ToastProvider />
             <UserProvider>
-              <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-200">
+              <div className="min-h-screen bg-linear-to-br from-stone-100 to-stone-200">
                 <header>
                   <Link href="/" className="inline-block">
                     <Logo />

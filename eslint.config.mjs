@@ -3,6 +3,7 @@ import next from "@next/eslint-plugin-next"
 import perfectionist from "eslint-plugin-perfectionist"
 import { dirname } from "path"
 import { fileURLToPath } from "url"
+import requireUseClient from "./eslint-rules/require-use-client.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -37,9 +38,15 @@ const eslintConfig = [
     plugins: {
       perfectionist,
       next,
+      custom: {
+        rules: {
+          "require-use-client": requireUseClient,
+        },
+      },
     },
     rules: {
       ...next.configs["core-web-vitals"].rules,
+      "custom/require-use-client": "error",
       "no-console": "warn",
       "@typescript-eslint/no-unused-vars": [
         "warn",

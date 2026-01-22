@@ -1,3 +1,5 @@
+"use client"
+
 import { Button, ButtonProps } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

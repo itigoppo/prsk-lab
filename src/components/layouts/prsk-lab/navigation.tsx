@@ -143,14 +143,14 @@ export function Navigation() {
                       height={40}
                     />
                   ) : (
-                    <AvatarFallback className="border-1 border-slate-600 bg-lime-100 text-slate-600">
+                    <AvatarFallback className="border border-slate-600 bg-lime-100 text-slate-600">
                       {getUserInitials({ name: currentUser?.name ?? "" })}
                     </AvatarFallback>
                   )}
                 </Button>
               ) : (
                 <Button size="icon" onClick={openLoginModal}>
-                  <AvatarFallback className="border-1 border-slate-600 bg-lime-100 text-slate-600">
+                  <AvatarFallback className="border border-slate-600 bg-lime-100 text-slate-600">
                     {getUserInitials({ name: "Guest" })}
                   </AvatarFallback>
                 </Button>

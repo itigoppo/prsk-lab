@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils/common"
 import type { ComponentPropsWithoutRef } from "react"
 import { forwardRef, useMemo } from "react"

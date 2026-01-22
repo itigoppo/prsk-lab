@@ -1,5 +1,3 @@
-"use client"
-
 import { cn } from "@/lib/utils/common"
 import { cva, type VariantProps } from "class-variance-authority"
 import { ComponentPropsWithoutRef, forwardRef } from "react"
@@ -67,8 +65,7 @@ const badgeVariants = cva(
 )
 
 export interface BadgeProps
-  extends ComponentPropsWithoutRef<"span">,
-    VariantProps<typeof badgeVariants> {
+  extends ComponentPropsWithoutRef<"span">, VariantProps<typeof badgeVariants> {
   outline?: boolean
 }
 

@@ -27,7 +27,7 @@ interface AlertProps extends ComponentPropsWithoutRef<"div">, VariantProps<typeo
 const Alert = forwardRef<HTMLDivElement, AlertProps>(
   ({ children, className, icon, variant, ...props }, ref) => (
     <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props}>
-      {icon && <div className="flex-shrink-0">{icon}</div>}
+      {icon && <div className="shrink-0">{icon}</div>}
       <div className="flex-1">{children}</div>
     </div>
   )
@@ -47,7 +47,11 @@ AlertTitle.displayName = "AlertTitle"
 
 const AlertDescription = forwardRef<HTMLParagraphElement, ComponentPropsWithoutRef<"p">>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn("flex items-center gap-1 text-sm [&_p]:leading-relaxed", className)}
+      {...props}
+    />
   )
 )
 AlertDescription.displayName = "AlertDescription"

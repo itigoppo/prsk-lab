@@ -136,7 +136,8 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends Omit<ComponentPropsWithoutRef<"button">, "disabled">,
+  extends
+    Omit<ComponentPropsWithoutRef<"button">, "disabled">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
   outline?: boolean
