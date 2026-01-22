@@ -6,14 +6,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils/common"
 
 interface ErrorStateProps {
-  error?: string
+  error?: unknown
   message?: string
   onRetry: () => void
   retrying?: boolean
   title?: string
 }
 
+function getErrorMessage(error: unknown): string {
+  if (!error) return ""
+  if (typeof error === "string") return error
+  if (error instanceof Error) return error.message
+  if (typeof error === "object" && error !== null) {
+    // Axios error
+    if ("message" in error && typeof error.message === "string") {
+      return error.message
+    }
+    // Response error
+    if ("response" in error && typeof error.response === "object" && error.response !== null) {
+      const response = error.response as { data?: { message?: string }; statusText?: string }
+      if (response.data?.message) return response.data.message
+      if (response.statusText) return response.statusText
+    }
+  }
+  return "エラーが発生しました"
+}
+
 export function ErrorState({ error, message, onRetry, retrying, title }: ErrorStateProps) {
+  const errorMessage = getErrorMessage(error)
   return (
     <Card className="mx-auto w-full max-w-2xl space-y-6">
       {title && (
@@ -30,9 +50,9 @@ export function ErrorState({ error, message, onRetry, retrying, title }: ErrorSt
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         )}
-        {error && (
+        {errorMessage && (
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
         <div className="flex justify-center">
