@@ -20,17 +20,40 @@ const alertVariants = cva("relative w-full rounded-lg border flex items-center g
   },
 })
 
+const variantIcons: Record<string, { colorClass: string; icon: string }> = {
+  default: { colorClass: "text-slate-500", icon: "info" },
+  destructive: { colorClass: "text-red-500", icon: "error" },
+  disabled: { colorClass: "text-slate-400", icon: "block" },
+  info: { colorClass: "text-blue-500", icon: "info" },
+  loading: { colorClass: "text-indigo-500", icon: "hourglass_empty" },
+  success: { colorClass: "text-emerald-500", icon: "check_circle" },
+  warning: { colorClass: "text-yellow-500", icon: "warning" },
+}
+
 interface AlertProps extends ComponentPropsWithoutRef<"div">, VariantProps<typeof alertVariants> {
   icon?: React.ReactNode
+  showIcon?: boolean
 }
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(
-  ({ children, className, icon, variant, ...props }, ref) => (
-    <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props}>
-      {icon && <div className="shrink-0">{icon}</div>}
-      <div className="flex-1">{children}</div>
-    </div>
-  )
+  ({ children, className, icon, showIcon = true, variant = "default", ...props }, ref) => {
+    const iconConfig = variantIcons[variant ?? "default"]
+
+    return (
+      <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props}>
+        {showIcon && (
+          <div className="shrink-0">
+            {icon ?? (
+              <span className={cn("material-symbols-outlined", iconConfig.colorClass)}>
+                {iconConfig.icon}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex-1">{children}</div>
+      </div>
+    )
+  }
 )
 Alert.displayName = "Alert"
 

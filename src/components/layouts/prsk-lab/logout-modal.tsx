@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -28,11 +29,11 @@ export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
   return (
     <Dialog isOpen={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <div className="space-y-4">
-          <DialogHeader onOpenChange={onClose}>
-            <DialogTitle>ログアウト</DialogTitle>
-            <DialogDescription>アカウントをログアウトしますか？</DialogDescription>
-          </DialogHeader>
+        <DialogHeader onOpenChange={onClose}>
+          <DialogTitle>ログアウト</DialogTitle>
+          <DialogDescription>アカウントをログアウトしますか？</DialogDescription>
+        </DialogHeader>
+        <DialogBody className="space-y-4">
           <Button onClick={handleSignOut} variant="primary" className="w-full">
             <span className="material-symbols-outlined">exit_to_app</span>
             <span>ログアウト</span>
@@ -42,7 +43,7 @@ export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
             <span className="material-symbols-outlined">block</span>
             <span>キャンセル</span>
           </Button>
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )

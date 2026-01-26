@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -35,12 +36,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   return (
     <Dialog isOpen={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <div className="space-y-4">
-          <DialogHeader onOpenChange={onClose}>
-            <DialogTitle>ログイン</DialogTitle>
-            <DialogDescription>アカウントにログインしますか？</DialogDescription>
-          </DialogHeader>
+        <DialogHeader onOpenChange={onClose}>
+          <DialogTitle>ログイン</DialogTitle>
+          <DialogDescription>アカウントにログインしますか？</DialogDescription>
+        </DialogHeader>
 
+        <DialogBody className="space-y-4">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -56,7 +57,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <span className="material-symbols-outlined">block</span>
             <span>キャンセル</span>
           </Button>
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )
