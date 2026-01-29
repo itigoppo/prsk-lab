@@ -34,7 +34,7 @@ run:
 
 # Build the project
 build:
-	pnpm build
+	PRISMA_LOCAL=true pnpm build
 
 # Start the project
 start:

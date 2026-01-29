@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client"
 import { withAccelerate } from "@prisma/extension-accelerate"
 import pg from "pg"
 
-const isLocal = process.env.NODE_ENV !== "production"
+const isLocal = process.env.NODE_ENV !== "production" || process.env.PRISMA_LOCAL === "true"
 
 const createPrismaClient = (): PrismaClient => {
   if (isLocal) {
