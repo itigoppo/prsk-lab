@@ -10,8 +10,8 @@ import {
   usePatchApiUsersSettings,
   usePostApiUsersSettings,
 } from "@/lib/api/generated/settings/settings"
-import type { UpdateSettingDto } from "@/lib/schemas/dto/setting"
-import { updateSettingDtoSchema } from "@/lib/schemas/dto/setting"
+import type { UpdateSettingDto } from "@/lib/schemas/dto/setting.dto"
+import { updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
 import { getApiErrorMessage } from "@/lib/utils/error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCallback, useEffect, useState } from "react"

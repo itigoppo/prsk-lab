@@ -1,7 +1,7 @@
 "use client"
 
 import { IconTofu } from "@/components/icons/tofu"
-import { CharacterListItem } from "@/lib/schemas/character"
+import { CharacterListItem } from "@/lib/schemas/response/character.response"
 import { cn } from "@/lib/utils/common"
 import Image from "next/image"
 import { memo } from "react"

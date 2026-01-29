@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { createUserDtoSchema } from "./user"
+import { createUserDtoSchema } from "./user.dto"
 
 describe("User DTO Schemas", () => {
   describe("createUserDtoSchema", () => {

@@ -20,21 +20,25 @@ React Query フック + TypeScript型
 src/
 ├── lib/
 │   ├── schemas/           # Zodスキーマ定義（真実の唯一の情報源）
-│   │   ├── api.ts        # API共通スキーマ
 │   │   ├── dto/          # リクエストDTO
-│   │   │   ├── user.ts   # ユーザー関連DTO
-│   │   │   ├── setting.ts # 設定関連DTO
-│   │   │   └── index.ts  # 再エクスポート
-│   │   ├── user.ts       # ユーザー関連レスポンス
-│   │   ├── character.ts  # キャラクター関連
-│   │   └── utils.ts      # Zodユーティリティ（formatZodErrors）
+│   │   │   ├── user.dto.ts
+│   │   │   └── setting.dto.ts
+│   │   └── response/     # レスポンススキーマ
+│   │       ├── api.response.ts        # API共通スキーマ
+│   │       ├── user.response.ts       # ユーザー関連レスポンス
+│   │       ├── character.response.ts  # キャラクター関連
+│   │       └── furniture.response.ts  # 家具関連
+│   │
+│   ├── utils/
+│   │   └── zod.ts        # Zodユーティリティ（formatZodErrors）
 │   │
 │   ├── hono/
 │   │   └── openapi.ts    # OpenAPI定義 + ハンドラー + ミドルウェア統合
 │   │
 │   ├── handlers/          # APIハンドラー実装
 │   │   ├── users/        # ユーザー関連ハンドラー
-│   │   └── characters/   # キャラクター関連ハンドラー
+│   │   ├── characters/   # キャラクター関連ハンドラー
+│   │   └── furnitures/   # 家具関連ハンドラー
 │   │
 │   ├── middleware/        # Honoミドルウェア
 │   │   ├── verify-nextauth-session.ts
@@ -56,7 +60,7 @@ src/
 
 ### 1. スキーマ定義（Zod）
 
-#### リクエストDTO: `src/lib/schemas/dto/todo.ts`
+#### リクエストDTO: `src/lib/schemas/dto/todo.dto.ts`
 
 ```typescript
 import { z } from "zod"
@@ -71,17 +75,11 @@ export const createTodoDtoSchema = z.object({
 export type CreateTodoDto = z.infer<typeof createTodoDtoSchema>
 ```
 
-#### `src/lib/schemas/dto/index.ts`に追加
-
-```typescript
-export * from "./todo"
-```
-
-#### レスポンススキーマ: `src/lib/schemas/todo.ts`
+#### レスポンススキーマ: `src/lib/schemas/response/todo.response.ts`
 
 ```typescript
 import { z } from "zod"
-import { createApiDataResponseSchema } from "./api"
+import { createApiDataResponseSchema } from "./api.response"
 
 export const todoSchema = z.object({
   id: z.string(),
@@ -104,7 +102,8 @@ export type TodoListResponse = z.infer<typeof todoListResponseSchema>
 **ポイント**:
 
 - すべての型は`z.infer`で推論
-- DTOはドメインごとにファイル分割（`dto/user.ts`, `dto/setting.ts`, `dto/todo.ts`等）
+- DTOは`dto/`ディレクトリ、レスポンスは`response/`ディレクトリに分離
+- ファイル名にサフィックス追加（`*.dto.ts`, `*.response.ts`）
 - TypeScript型定義を手動で書かない（Single Source of Truth）
 
 ---
@@ -153,8 +152,8 @@ export const getTodos: Handler = async (c) => {
 ```typescript
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { CreateTodoDto, createTodoDtoSchema } from "@/lib/schemas/dto"
-import { formatZodErrors } from "@/lib/schemas/utils"
+import { CreateTodoDto, createTodoDtoSchema } from "@/lib/schemas/dto/todo"
+import { formatZodErrors } from "@/lib/utils/zod"
 import type { Handler } from "hono"
 
 export const createTodo: Handler = async (c) => {
@@ -221,8 +220,8 @@ export const createTodo: Handler = async (c) => {
 import { getTodos } from "@/lib/handlers/todos/get-todos.handler"
 import { createTodo } from "@/lib/handlers/todos/create-todo.handler"
 import { verifyNextAuthSession } from "@/lib/middleware/verify-nextauth-session"
-import { todoListResponseSchema } from "@/lib/schemas/todo"
-import { createTodoDtoSchema } from "@/lib/schemas/dto"
+import { todoListResponseSchema } from "@/lib/schemas/response/todo.response"
+import { createTodoDtoSchema } from "@/lib/schemas/dto/todo"
 import { createRoute } from "@hono/zod-openapi"
 
 // GET /api/todos

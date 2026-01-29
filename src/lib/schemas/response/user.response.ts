@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { createApiDataResponseSchema } from "./api"
+import { createApiDataResponseSchema } from "./api.response"
 
 // ユーザーデータスキーマ
 export const currentUserDataSchema = z.object({

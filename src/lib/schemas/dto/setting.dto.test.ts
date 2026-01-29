@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { createSettingDtoSchema, updateSettingDtoSchema } from "./setting"
+import { createSettingDtoSchema, updateSettingDtoSchema } from "./setting.dto"
 
 describe("Setting DTO Schemas", () => {
   describe("createSettingDtoSchema", () => {

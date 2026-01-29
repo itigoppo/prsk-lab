@@ -1,7 +1,7 @@
 "use client"
 
 import { useGetApiUsersMe } from "@/lib/api/generated/users/users"
-import type { CurrentUserData } from "@/lib/schemas/user"
+import type { CurrentUserData } from "@/lib/schemas/response/user.response"
 import { useSession } from "next-auth/react"
 import { createContext, useContext } from "react"
 

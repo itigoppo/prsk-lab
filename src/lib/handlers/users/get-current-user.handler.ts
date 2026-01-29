@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import type { CurrentUserResponse } from "@/lib/schemas/user"
+import type { CurrentUserResponse } from "@/lib/schemas/response/user.response"
 import type { Handler } from "hono"
 
 export const getCurrentUser: Handler = async (c) => {

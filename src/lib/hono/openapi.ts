@@ -6,9 +6,12 @@ import { getSetting } from "@/lib/handlers/users/get-setting.handler"
 import { updateSetting } from "@/lib/handlers/users/update-setting.handler"
 import { verifyDiscordToken } from "@/lib/middleware/verify-discord-token"
 import { verifyNextAuthSession } from "@/lib/middleware/verify-nextauth-session"
-import { characterListResponseSchema } from "@/lib/schemas/character"
-import { createSettingDtoSchema, updateSettingDtoSchema } from "@/lib/schemas/dto"
-import { currentSettingResponseSchema, currentUserResponseSchema } from "@/lib/schemas/user"
+import { createSettingDtoSchema, updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
+import { characterListResponseSchema } from "@/lib/schemas/response/character.response"
+import {
+  currentSettingResponseSchema,
+  currentUserResponseSchema,
+} from "@/lib/schemas/response/user.response"
 import { swaggerUI } from "@hono/swagger-ui"
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
 import type { Handler, MiddlewareHandler } from "hono"

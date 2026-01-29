@@ -4,7 +4,7 @@ import {
   CharacterListItem,
   CharacterListResponse,
   CharacterUnitListItem,
-} from "@/lib/schemas/character"
+} from "@/lib/schemas/response/character.response"
 import { Prisma } from "@prisma/client"
 import type { Handler } from "hono"
 

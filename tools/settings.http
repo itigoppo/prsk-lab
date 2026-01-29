@@ -1,0 +1,25 @@
+@baseUrl = {{$dotenv BASE_URL}}
+@sessionToken = {{$dotenv SESSION_TOKEN}}
+
+### Get settings
+GET {{baseUrl}}/users/settings
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Create settings
+POST {{baseUrl}}/users/settings
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+{
+  "leaderSheetUrl": "https://docs.google.com/spreadsheets/d/1234567890/edit"
+}
+
+### Update settings
+PATCH {{baseUrl}}/users/settings
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+{
+  "leaderSheetUrl": null
+}

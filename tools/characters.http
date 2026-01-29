@@ -1,0 +1,5 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+### Get characters
+GET {{baseUrl}}/characters
+Accept: application/json

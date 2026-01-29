@@ -1,7 +1,7 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { CreateUserDto, createUserDtoSchema } from "@/lib/schemas/dto"
-import { formatZodErrors } from "@/lib/schemas/utils"
+import { CreateUserDto, createUserDtoSchema } from "@/lib/schemas/dto/user.dto"
+import { formatZodErrors } from "@/lib/utils/zod"
 import { UserRole } from "@prisma/client"
 import type { Handler } from "hono"
 

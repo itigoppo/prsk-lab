@@ -1,8 +1,8 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { UpdateSettingDto, updateSettingDtoSchema } from "@/lib/schemas/dto"
-import { formatZodErrors } from "@/lib/schemas/utils"
+import { UpdateSettingDto, updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
 import { validateCsvUrl } from "@/lib/utils/csv-validator"
+import { formatZodErrors } from "@/lib/utils/zod"
 import type { Handler } from "hono"
 
 export const updateSetting: Handler = async (c) => {

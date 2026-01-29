@@ -1,4 +1,4 @@
-import { CharacterListItem } from "@/lib/schemas/character"
+import { CharacterListItem } from "@/lib/schemas/response/character.response"
 import { memo } from "react"
 import { CharacterItem } from "./character-item"
 
