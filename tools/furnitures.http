@@ -1,0 +1,43 @@
+@baseUrl = {{$dotenv BASE_URL}}
+@sessionToken = {{$dotenv SESSION_TOKEN}}
+
+### Get furnitures
+GET {{baseUrl}}/furnitures
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furnitures by unit
+GET {{baseUrl}}/furnitures/leoneed
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furnitures by unit
+GET {{baseUrl}}/furnitures/mmj
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furnitures by unit
+GET {{baseUrl}}/furnitures/vbs
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furnitures by unit
+GET {{baseUrl}}/furnitures/ws
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furnitures by unit
+GET {{baseUrl}}/furnitures/oclock
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+
+### Own furniture
+POST {{baseUrl}}/furnitures/own/{furnitureId}
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Unown furniture
+DELETE {{baseUrl}}/furnitures/own/{furnitureId}
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};

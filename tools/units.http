@@ -1,0 +1,5 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+### Get units
+GET {{baseUrl}}/units
+Accept: application/json

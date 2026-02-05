@@ -6,7 +6,7 @@ import { Checkbox as CheckboxPrimitive } from "radix-ui"
 import * as React from "react"
 
 const checkboxVariants = cva(
-  "group border-gray-300 peer relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors outline-none group-has-disabled/field:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2",
+  "group peer relative flex size-4 shrink-0 items-center justify-center cursor-pointer transition-colors outline-none group-has-disabled/field:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2",
   {
     defaultVariants: {
       variant: "default",
@@ -31,24 +31,43 @@ const checkboxVariants = cva(
 export interface CheckboxProps
   extends
     React.ComponentProps<typeof CheckboxPrimitive.Root>,
-    VariantProps<typeof checkboxVariants> {}
+    VariantProps<typeof checkboxVariants> {
+  /** Material Symbolsのサイズ (px) */
+  iconSize?: number
+  /** Material Symbolsのfont-weight (100-700) */
+  iconWeight?: number
+  /** 中間状態（横線アイコン）で表示 */
+  indeterminate?: boolean
+}
 
-function Checkbox({ className, variant, ...props }: CheckboxProps) {
+function Checkbox({
+  checked,
+  className,
+  iconSize,
+  iconWeight,
+  indeterminate,
+  variant,
+  ...props
+}: CheckboxProps) {
+  const iconStyle: React.CSSProperties | undefined =
+    iconWeight || iconSize ? { fontSize: iconSize, fontWeight: iconWeight } : undefined
+
+  const getIcon = () => {
+    if (checked && indeterminate) return "indeterminate_check_box"
+    if (checked) return "select_check_box"
+    return "check_box_outline_blank"
+  }
+
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(checkboxVariants({ className, variant }))}
+      checked={checked}
       {...props}
     >
-      <span className="material-symbols-outlined absolute group-data-[state=checked]:hidden">
-        check_box_outline_blank
+      <span className="material-symbols-outlined" style={iconStyle}>
+        {getIcon()}
       </span>
-      <CheckboxPrimitive.Indicator
-        data-slot="checkbox-indicator"
-        className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
-      >
-        <span className="material-symbols-outlined">check_box</span>
-      </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )
 }

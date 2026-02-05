@@ -86,12 +86,25 @@ interface RadioGroupItemProps extends Omit<
   "children"
 > {
   children?: React.ReactNode
+  /** Material Symbolsのサイズ (px) */
+  iconSize?: number
+  /** Material Symbolsのfont-weight (100-700) */
+  iconWeight?: number
 }
 
-function RadioGroupItem({ children, className, value, ...props }: RadioGroupItemProps) {
+function RadioGroupItem({
+  children,
+  className,
+  iconSize,
+  iconWeight,
+  value,
+  ...props
+}: RadioGroupItemProps) {
   const { selectedValue, variant } = useContext(RadioGroupContext)
   const isChecked = selectedValue === value
   const id = React.useId()
+  const iconStyle: React.CSSProperties | undefined =
+    iconWeight || iconSize ? { fontSize: iconSize, fontWeight: iconWeight } : undefined
 
   return (
     <div className="flex items-center gap-1">
@@ -104,8 +117,11 @@ function RadioGroupItem({ children, className, value, ...props }: RadioGroupItem
         value={value}
         {...props}
       >
-        <span className="material-symbols-outlined flex items-center justify-center text-xl leading-none">
-          {isChecked ? "check_circle" : "circle"}
+        <span
+          className="material-symbols-outlined flex items-center justify-center leading-none"
+          style={iconStyle}
+        >
+          {isChecked ? "task_alt" : "circle"}
         </span>
       </RadioGroupPrimitive.Item>
       {children && (

@@ -57,9 +57,32 @@ function extractEndpointsFromOpenAPI(): Set<string> {
 }
 
 /**
+ * テストのパスをOpenAPIのパスパターンに変換
+ * 例: /api/furnitures/leoneed -> /api/furnitures/{unitCode}
+ */
+function normalizePathToPattern(testPath: string, openApiPaths: Set<string>): string {
+  // OpenAPIのパスからパターンを取得
+  for (const endpoint of openApiPaths) {
+    const [, openApiPath] = endpoint.split(" ")
+    if (!openApiPath) continue
+
+    // パスパラメータを正規表現に変換
+    // 例: /api/furnitures/{unitCode} -> /api/furnitures/[^/]+
+    const pattern = openApiPath.replace(/\{[^}]+\}/g, "[^/]+")
+    const regex = new RegExp(`^${pattern}$`)
+
+    if (regex.test(testPath)) {
+      return openApiPath
+    }
+  }
+
+  return testPath
+}
+
+/**
  * 統合テストファイルから実際にテストされているエンドポイントを抽出
  */
-function extractTestedEndpoints(): Set<string> {
+function extractTestedEndpoints(openApiEndpoints: Set<string>): Set<string> {
   const integrationTestFiles = findFiles("src/__tests__/integration", /\.integration\.test\.ts$/)
   const testedEndpoints = new Set<string>()
 
@@ -73,9 +96,10 @@ function extractTestedEndpoints(): Set<string> {
 
     let match
     while ((match = inlinePattern.exec(content)) !== null) {
-      const path = match[1]
+      const testPath = match[1]
       const method = match[2].toUpperCase()
-      testedEndpoints.add(`${method} ${path}`)
+      const normalizedPath = normalizePathToPattern(testPath, openApiEndpoints)
+      testedEndpoints.add(`${method} ${normalizedPath}`)
     }
 
     // パターン2: method が別の行にある場合
@@ -87,9 +111,10 @@ function extractTestedEndpoints(): Set<string> {
       /openAPIApp\.request\(["']([^"']+)["'][\s\S]{0,500}?method:\s*["'](\w+)["']/gi
 
     while ((match = multilinePattern.exec(content)) !== null) {
-      const path = match[1]
+      const testPath = match[1]
       const method = match[2].toUpperCase()
-      testedEndpoints.add(`${method} ${path}`)
+      const normalizedPath = normalizePathToPattern(testPath, openApiEndpoints)
+      testedEndpoints.add(`${method} ${normalizedPath}`)
     }
   }
 
@@ -184,7 +209,7 @@ function checkHandlerTests() {
 
   // 統合テストファイルから実際にテストされているエンドポイントを抽出
   console.log("🔬 Extracting tested endpoints from integration tests...")
-  const testedEndpoints = extractTestedEndpoints()
+  const testedEndpoints = extractTestedEndpoints(allEndpoints)
   console.log(`   Found ${testedEndpoints.size} endpoint(s) tested\n`)
 
   // 各エンドポイントがテストされているかチェック

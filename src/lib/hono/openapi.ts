@@ -1,4 +1,10 @@
 import { getCharacters } from "@/lib/handlers/characters/get-characters.handler"
+import { getFurnituresByUnit } from "@/lib/handlers/furnitures/get-furnitures-by-unit.handler"
+import { getFurnitures } from "@/lib/handlers/furnitures/get-furnitures.handler"
+import { ownFurniture } from "@/lib/handlers/furnitures/own-furniture.handler"
+import { unownFurniture } from "@/lib/handlers/furnitures/unown-furniture.handler"
+import { checkReaction } from "@/lib/handlers/reactions/check-reaction.handler"
+import { uncheckReaction } from "@/lib/handlers/reactions/uncheck-reaction.handler"
 import { createSetting } from "@/lib/handlers/users/create-setting.handler"
 import { createUser } from "@/lib/handlers/users/create-user.handler"
 import { getCurrentUser } from "@/lib/handlers/users/get-current-user.handler"
@@ -9,13 +15,21 @@ import { verifyNextAuthSession } from "@/lib/middleware/verify-nextauth-session"
 import { createSettingDtoSchema, updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
 import { characterListResponseSchema } from "@/lib/schemas/response/character.response"
 import {
+  furnitureListResponseSchema,
+  furnitureOwnershipListResponseSchema,
+  furnitureOwnershipResponseSchema,
+} from "@/lib/schemas/response/furniture.response"
+import { reactionCheckResponseSchema } from "@/lib/schemas/response/reaction.response"
+import {
   currentSettingResponseSchema,
   currentUserResponseSchema,
 } from "@/lib/schemas/response/user.response"
 import { swaggerUI } from "@hono/swagger-ui"
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
 import type { Handler, MiddlewareHandler } from "hono"
-import type { z } from "zod"
+import { z } from "zod"
+import { getUnits } from "../handlers/units/get-units.handler"
+import { unitListResponseSchema } from "../schemas/response/unit.response"
 
 const app = new OpenAPIHono()
 
@@ -25,9 +39,21 @@ const Tags = {
     description: "Character and unit information",
     name: "Characters",
   },
+  FURNITURES: {
+    description: "Furniture and reaction information",
+    name: "Furnitures",
+  },
+  REACTIONS: {
+    description: "Reaction check management",
+    name: "Reactions",
+  },
   SETTINGS: {
     description: "User settings management",
     name: "Settings",
+  },
+  UNITS: {
+    description: "Unit information",
+    name: "Units",
   },
   USERS: {
     description: "User management endpoints",
@@ -180,6 +206,173 @@ const getCharactersRoute = createRoute({
   tags: [Tags.CHARACTERS.name],
 })
 
+const getUnitsRoute = createRoute({
+  description: "Retrieve all units",
+  method: "get",
+  path: "/api/units",
+  responses: {
+    ...jsonResponse(200, unitListResponseSchema, "Units retrieved successfully"),
+    ...commonResponses.internalServerError,
+  },
+  summary: "Get all units",
+  tags: [Tags.UNITS.name],
+})
+
+const getFurnituresByUnitRoute = createRoute({
+  description: "Retrieve furniture list with reactions for a specific unit",
+  method: "get",
+  path: "/api/furnitures/{unitCode}",
+  request: {
+    params: z.object({
+      unitCode: z.string().openapi({
+        description: "Unit code (e.g., leoneed, mmj, vbs, ws, oclock)",
+        example: "leoneed",
+      }),
+    }),
+    query: z.object({
+      characterIds: z.string().optional().openapi({
+        description: "Comma-separated character IDs to filter reactions",
+        example: "char-id-1,char-id-2",
+      }),
+      hideCompleted: z.string().optional().openapi({
+        description: "Hide tags where all reactions are checked (true/false)",
+        example: "true",
+      }),
+      ownedOnly: z.string().optional().openapi({
+        description: "Show only owned furniture (true/false)",
+        example: "true",
+      }),
+      q: z.string().optional().openapi({
+        description: "Search query for furniture name (partial match)",
+        example: "ソファ",
+      }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(200, furnitureListResponseSchema, "Furnitures retrieved successfully"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [bearerAuth],
+  summary: "Get furnitures by unit",
+  tags: [Tags.FURNITURES.name],
+})
+
+const getFurnituresRoute = createRoute({
+  description: "Retrieve all furnitures with ownership status for the current user",
+  method: "get",
+  path: "/api/furnitures",
+  request: {
+    query: z.object({
+      q: z.string().optional().openapi({
+        description: "Search query for furniture name (partial match)",
+        example: "ソファ",
+      }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(200, furnitureOwnershipListResponseSchema, "Furnitures retrieved successfully"),
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [bearerAuth],
+  summary: "Get all furnitures with ownership status",
+  tags: [Tags.FURNITURES.name],
+})
+
+const ownFurnitureRoute = createRoute({
+  description: "Mark a furniture as owned by the current user",
+  method: "post",
+  path: "/api/furnitures/own/{furnitureId}",
+  request: {
+    params: z.object({
+      furnitureId: z.string().openapi({
+        description: "Furniture ID",
+        example: "clxxxxx",
+      }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(200, furnitureOwnershipResponseSchema, "Furniture marked as owned"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [bearerAuth],
+  summary: "Own a furniture",
+  tags: [Tags.FURNITURES.name],
+})
+
+const unownFurnitureRoute = createRoute({
+  description: "Remove ownership of a furniture for the current user",
+  method: "delete",
+  path: "/api/furnitures/own/{furnitureId}",
+  request: {
+    params: z.object({
+      furnitureId: z.string().openapi({
+        description: "Furniture ID",
+        example: "clxxxxx",
+      }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(200, furnitureOwnershipResponseSchema, "Furniture ownership removed"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [bearerAuth],
+  summary: "Unown a furniture",
+  tags: [Tags.FURNITURES.name],
+})
+
+const checkReactionRoute = createRoute({
+  description: "Mark a reaction as checked for the current user",
+  method: "post",
+  path: "/api/reactions/{reactionId}/check",
+  request: {
+    params: z.object({
+      reactionId: z.string().openapi({
+        description: "Reaction ID",
+        example: "clxxxxx",
+      }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(200, reactionCheckResponseSchema, "Reaction checked successfully"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [bearerAuth],
+  summary: "Check a reaction",
+  tags: [Tags.REACTIONS.name],
+})
+
+const uncheckReactionRoute = createRoute({
+  description: "Remove check from a reaction for the current user",
+  method: "delete",
+  path: "/api/reactions/{reactionId}/check",
+  request: {
+    params: z.object({
+      reactionId: z.string().openapi({
+        description: "Reaction ID",
+        example: "clxxxxx",
+      }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(200, reactionCheckResponseSchema, "Reaction unchecked successfully"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [bearerAuth],
+  summary: "Uncheck a reaction",
+  tags: [Tags.REACTIONS.name],
+})
+
 // Register routes with actual handlers and middleware
 // 構造化されたルート登録でパス重複を削減
 type RouteDefinition = {
@@ -221,12 +414,53 @@ const routes: RouteDefinition[] = [
     handler: getCharacters,
     route: getCharactersRoute,
   },
+  // Units
+  {
+    handler: getUnits,
+    route: getUnitsRoute,
+  },
+  // Furnitures
+  {
+    handler: getFurnitures,
+    middleware: verifyNextAuthSession,
+    route: getFurnituresRoute,
+  },
+  {
+    handler: getFurnituresByUnit,
+    middleware: verifyNextAuthSession,
+    route: getFurnituresByUnitRoute,
+  },
+  {
+    handler: ownFurniture,
+    middleware: verifyNextAuthSession,
+    route: ownFurnitureRoute,
+  },
+  {
+    handler: unownFurniture,
+    middleware: verifyNextAuthSession,
+    route: unownFurnitureRoute,
+  },
+  // Reactions
+  {
+    handler: checkReaction,
+    middleware: verifyNextAuthSession,
+    route: checkReactionRoute,
+  },
+  {
+    handler: uncheckReaction,
+    middleware: verifyNextAuthSession,
+    route: uncheckReactionRoute,
+  },
 ]
+
+// OpenAPIパス形式をHonoパス形式に変換（{param} -> :param）
+const convertPathToHonoFormat = (openApiPath: string): string =>
+  openApiPath.replace(/\{(\w+)\}/g, ":$1")
 
 // ミドルウェアとハンドラーを一括登録
 routes.forEach(({ handler, middleware, route }) => {
   if (middleware) {
-    app.use(route.path, middleware)
+    app.use(convertPathToHonoFormat(route.path), middleware)
   }
   app.openapi(route, handler)
 })
