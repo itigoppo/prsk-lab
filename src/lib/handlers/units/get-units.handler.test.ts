@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Prisma } from "@prisma/client"
 import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -106,7 +107,7 @@ describe("Unit Handlers", () => {
       // priority順でソートされるようにfindManyが呼ばれていることを確認
       expect(prisma.unit.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: { priority: "asc" },
+          orderBy: { priority: Prisma.SortOrder.asc },
         })
       )
     })
