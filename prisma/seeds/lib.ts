@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client"
 import chalk from "chalk"
 import readline from "readline"
 import { seedCharacters } from "./characters"
+import { seedFurnitures } from "./furnitures"
 import { seedUnits } from "./units"
 
 export const runInit = async (prisma: PrismaClient) => {
@@ -70,4 +71,5 @@ const seed = async (prisma: PrismaClient) => {
 
   await seedUnits(prisma)
   await seedCharacters(prisma)
+  await seedFurnitures(prisma)
 }
