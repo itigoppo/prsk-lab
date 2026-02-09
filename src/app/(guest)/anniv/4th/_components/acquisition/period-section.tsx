@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { cn } from "@/lib/utils/common"
 import { ComponentType, useState } from "react"
 import { fortuneFlowerConfigByTimes } from "../../_constants/config"
 import { AfterPartySticker } from "./after-party-sticker"
@@ -46,7 +47,10 @@ export function PeriodSection({ times }: PeriodSectionProps) {
   return (
     <Collapsible defaultOpen={true}>
       <CollapsibleTrigger
-        className={`border-b-2 border-slate-500 bg-linear-to-r ${config.gradientClass} px-6 py-4 font-bold`}
+        className={cn(
+          "border-b-2 border-slate-500 bg-linear-to-r px-6 py-4 font-bold",
+          config.gradientClass
+        )}
       >
         {config.name} ({config.dateStart}
         {config.dateStrikethrough && (

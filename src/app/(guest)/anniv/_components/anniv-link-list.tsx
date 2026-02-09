@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils/common"
 import Link from "next/link"
 
 const annivLinks = [
@@ -20,9 +21,10 @@ export function AnnivLinkList() {
       {annivLinks.map((link, index) => (
         <div key={link.href} className="relative">
           <div
-            className={`absolute top-1/2 -left-[31px] h-3 w-3 -translate-y-1/2 rounded-full ${
+            className={cn(
+              "absolute top-1/2 -left-[31px] h-3 w-3 -translate-y-1/2 rounded-full",
               index === 0 ? "bg-teal-500" : "bg-stone-400"
-            }`}
+            )}
           />
           <Link href={link.href} className="group block">
             <Card className="p-4 transition-all hover:border-teal-400 hover:shadow-lg">

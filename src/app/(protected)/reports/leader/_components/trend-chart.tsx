@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils/common"
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -337,13 +338,14 @@ export function TrendChart({ colorMap, data, headers, originalHeaders }: TrendCh
                   <button
                     type="button"
                     onClick={() => toggleUnit(unitMembers)}
-                    className={`rounded px-1.5 py-0.5 text-xs font-semibold transition-colors hover:bg-slate-200 ${
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-xs font-semibold transition-colors hover:bg-slate-200",
                       allHidden
                         ? "text-slate-400 line-through"
                         : someHidden
                           ? "text-slate-500"
                           : "text-slate-600"
-                    }`}
+                    )}
                   >
                     {unitName}
                   </button>
@@ -360,9 +362,11 @@ export function TrendChart({ colorMap, data, headers, originalHeaders }: TrendCh
                           onClick={() => toggleMember(member.name)}
                           onMouseEnter={() => !isHidden && setHighlightedMember(member.name)}
                           onMouseLeave={() => setHighlightedMember(null)}
-                          className={`flex items-center gap-1.5 rounded px-1 py-0.5 transition-all hover:bg-slate-100 ${
-                            isHidden ? "opacity-40" : ""
-                          } ${isHighlighted ? "ring-2 ring-slate-400 ring-offset-1" : ""}`}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded px-1 py-0.5 transition-all hover:bg-slate-100",
+                            isHidden && "opacity-40",
+                            isHighlighted && "ring-2 ring-slate-400 ring-offset-1"
+                          )}
                         >
                           {/* 右軸はひし形、左軸は四角 */}
                           <div
@@ -373,7 +377,7 @@ export function TrendChart({ colorMap, data, headers, originalHeaders }: TrendCh
                               transform: isRightAxis ? "rotate(45deg) scale(0.7)" : "none",
                             }}
                           />
-                          <span className={`truncate text-xs ${isHidden ? "line-through" : ""}`}>
+                          <span className={cn("truncate text-xs", isHidden && "line-through")}>
                             {member.name}
                           </span>
                         </button>
