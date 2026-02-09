@@ -1,0 +1,7 @@
+@baseUrl = {{$dotenv BASE_URL}}
+@sessionToken = {{$dotenv SESSION_TOKEN}}
+
+### Get furniture characters
+GET {{baseUrl}}/admin/furniture-characters
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};

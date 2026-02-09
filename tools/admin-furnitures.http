@@ -1,0 +1,145 @@
+@baseUrl = {{$dotenv BASE_URL}}
+@sessionToken = {{$dotenv SESSION_TOKEN}}
+
+### Get furniture tags
+GET {{baseUrl}}/admin/furniture-tags
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furniture tags with pagination
+GET {{baseUrl}}/admin/furniture-tags?page=1&limit=20
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furniture tags with search query
+GET {{baseUrl}}/admin/furniture-tags?q=ナチュラル
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Create furniture tag
+POST {{baseUrl}}/admin/furniture-tags
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "タグ1"
+}
+
+### Create furniture tag with furnitures
+POST {{baseUrl}}/admin/furniture-tags
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "タグ6",
+  "furnitures": [
+    {
+      "name": "家具1",
+      "groupId": null,
+      "reactions": [
+        {
+          "characters": ["cmk72r8e0000cp8pfe20pq5y4"],
+          "excludeFromGroup": false
+        },
+        {
+          "characters": ["cmk72r8e0000cp8pfe20pq5y4"],
+          "excludeFromGroup": false
+        }
+      ]
+    }
+  ]
+}
+
+### Get furniture tag
+GET {{baseUrl}}/admin/furniture-tags/gj4o4426pawsc3ok0gayqg3x
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Update furniture tag (name only)
+PATCH {{baseUrl}}/admin/furniture-tags/ls1mdumpd05raqb2qkwuh1hr
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "タグ1-1"
+}
+
+### Update furniture tag with furnitures
+PATCH {{baseUrl}}/admin/furniture-tags/ls1mdumpd05raqb2qkwuh1hr
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "タグ1-1",
+  "furnitures": [
+    {
+      "name": "家具1",
+      "groupId": null,
+      "reactions": [
+        {
+          "characters": ["cmk72r8e0000cp8pfe20pq5y4"],
+          "excludeFromGroup": false
+        }
+      ]
+    }
+  ]
+}
+
+### Delete furniture tag
+DELETE {{baseUrl}}/admin/furniture-tags/b3iec7s0s5t95zf3grmry9hc
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+
+### Get furniture groups
+GET {{baseUrl}}/admin/furniture-groups
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furniture groups with pagination
+GET {{baseUrl}}/admin/furniture-groups?page=1&limit=20
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Create furniture group
+POST {{baseUrl}}/admin/furniture-groups
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "グループ1",
+  "furnitureIds": [
+  ],
+  "excludedCombinations": [
+  ]
+}
+
+### Get furniture group
+GET {{baseUrl}}/admin/furniture-groups/c560refezobhp6tmyqw82g5c
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Update furniture group
+PATCH {{baseUrl}}/admin/furniture-groups/c560refezobhp6tmyqw82g5c
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "グループ1-1",
+  "furnitureIds": [
+  ],
+  "excludedCombinations": [
+  ]
+}
+
+### Delete furniture group
+DELETE {{baseUrl}}/admin/furniture-groups/c560refezobhp6tmyqw82g5c
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+

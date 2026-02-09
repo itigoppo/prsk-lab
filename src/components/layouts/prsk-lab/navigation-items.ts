@@ -48,4 +48,11 @@ export const mainNavigationItems: NavigationItem[] = [
     isProtected: true,
     title: "Settings",
   },
+  {
+    description: "管理",
+    href: "/admin",
+    isAdmin: true,
+    isProtected: true,
+    title: "Admin",
+  },
 ]

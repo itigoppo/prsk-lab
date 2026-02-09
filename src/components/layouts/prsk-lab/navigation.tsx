@@ -62,8 +62,12 @@ export function Navigation() {
   const filteredNavigationItems = useMemo(
     () =>
       mainNavigationItems.filter((item) => {
-        // 管理者専用ページの場合は管理者のみ表示
-        if (item.isAdmin && currentUser?.role !== UserRole.Admin) {
+        // 管理者専用ページの場合はEditor/Adminのみ表示
+        if (
+          item.isAdmin &&
+          currentUser?.role !== UserRole.Admin &&
+          currentUser?.role !== UserRole.Editor
+        ) {
           return false
         }
         // 認証が必要なページの場合は未ログインの場合は表示しない
