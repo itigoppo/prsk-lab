@@ -155,14 +155,19 @@ module.exports = {
         }
       },
 
-      // Check for React hooks
+      // Check for React hooks and custom hooks (use* convention)
       CallExpression(node) {
         if (clientFeatureUsed) return
 
         const callee = node.callee
-        if (callee.type === "Identifier" && REACT_HOOKS.has(callee.name)) {
-          clientFeatureUsed = `React hook "${callee.name}"`
-          clientFeatureNode = node
+        if (callee.type === "Identifier") {
+          if (REACT_HOOKS.has(callee.name)) {
+            clientFeatureUsed = `React hook "${callee.name}"`
+            clientFeatureNode = node
+          } else if (/^use[A-Z]/.test(callee.name)) {
+            clientFeatureUsed = `custom hook "${callee.name}"`
+            clientFeatureNode = node
+          }
         }
       },
 
