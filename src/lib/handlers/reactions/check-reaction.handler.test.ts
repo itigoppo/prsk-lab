@@ -94,6 +94,53 @@ describe("checkReaction", () => {
     expect(json.message).toBe("リアクションが見つかりません")
   })
 
+  it("既にチェック済みのリアクションを再チェックしても成功する", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "reaction-1",
+    } as never)
+    vi.mocked(prisma.userReactionCheck.upsert).mockResolvedValue({
+      id: "check-1",
+      reactionId: "reaction-1",
+      userId: "user-1",
+    } as never)
+
+    app.post("/reactions/:reactionId/check", checkReaction)
+
+    const res = await app.request("/reactions/reaction-1/check", {
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.OK)
+    expect(json.success).toBe(true)
+    expect(prisma.userReactionCheck.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: {},
+        where: { userId_reactionId: { reactionId: "reaction-1", userId: "user-1" } },
+      })
+    )
+  })
+
+  it("upsertでエラーが発生した場合は500を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "reaction-1",
+    } as never)
+    vi.mocked(prisma.userReactionCheck.upsert).mockRejectedValue(new Error("Upsert failed"))
+
+    app.post("/reactions/:reactionId/check", checkReaction)
+
+    const res = await app.request("/reactions/reaction-1/check", {
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("リアクションのチェックに失敗しました")
+  })
+
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 

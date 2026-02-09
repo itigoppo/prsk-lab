@@ -82,6 +82,58 @@ describe("getCurrentUser", () => {
     expect(json.data.avatarUrl).toBeNull()
   })
 
+  it("Adminロールのユーザー情報を正しく返す", async () => {
+    const mockUser = {
+      avatarUrl: "https://example.com/avatar.png",
+      discordId: "123456789",
+      email: "admin@example.com",
+      id: "user-1",
+      name: "Admin User",
+      role: "Admin",
+    } as User
+
+    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+
+    const res = await app.request("/user")
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.OK)
+    expect(json.data.role).toBe("Admin")
+  })
+
+  it("Editorロールのユーザー情報を正しく返す", async () => {
+    const mockUser = {
+      avatarUrl: null,
+      discordId: "123456789",
+      email: null,
+      id: "user-2",
+      name: "Editor User",
+      role: "Editor",
+    } as User
+
+    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+
+    const res = await app.request("/user")
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.OK)
+    expect(json.data.role).toBe("Editor")
+    expect(json.data.avatarUrl).toBeNull()
+    expect(json.data.email).toBeNull()
+  })
+
+  it("discordIdがセットされていない場合は401を返す", async () => {
+    const noAuthApp = new Hono<Env>()
+    noAuthApp.get("/user", getCurrentUser)
+
+    const res = await noAuthApp.request("/user")
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("ユーザー情報の取得に失敗しました")
+  })
+
   it("ユーザーが存在しない場合は500を返す", async () => {
     vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(new Error("User not found"))
 

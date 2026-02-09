@@ -92,6 +92,52 @@ describe("ownFurniture", () => {
     expect(json.message).toBe("家具が見つかりません")
   })
 
+  it("既に所持している家具を再登録しても成功する", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
+    vi.mocked(prisma.userFurniture.upsert).mockResolvedValue({
+      furnitureId: "furniture-1",
+      userId: "user-1",
+    } as never)
+
+    app.use("/furnitures/:furnitureId/own", async (c, next) => {
+      c.set("discordId", "discord-123")
+      await next()
+    })
+    app.post("/furnitures/:furnitureId/own", ownFurniture)
+
+    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.success).toBe(true)
+    expect(prisma.userFurniture.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: {},
+        where: { userId_furnitureId: { furnitureId: "furniture-1", userId: "user-1" } },
+      })
+    )
+  })
+
+  it("upsertでエラーが発生した場合は500を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
+    vi.mocked(prisma.userFurniture.upsert).mockRejectedValue(new Error("Upsert failed"))
+
+    app.use("/furnitures/:furnitureId/own", async (c, next) => {
+      c.set("discordId", "discord-123")
+      await next()
+    })
+    app.post("/furnitures/:furnitureId/own", ownFurniture)
+
+    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("所持登録に失敗しました")
+  })
+
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 
