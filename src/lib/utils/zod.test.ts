@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
-import { formatZodErrors } from "./zod"
+import { formatZodErrors, trimFullWidth, zNullableString, zString } from "./zod"
 
 describe("formatZodErrors", () => {
   describe("基本的なバリデーション", () => {
@@ -13,7 +13,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ email: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.email).toBe("有効なメールアドレスを入力してください")
       }
@@ -30,7 +30,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ age: number; email: string; name: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.email).toBe("有効なメールアドレスを入力してください")
         expect(errors.name).toBe("名前は必須です")
@@ -59,7 +59,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ username: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.username).toBeDefined()
         expect(typeof errors.username).toBe("string")
@@ -77,9 +77,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ email: string; name: string; password: string }>(
-          result.error
-        )
+        const errors = formatZodErrors(result.error)
 
         expect(errors.email).toBeDefined()
         expect(errors.name).toBeDefined()
@@ -101,7 +99,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ password: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         // 最初のエラーメッセージのみが保持される
         expect(errors.password).toBeDefined()
@@ -127,7 +125,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ password: string; passwordConfirm: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.passwordConfirm).toBe("パスワードが一致しません")
       }
@@ -149,7 +147,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ password: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         // 最初のエラーのみ
         expect(errors.password).toBe("パスワードは8文字以上である必要があります")
@@ -157,14 +155,8 @@ describe("formatZodErrors", () => {
     })
   })
 
-  describe("型安全性", () => {
-    it("型パラメータで指定されたフィールドのみを返す", () => {
-      type UserForm = {
-        age: number
-        email: string
-        name: string
-      }
-
+  describe("Record型の戻り値", () => {
+    it("任意のフィールドにアクセスできる", () => {
       const schema = z.object({
         email: z.string().email("無効なメール"),
         name: z.string().min(1, "名前は必須"),
@@ -174,9 +166,8 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<UserForm>(result.error)
+        const errors = formatZodErrors(result.error)
 
-        // TypeScriptの型チェックで、email, name, ageのみがキーとして認識される
         expect(errors.email).toBeDefined()
         expect(errors.name).toBeDefined()
         expect(errors.age).toBeUndefined()
@@ -185,7 +176,7 @@ describe("formatZodErrors", () => {
   })
 
   describe("ネストされたオブジェクト", () => {
-    it("ネストされたフィールドの最初のパスをキーとする", () => {
+    it("ネストされたフィールドのフルパスをキーとする", () => {
       const schema = z.object({
         address: z.object({
           city: z.string().min(1, "市区町村は必須です"),
@@ -197,10 +188,11 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ address: { city: string; zip: string } }>(result.error)
+        const errors = formatZodErrors(result.error)
 
-        // ネストされた構造の場合、最初のパス（address）がキーになる
-        expect(errors.address).toBeDefined()
+        // ネストされた構造の場合、フルパスがキーになる
+        expect(errors["address.city"]).toBe("市区町村は必須です")
+        expect(errors["address.zip"]).toBe("郵便番号は7桁の数字です")
       }
     })
   })
@@ -215,7 +207,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ name: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.name).toBe("名前は必須です")
       }
@@ -230,7 +222,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ name: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.name).toBeDefined()
       }
@@ -245,7 +237,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ name: string }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.name).toBeDefined()
       }
@@ -262,7 +254,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ age: number }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.age).toBe("18歳以上である必要があります")
       }
@@ -277,7 +269,7 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ terms: boolean }>(result.error)
+        const errors = formatZodErrors(result.error)
 
         expect(errors.terms).toBeDefined()
       }
@@ -285,7 +277,7 @@ describe("formatZodErrors", () => {
   })
 
   describe("配列のバリデーション", () => {
-    it("配列の最初の要素にエラーがある場合", () => {
+    it("配列の要素にエラーがある場合はインデックス付きパスになる", () => {
       const schema = z.object({
         tags: z.array(z.string().min(1, "タグは空にできません")),
       })
@@ -294,10 +286,168 @@ describe("formatZodErrors", () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        const errors = formatZodErrors<{ tags: string[] }>(result.error)
+        const errors = formatZodErrors(result.error)
 
-        expect(errors.tags).toBeDefined()
+        // 配列の場合、インデックス付きパスになる
+        expect(errors["tags[0]"]).toBe("タグは空にできません")
       }
     })
+
+    it("ネストされた配列のエラーはフルパスで表現される", () => {
+      const schema = z.object({
+        furnitures: z.array(
+          z.object({
+            groupId: z.string().min(1, "グループIDは必須です"),
+            name: z.string().min(1, "家具名は必須です"),
+          })
+        ),
+      })
+
+      const result = schema.safeParse({
+        furnitures: [{ groupId: "", name: "家具1" }],
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        const errors = formatZodErrors(result.error)
+
+        // ネストされた配列の場合、フルパスになる
+        expect(errors["furnitures[0].groupId"]).toBe("グループIDは必須です")
+      }
+    })
+  })
+})
+
+describe("trimFullWidth", () => {
+  it("半角スペースをトリムできる", () => {
+    expect(trimFullWidth("  hello  ")).toBe("hello")
+  })
+
+  it("全角スペースをトリムできる", () => {
+    expect(trimFullWidth("　hello　")).toBe("hello")
+  })
+
+  it("半角・全角混合をトリムできる", () => {
+    expect(trimFullWidth("　 hello 　")).toBe("hello")
+  })
+
+  it("空白のみの場合は空文字になる", () => {
+    expect(trimFullWidth("　 　")).toBe("")
+  })
+
+  it("空文字はそのまま", () => {
+    expect(trimFullWidth("")).toBe("")
+  })
+
+  it("中間の空白は残る", () => {
+    expect(trimFullWidth("　hello　world　")).toBe("hello　world")
+  })
+})
+
+describe("zString", () => {
+  it("有効な文字列を受け入れる", () => {
+    const schema = zString()
+    expect(schema.safeParse("hello").success).toBe(true)
+  })
+
+  it("空文字を拒否する", () => {
+    const schema = zString("必須です")
+    const result = schema.safeParse("")
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("必須です")
+    }
+  })
+
+  it("半角スペースのみを拒否する", () => {
+    const schema = zString()
+    const result = schema.safeParse("   ")
+    expect(result.success).toBe(false)
+  })
+
+  it("全角スペースのみを拒否する", () => {
+    const schema = zString()
+    const result = schema.safeParse("　　　")
+    expect(result.success).toBe(false)
+  })
+
+  it("前後の空白をトリムして値を返す", () => {
+    const schema = zString()
+    const result = schema.safeParse("　hello　")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toBe("hello")
+    }
+  })
+
+  it("最大文字数を超える場合を拒否する", () => {
+    const schema = zString("必須です", { max: 10, maxMessage: "10文字以内で入力してください" })
+    const result = schema.safeParse("12345678901")
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("10文字以内で入力してください")
+    }
+  })
+
+  it("最大文字数以内なら受け入れる", () => {
+    const schema = zString("必須です", { max: 10 })
+    const result = schema.safeParse("1234567890")
+    expect(result.success).toBe(true)
+  })
+})
+
+describe("zNullableString", () => {
+  it("有効な文字列を受け入れる", () => {
+    const schema = zNullableString("必須です")
+    const result = schema.safeParse("hello")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toBe("hello")
+    }
+  })
+
+  it("nullを受け入れる", () => {
+    const schema = zNullableString()
+    const result = schema.safeParse(null)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toBeNull()
+    }
+  })
+
+  it("空文字を拒否する", () => {
+    const schema = zNullableString("グループIDは必須です")
+    const result = schema.safeParse("")
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("グループIDは必須です")
+    }
+  })
+
+  it("全角スペースのみを拒否する", () => {
+    const schema = zNullableString()
+    const result = schema.safeParse("　")
+    expect(result.success).toBe(false)
+  })
+
+  it("前後の空白をトリムして値を返す", () => {
+    const schema = zNullableString()
+    const result = schema.safeParse("　hello　")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toBe("hello")
+    }
+  })
+
+  it("最大文字数を超える場合を拒否する", () => {
+    const schema = zNullableString("必須です", {
+      max: 10,
+      maxMessage: "10文字以内で入力してください",
+    })
+    const result = schema.safeParse("12345678901")
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe("10文字以内で入力してください")
+    }
   })
 })

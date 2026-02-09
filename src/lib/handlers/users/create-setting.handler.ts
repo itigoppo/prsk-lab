@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { CreateSettingDto, createSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
+import { createSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
 import { validateCsvUrl } from "@/lib/utils/csv-validator"
 import { formatZodErrors } from "@/lib/utils/zod"
 import type { Handler } from "hono"
@@ -12,7 +12,7 @@ export const createSetting: Handler = async (c) => {
 
   const parsed = createSettingDtoSchema.safeParse(body)
   if (!parsed.success) {
-    const errors = formatZodErrors<CreateSettingDto>(parsed.error)
+    const errors = formatZodErrors(parsed.error)
     return c.json(
       {
         errors,

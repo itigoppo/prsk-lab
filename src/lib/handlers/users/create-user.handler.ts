@@ -24,7 +24,7 @@ export const createUser: Handler = async (c) => {
 
   const parsed = createUserDtoSchema.safeParse(body)
   if (!parsed.success) {
-    const errors = formatZodErrors<CreateUserDto>(parsed.error)
+    const errors = formatZodErrors(parsed.error)
     return c.json(
       {
         errors,

@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { UpdateSettingDto, updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
+import { updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
 import { validateCsvUrl } from "@/lib/utils/csv-validator"
 import { formatZodErrors } from "@/lib/utils/zod"
 import type { Handler } from "hono"
@@ -12,7 +12,7 @@ export const updateSetting: Handler = async (c) => {
 
   const parsed = updateSettingDtoSchema.safeParse(body)
   if (!parsed.success) {
-    const errors = formatZodErrors<UpdateSettingDto>(parsed.error)
+    const errors = formatZodErrors(parsed.error)
     return c.json(
       {
         errors,
