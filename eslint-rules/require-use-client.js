@@ -184,6 +184,7 @@ module.exports = {
       // Check for browser APIs
       Identifier(node) {
         if (clientFeatureUsed) return
+        if (!BROWSER_APIS.has(node.name)) return
 
         // Skip if it's a property access (e.g., obj.window)
         if (node.parent.type === "MemberExpression" && node.parent.property === node) {
@@ -204,10 +205,29 @@ module.exports = {
           return
         }
 
-        if (BROWSER_APIS.has(node.name)) {
-          clientFeatureUsed = `browser API "${node.name}"`
-          clientFeatureNode = node
+        // Skip object / interface / type property keys (e.g., { history: ... })
+        if (
+          (node.parent.type === "Property" ||
+            node.parent.type === "TSPropertySignature" ||
+            node.parent.type === "TSMethodSignature") &&
+          node.parent.key === node &&
+          !node.parent.computed
+        ) {
+          return
         }
+
+        // Skip if the identifier resolves to a local variable (parameter, let/const, etc.)
+        const sourceCode = context.sourceCode || context.getSourceCode()
+        const scope = sourceCode.getScope(node)
+        let s = scope
+        while (s) {
+          if (s.type === "global" || s.type === "module") break
+          if (s.set.has(node.name)) return
+          s = s.upper
+        }
+
+        clientFeatureUsed = `browser API "${node.name}"`
+        clientFeatureNode = node
       },
 
       "Program:exit"(node) {
