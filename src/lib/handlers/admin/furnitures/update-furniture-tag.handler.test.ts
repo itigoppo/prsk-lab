@@ -5,10 +5,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { updateFurnitureTag } from "./update-furniture-tag.handler"
 
 const mockTx = {
-  furniture: { create: vi.fn(), deleteMany: vi.fn() },
-  furnitureGroupExcludedCharacter: { create: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
-  furnitureReaction: { create: vi.fn() },
-  furnitureReactionCharacter: { create: vi.fn() },
+  furniture: { create: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn() },
+  furnitureGroupExcludedCharacter: {
+    create: vi.fn(),
+    createMany: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+  },
+  furnitureReaction: { create: vi.fn(), createMany: vi.fn() },
+  furnitureReactionCharacter: { create: vi.fn(), createMany: vi.fn() },
   furnitureTag: { update: vi.fn() },
 }
 
@@ -86,7 +90,7 @@ describe("updateFurnitureTag", () => {
     expect(res.status).toBe(HTTP_STATUS.OK)
     expect(json.success).toBe(true)
     expect(mockTx.furniture.deleteMany).toHaveBeenCalledWith({ where: { tagId: "tag-1" } })
-    expect(mockTx.furniture.create).toHaveBeenCalled()
+    expect(mockTx.furniture.createMany).toHaveBeenCalled()
   })
 
   it("タグが見つからない場合は404を返す", async () => {

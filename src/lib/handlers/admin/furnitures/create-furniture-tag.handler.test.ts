@@ -11,10 +11,14 @@ type Env = {
 }
 
 const mockTx = {
-  furniture: { create: vi.fn() },
-  furnitureGroupExcludedCharacter: { create: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
-  furnitureReaction: { create: vi.fn() },
-  furnitureReactionCharacter: { create: vi.fn() },
+  furniture: { create: vi.fn(), createMany: vi.fn() },
+  furnitureGroupExcludedCharacter: {
+    create: vi.fn(),
+    createMany: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+  },
+  furnitureReaction: { create: vi.fn(), createMany: vi.fn() },
+  furnitureReactionCharacter: { create: vi.fn(), createMany: vi.fn() },
   furnitureTag: { create: vi.fn() },
 }
 
@@ -121,7 +125,7 @@ describe("createFurnitureTag", () => {
 
     expect(res.status).toBe(HTTP_STATUS.CREATED)
     expect(json.success).toBe(true)
-    expect(mockTx.furnitureGroupExcludedCharacter.create).toHaveBeenCalledTimes(2)
+    expect(mockTx.furnitureGroupExcludedCharacter.createMany).toHaveBeenCalledTimes(1)
   })
 
   it("グループに既存の除外組み合わせがある場合は重複作成しない", async () => {
@@ -157,7 +161,7 @@ describe("createFurnitureTag", () => {
     expect(res.status).toBe(HTTP_STATUS.CREATED)
     expect(json.success).toBe(true)
     // 既存と同じ組み合わせなので作成されない
-    expect(mockTx.furnitureGroupExcludedCharacter.create).not.toHaveBeenCalled()
+    expect(mockTx.furnitureGroupExcludedCharacter.createMany).not.toHaveBeenCalled()
   })
 
   it("タグ名が空の場合は400を返す", async () => {

@@ -109,109 +109,153 @@ export const updateFurnitureTag: Handler = async (c) => {
     const now = new Date()
 
     // トランザクションで一括更新
-    await prisma.$transaction(async (tx) => {
-      // タグを更新
-      await tx.furnitureTag.update({
-        data: { name, updatedAt: now },
-        where: { id: tagId },
-      })
-
-      // 既存の家具を全削除（cascade で reaction, reactionCharacter も削除）
-      await tx.furniture.deleteMany({
-        where: { tagId },
-      })
-
-      // グループの既存除外組み合わせを取得（重複防止用）
-      const existingExclusionKeys = new Map<string, Set<string>>()
-      if (groupIds.length > 0) {
-        const existingExclusions = await tx.furnitureGroupExcludedCharacter.findMany({
-          select: { characterId: true, combinationId: true, groupId: true },
-          where: { groupId: { in: groupIds } },
-        })
-        const combMap = new Map<string, Map<string, string[]>>()
-        for (const ec of existingExclusions) {
-          if (!combMap.has(ec.groupId)) combMap.set(ec.groupId, new Map())
-          const group = combMap.get(ec.groupId)!
-          if (!group.has(ec.combinationId)) group.set(ec.combinationId, [])
-          group.get(ec.combinationId)!.push(ec.characterId)
-        }
-        for (const [gId, combs] of combMap.entries()) {
-          const keys = new Set<string>()
-          for (const charIds of combs.values()) {
-            keys.add([...charIds].sort().join(","))
+    await prisma.$transaction(
+      async (tx) => {
+        // グループの既存除外組み合わせを取得（重複防止用）
+        const existingExclusionKeys = new Map<string, Set<string>>()
+        if (groupIds.length > 0) {
+          const existingExclusions = await tx.furnitureGroupExcludedCharacter.findMany({
+            select: { characterId: true, combinationId: true, groupId: true },
+            where: { groupId: { in: groupIds } },
+          })
+          const combMap = new Map<string, Map<string, string[]>>()
+          for (const ec of existingExclusions) {
+            if (!combMap.has(ec.groupId)) combMap.set(ec.groupId, new Map())
+            const group = combMap.get(ec.groupId)!
+            if (!group.has(ec.combinationId)) group.set(ec.combinationId, [])
+            group.get(ec.combinationId)!.push(ec.characterId)
           }
-          existingExclusionKeys.set(gId, keys)
+          for (const [gId, combs] of combMap.entries()) {
+            const keys = new Set<string>()
+            for (const charIds of combs.values()) {
+              keys.add([...charIds].sort().join(","))
+            }
+            existingExclusionKeys.set(gId, keys)
+          }
         }
-      }
 
-      // 家具とリアクションを作成
-      for (const furniture of furnitures) {
-        const furnitureId = createId()
-        await tx.furniture.create({
-          data: {
+        // 一括登録用の配列を準備
+        const furnituresData = []
+        const reactionsData = []
+        const reactionCharactersData = []
+        const exclusionData = []
+
+        // 事前に作成する総アイテム数を計算
+        let totalItems = 0
+        for (const f of furnitures) {
+          totalItems += 1 // furniture
+          for (const r of f.reactions) {
+            totalItems += 1 // reaction
+            totalItems += r.characters.length // reactionCharacters
+            if (f.groupId && r.excludeFromGroup) {
+              totalItems += r.characters.length // exclusions
+            }
+          }
+        }
+
+        // スタート時刻を（現在のミリ秒 - 総数）とする
+        let currentMs = now.getTime() - totalItems
+
+        // 家具とリアクションを作成
+        for (const furniture of furnitures) {
+          currentMs += 1
+          const furnitureTime = new Date(currentMs)
+
+          const furnitureId = createId()
+          furnituresData.push({
+            createdAt: furnitureTime,
             groupId: furniture.groupId ?? null,
             id: furnitureId,
             name: furniture.name,
             tagId,
-            updatedAt: now,
-          },
-        })
-
-        // リアクションを作成（同じ組み合わせは先勝ちでスキップ）
-        const processedCombinations = new Set<string>()
-        for (const reaction of furniture.reactions) {
-          const sortedCharacterIds = sortCharacterIds(reaction.characters)
-          // ソート済みIDで組み合わせキーを生成
-          const combinationKey = [...sortedCharacterIds].sort().join(",")
-          if (processedCombinations.has(combinationKey)) {
-            continue // 同じ組み合わせはスキップ
-          }
-          processedCombinations.add(combinationKey)
-
-          const reactionId = createId()
-          await tx.furnitureReaction.create({
-            data: {
-              furnitureId,
-              id: reactionId,
-              updatedAt: now,
-            },
+            updatedAt: furnitureTime,
           })
 
-          for (const characterId of sortedCharacterIds) {
-            await tx.furnitureReactionCharacter.create({
-              data: {
+          // リアクションを作成（同じ組み合わせは先勝ちでスキップ）
+          const processedCombinations = new Set<string>()
+          for (const reaction of furniture.reactions) {
+            const sortedCharacterIds = sortCharacterIds(reaction.characters)
+            // ソート済みIDで組み合わせキーを生成
+            const combinationKey = [...sortedCharacterIds].sort().join(",")
+            if (processedCombinations.has(combinationKey)) {
+              continue // 同じ組み合わせはスキップ
+            }
+            processedCombinations.add(combinationKey)
+
+            currentMs += 1
+            const reactionTime = new Date(currentMs)
+
+            const reactionId = createId()
+            reactionsData.push({
+              createdAt: reactionTime,
+              furnitureId,
+              id: reactionId,
+              updatedAt: reactionTime,
+            })
+
+            for (const characterId of sortedCharacterIds) {
+              currentMs += 1
+              const charTime = new Date(currentMs)
+
+              reactionCharactersData.push({
                 characterId,
+                createdAt: charTime,
                 id: createId(),
                 reactionId,
-              },
-            })
-          }
+              })
+            }
 
-          // グループから除外する場合、FurnitureGroupExcludedCharacterを作成（重複スキップ）
-          if (furniture.groupId && reaction.excludeFromGroup) {
-            const exclusionKey = [...sortedCharacterIds].sort().join(",")
-            const groupExclusions = existingExclusionKeys.get(furniture.groupId)
-            if (!groupExclusions?.has(exclusionKey)) {
-              const combinationId = createId()
-              for (const characterId of sortedCharacterIds) {
-                await tx.furnitureGroupExcludedCharacter.create({
-                  data: {
+            // グループから除外する場合、FurnitureGroupExcludedCharacterを作成（重複スキップ）
+            if (furniture.groupId && reaction.excludeFromGroup) {
+              const exclusionKey = [...sortedCharacterIds].sort().join(",")
+              const groupExclusions = existingExclusionKeys.get(furniture.groupId)
+              if (!groupExclusions?.has(exclusionKey)) {
+                const combinationId = createId()
+                for (const characterId of sortedCharacterIds) {
+                  currentMs += 1
+                  const exclusionTime = new Date(currentMs)
+
+                  exclusionData.push({
                     characterId,
                     combinationId,
+                    createdAt: exclusionTime,
                     groupId: furniture.groupId,
                     id: createId(),
-                  },
-                })
+                    updatedAt: exclusionTime,
+                  })
+                }
+                if (!existingExclusionKeys.has(furniture.groupId)) {
+                  existingExclusionKeys.set(furniture.groupId, new Set())
+                }
+                existingExclusionKeys.get(furniture.groupId)!.add(exclusionKey)
               }
-              if (!existingExclusionKeys.has(furniture.groupId)) {
-                existingExclusionKeys.set(furniture.groupId, new Set())
-              }
-              existingExclusionKeys.get(furniture.groupId)!.add(exclusionKey)
             }
           }
         }
-      }
-    })
+
+        // データベースへの保存（タグ更新、既存家具削除、一括登録）
+        await tx.furnitureTag.update({
+          data: { name, updatedAt: now },
+          where: { id: tagId },
+        })
+        await tx.furniture.deleteMany({
+          where: { tagId },
+        })
+        if (furnituresData.length > 0) {
+          await tx.furniture.createMany({ data: furnituresData })
+        }
+        if (reactionsData.length > 0) {
+          await tx.furnitureReaction.createMany({ data: reactionsData })
+        }
+        if (reactionCharactersData.length > 0) {
+          await tx.furnitureReactionCharacter.createMany({ data: reactionCharactersData })
+        }
+        if (exclusionData.length > 0) {
+          await tx.furnitureGroupExcludedCharacter.createMany({ data: exclusionData })
+        }
+      },
+      { timeout: 15000 }
+    )
 
     const response: UpdateFurnitureTagResponse = {
       message: "タグを更新しました",
