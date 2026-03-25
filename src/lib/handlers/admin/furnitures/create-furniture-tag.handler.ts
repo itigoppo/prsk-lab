@@ -210,6 +210,7 @@ export const createFurnitureTag: Handler = async (c) => {
 
     return c.json(response, HTTP_STATUS.CREATED)
   } catch (error) {
+    console.error("[createFurnitureTag] error:", error)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return c.json(
         { message: "同じ名前のタグが既に存在します", success: false },

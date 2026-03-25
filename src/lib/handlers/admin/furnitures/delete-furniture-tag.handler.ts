@@ -28,7 +28,8 @@ export const deleteFurnitureTag: Handler = async (c) => {
     }
 
     return c.json(response)
-  } catch {
+  } catch (error) {
+    console.error("[deleteFurnitureTag] error:", error)
     return c.json(
       { message: "タグの削除に失敗しました", success: false },
       HTTP_STATUS.INTERNAL_SERVER_ERROR

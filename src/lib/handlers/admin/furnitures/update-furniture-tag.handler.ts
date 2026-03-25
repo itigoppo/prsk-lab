@@ -220,6 +220,7 @@ export const updateFurnitureTag: Handler = async (c) => {
 
     return c.json(response)
   } catch (error) {
+    console.error("[updateFurnitureTag] error:", error)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return c.json(
         { message: "同じ名前のタグが既に存在します", success: false },
