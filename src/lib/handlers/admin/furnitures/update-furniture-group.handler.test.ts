@@ -145,6 +145,29 @@ describe("updateFurnitureGroup", () => {
     expect(json.message).toContain("不明なキャラクターID")
   })
 
+  it("除外組み合わせが異なるユニットのキャラクターを含む場合はエラーになる", async () => {
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.character.findMany).mockResolvedValue([
+      { id: "char-1", unitId: "unit-1" },
+      { id: "char-2", unitId: "unit-2" },
+    ] as never)
+
+    const res = await app.request("/admin/furniture-groups/group-1", {
+      body: JSON.stringify({
+        excludedCombinations: [["char-1", "char-2"]],
+        furnitureIds: [],
+        name: "グループ名",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("ユニットをまたいだ組み合わせは作成できません")
+  })
+
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))

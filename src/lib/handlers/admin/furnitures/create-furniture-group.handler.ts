@@ -36,11 +36,12 @@ export const createFurnitureGroup: Handler = async (c) => {
     // キャラクターIDの存在確認
     if (allCharacterIds.size > 0) {
       const characters = await prisma.character.findMany({
-        select: { id: true },
+        select: { id: true, unitId: true },
         where: { id: { in: Array.from(allCharacterIds) } },
       })
 
-      const existingIds = new Set(characters.map((ch) => ch.id))
+      const characterMap = new Map(characters.map((ch) => [ch.id, ch]))
+      const existingIds = new Set(characterMap.keys())
       const missingIds = Array.from(allCharacterIds).filter((id) => !existingIds.has(id))
       if (missingIds.length > 0) {
         return c.json(
@@ -50,6 +51,25 @@ export const createFurnitureGroup: Handler = async (c) => {
           },
           HTTP_STATUS.BAD_REQUEST
         )
+      }
+
+      // 同一ユニットバリデーション
+      for (const combination of excludedCombinations) {
+        if (combination.length <= 1) continue
+        const unitIds = new Set()
+        for (const id of combination) {
+          const char = characterMap.get(id)
+          if (char) unitIds.add(char.unitId ?? "none")
+        }
+        if (unitIds.size > 1) {
+          return c.json(
+            {
+              message: "ユニットをまたいだ組み合わせは作成できません",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+        }
       }
     }
 

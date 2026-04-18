@@ -228,6 +228,39 @@ describe("Admin Furnitures Integration Tests", () => {
         expect(json.data.id).toBeDefined()
       })
 
+      it("リアクションが異なるユニットのキャラクターを含む場合はエラーになる", async () => {
+        vi.mocked(prisma.character.findMany).mockResolvedValue([
+          { code: "leoneed_ichika", id: "char-1", priority: 1, unitId: "unit-1" },
+          { code: "miku", id: "char-2", priority: 1, unitId: "unit-2" },
+        ] as never)
+
+        const res = await openAPIApp.request("/api/admin/furniture-tags", {
+          body: JSON.stringify({
+            furnitures: [
+              {
+                groupId: null,
+                id: null,
+                name: "家具1",
+                reactions: [
+                  { characters: ["char-1", "char-2"], excludeFromGroup: false, id: null },
+                ],
+              },
+            ],
+            name: "新タグ",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
+          },
+          method: "POST",
+        })
+
+        expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
+        const json = await res.json()
+        expect(json.success).toBe(false)
+        expect(json.message).toBe("ユニットをまたいだリアクションは作成できません")
+      })
+
       it("Viewer権限では403を返す", async () => {
         vi.mocked(prisma.user.findUnique).mockResolvedValue({
           discordId: MOCK_DISCORD_ID,

@@ -152,6 +152,28 @@ describe("createFurnitureGroup", () => {
     expect(json.message).toContain("不明なキャラクターID")
   })
 
+  it("除外組み合わせが異なるユニットのキャラクターを含む場合はエラーになる", async () => {
+    vi.mocked(prisma.character.findMany).mockResolvedValue([
+      { id: "char-1", unitId: "unit-1" },
+      { id: "char-2", unitId: "unit-2" },
+    ] as never)
+
+    const res = await app.request("/admin/furniture-groups", {
+      body: JSON.stringify({
+        excludedCombinations: [["char-1", "char-2"]],
+        furnitureIds: [],
+        name: "新グループ",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("ユニットをまたいだ組み合わせは作成できません")
+  })
+
   it("同名のグループが存在する場合は409を返す", async () => {
     vi.mocked(prisma.$transaction).mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {

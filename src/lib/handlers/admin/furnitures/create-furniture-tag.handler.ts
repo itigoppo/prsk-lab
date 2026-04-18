@@ -37,10 +37,13 @@ export const createFurnitureTag: Handler = async (c) => {
 
     // キャラクターIDの存在確認 + ソート用情報取得
     const vsNames = ["miku", "rin", "len", "luka", "meiko", "kaito"]
-    const characterMap = new Map<string, { isVirtualSinger: boolean; priority: number }>()
+    const characterMap = new Map<
+      string,
+      { isVirtualSinger: boolean; priority: number; unitId: string | null }
+    >()
     if (allCharacterIds.size > 0) {
       const characters = await prisma.character.findMany({
-        select: { code: true, id: true, priority: true },
+        select: { code: true, id: true, priority: true, unitId: true },
         where: { id: { in: Array.from(allCharacterIds) } },
       })
 
@@ -49,6 +52,7 @@ export const createFurnitureTag: Handler = async (c) => {
         characterMap.set(ch.id, {
           isVirtualSinger: vsNames.includes(suffix),
           priority: ch.priority,
+          unitId: ch.unitId,
         })
       }
 
@@ -61,6 +65,27 @@ export const createFurnitureTag: Handler = async (c) => {
           },
           HTTP_STATUS.BAD_REQUEST
         )
+      }
+
+      // 同一ユニットバリデーション
+      for (const furniture of furnitures) {
+        for (const reaction of furniture.reactions) {
+          if (reaction.characters.length <= 1) continue
+          const unitIds = new Set()
+          for (const id of reaction.characters) {
+            const char = characterMap.get(id)
+            if (char) unitIds.add(char.unitId ?? "none")
+          }
+          if (unitIds.size > 1) {
+            return c.json(
+              {
+                message: "ユニットをまたいだリアクションは作成できません",
+                success: false,
+              },
+              HTTP_STATUS.BAD_REQUEST
+            )
+          }
+        }
       }
     }
 
