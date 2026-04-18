@@ -29,6 +29,7 @@ export const deleteFurnitureTag: Handler = async (c) => {
 
     return c.json(response)
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[deleteFurnitureTag] error:", error)
     return c.json(
       { message: "タグの削除に失敗しました", success: false },

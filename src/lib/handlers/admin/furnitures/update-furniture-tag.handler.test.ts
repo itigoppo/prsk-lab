@@ -5,14 +5,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { updateFurnitureTag } from "./update-furniture-tag.handler"
 
 const mockTx = {
-  furniture: { create: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn() },
+  furniture: {
+    create: vi.fn(),
+    createMany: vi.fn(),
+    deleteMany: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    update: vi.fn(),
+  },
   furnitureGroupExcludedCharacter: {
     create: vi.fn(),
     createMany: vi.fn(),
     findMany: vi.fn().mockResolvedValue([]),
   },
-  furnitureReaction: { create: vi.fn(), createMany: vi.fn() },
-  furnitureReactionCharacter: { create: vi.fn(), createMany: vi.fn() },
+  furnitureReaction: { create: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn(), update: vi.fn() },
+  furnitureReactionCharacter: { create: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn() },
   furnitureTag: { update: vi.fn() },
 }
 
@@ -76,8 +82,9 @@ describe("updateFurnitureTag", () => {
         furnitures: [
           {
             groupId: null,
+            id: null,
             name: "家具1",
-            reactions: [{ characters: ["char-1"], excludeFromGroup: false }],
+            reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
           },
         ],
         name: "更新後のタグ名",
@@ -89,7 +96,7 @@ describe("updateFurnitureTag", () => {
 
     expect(res.status).toBe(HTTP_STATUS.OK)
     expect(json.success).toBe(true)
-    expect(mockTx.furniture.deleteMany).toHaveBeenCalledWith({ where: { tagId: "tag-1" } })
+    // furniture.deleteMany は不要データが無い場合呼ばれない、新規追加のため createMany は呼ばれる
     expect(mockTx.furniture.createMany).toHaveBeenCalled()
   })
 

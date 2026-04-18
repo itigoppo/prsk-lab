@@ -12,9 +12,9 @@ import {
   usePatchApiAdminFurnitureTagsTagId,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
+import { updateFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import { cn } from "@/lib/utils/common"
 import { getApiErrorMessage } from "@/lib/utils/error"
-import { zString } from "@/lib/utils/zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -26,12 +26,7 @@ import {
   type FurnitureFormValues,
 } from "../../_components/furniture-form-fields"
 
-const tagFormSchema = z.object({
-  name: zString("タグ名は必須です", {
-    max: 100,
-    maxMessage: "タグ名は100文字以内で入力してください",
-  }),
-})
+const tagFormSchema = updateFurnitureTagDtoSchema.pick({ name: true })
 
 type TagFormValues = z.infer<typeof tagFormSchema>
 
@@ -74,10 +69,12 @@ export function FurnitureTagDetail({ tagId }: FurnitureTagDetailProps) {
     resetTagForm({ name: tag.name })
     const entries = tag.furnitures.map((f) => ({
       groupId: f.groupId,
+      id: f.id,
       name: f.name,
       reactions: f.reactions.map((r) => ({
         characters: r.characters.map((c) => c.id),
         excludeFromGroup: r.excludeFromGroup,
+        id: r.id,
       })),
     }))
     setFurnitures(entries.map((values) => ({ id: ++furnitureIdCounter, values })))

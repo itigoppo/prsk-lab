@@ -256,6 +256,7 @@ export const createFurnitureTag: Handler = async (c) => {
 
     return c.json(response, HTTP_STATUS.CREATED)
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[createFurnitureTag] error:", error)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return c.json(

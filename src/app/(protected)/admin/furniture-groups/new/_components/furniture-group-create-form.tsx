@@ -9,9 +9,9 @@ import {
   usePostApiAdminFurnitureGroups,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
+import { createFurnitureGroupDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
 import { cn } from "@/lib/utils/common"
 import { getApiErrorMessage } from "@/lib/utils/error"
-import { zString } from "@/lib/utils/zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
@@ -21,12 +21,7 @@ import toast from "react-hot-toast"
 import { z } from "zod"
 import { ExcludedCombinationFields } from "../../_components/excluded-combination-fields"
 
-const groupFormSchema = z.object({
-  name: zString("グループ名は必須です", {
-    max: 100,
-    maxMessage: "グループ名は100文字以内で入力してください",
-  }),
-})
+const groupFormSchema = createFurnitureGroupDtoSchema.pick({ name: true })
 
 type GroupFormValues = z.infer<typeof groupFormSchema>
 

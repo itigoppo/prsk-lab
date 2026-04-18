@@ -78,8 +78,9 @@ describe("createFurnitureTag", () => {
         furnitures: [
           {
             groupId: null,
+            id: null,
             name: "家具1",
-            reactions: [{ characters: ["char-1"], excludeFromGroup: false }],
+            reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
           },
         ],
         name: "新タグ",
@@ -109,10 +110,11 @@ describe("createFurnitureTag", () => {
         furnitures: [
           {
             groupId: "group-1",
+            id: null,
             name: "家具1",
             reactions: [
-              { characters: ["char-1"], excludeFromGroup: false },
-              { characters: ["char-1", "char-2"], excludeFromGroup: true },
+              { characters: ["char-1"], excludeFromGroup: false, id: null },
+              { characters: ["char-1", "char-2"], excludeFromGroup: true, id: null },
             ],
           },
         ],
@@ -147,8 +149,9 @@ describe("createFurnitureTag", () => {
         furnitures: [
           {
             groupId: "group-1",
+            id: null,
             name: "家具1",
-            reactions: [{ characters: ["char-1", "char-2"], excludeFromGroup: true }],
+            reactions: [{ characters: ["char-1", "char-2"], excludeFromGroup: true, id: null }],
           },
         ],
         name: "新タグ",
@@ -184,8 +187,9 @@ describe("createFurnitureTag", () => {
         furnitures: [
           {
             groupId: null,
+            id: null,
             name: "家具1",
-            reactions: [{ characters: ["unknown_code"], excludeFromGroup: false }],
+            reactions: [{ characters: ["unknown_code"], excludeFromGroup: false, id: null }],
           },
         ],
         name: "新タグ",
@@ -211,8 +215,9 @@ describe("createFurnitureTag", () => {
         furnitures: [
           {
             groupId: "unknown-group",
+            id: null,
             name: "家具1",
-            reactions: [{ characters: ["char-1"], excludeFromGroup: false }],
+            reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
           },
         ],
         name: "新タグ",

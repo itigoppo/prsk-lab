@@ -111,6 +111,7 @@ export const getFurnitureTag: Handler = async (c) => {
 
     return c.json(response)
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[getFurnitureTag] error:", error)
     return c.json(
       { message: "タグの取得に失敗しました", success: false },

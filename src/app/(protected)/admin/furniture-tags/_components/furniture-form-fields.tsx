@@ -9,36 +9,27 @@ import {
   useGetApiAdminFurnitureGroups,
   useGetApiAdminFurnitureGroupsGroupId,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import {
+  furnitureWithReactionsDtoSchema,
+  reactionDtoSchema,
+} from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import { cn } from "@/lib/utils/common"
-import { zNullableString, zString } from "@/lib/utils/zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCallback, useEffect, useMemo } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
 
-export const reactionFormSchema = z.object({
-  characters: z
-    .array(zString("キャラクターIDは必須です"))
-    .min(1, "リアクションには少なくとも1人のキャラクターが必要です")
-    .max(4, "リアクションのキャラクターは4人以内で指定してください"),
-  excludeFromGroup: z.boolean(),
-})
+export type FurnitureFormValues = z.infer<typeof furnitureWithReactionsDtoSchema>
+export type ReactionFormValues = z.infer<typeof reactionDtoSchema>
 
-export const furnitureFormSchema = z.object({
-  groupId: zNullableString("グループIDは必須です"),
-  name: zString("家具名は必須です", {
-    max: 100,
-    maxMessage: "家具名は100文字以内で入力してください",
-  }),
-  reactions: z.array(reactionFormSchema).min(1, "少なくとも1つのリアクションが必要です"),
-})
-
-export type FurnitureFormValues = z.infer<typeof furnitureFormSchema>
-export type ReactionFormValues = z.infer<typeof reactionFormSchema>
-
-export const defaultReaction: ReactionFormValues = { characters: [], excludeFromGroup: false }
+export const defaultReaction: ReactionFormValues = {
+  characters: [],
+  excludeFromGroup: false,
+  id: null,
+}
 export const defaultFurniture: FurnitureFormValues = {
   groupId: null,
+  id: null,
   name: "",
   reactions: [{ ...defaultReaction }],
 }
@@ -76,7 +67,7 @@ export function FurnitureFormFields({
     watch,
   } = useForm<FurnitureFormValues>({
     defaultValues: defaultValues ?? { ...defaultFurniture, reactions: [{ ...defaultReaction }] },
-    resolver: zodResolver(furnitureFormSchema),
+    resolver: zodResolver(furnitureWithReactionsDtoSchema),
   })
 
   const {

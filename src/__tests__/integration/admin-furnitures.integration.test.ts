@@ -208,8 +208,9 @@ describe("Admin Furnitures Integration Tests", () => {
             furnitures: [
               {
                 groupId: null,
+                id: null,
                 name: "家具1",
-                reactions: [{ characters: ["char-1"], excludeFromGroup: false }],
+                reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
               },
             ],
             name: "新タグ",
@@ -287,7 +288,16 @@ describe("Admin Furnitures Integration Tests", () => {
         vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
         vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
           await (fn as (tx: unknown) => Promise<void>)({
-            furniture: { create: vi.fn(), deleteMany: vi.fn() },
+            furniture: {
+              create: vi.fn(),
+              createMany: vi.fn(),
+              deleteMany: vi.fn(),
+              findMany: vi.fn().mockResolvedValue([]),
+              update: vi.fn(),
+            },
+            furnitureGroupExcludedCharacter: { findMany: vi.fn().mockResolvedValue([]) },
+            furnitureReaction: { deleteMany: vi.fn(), update: vi.fn() },
+            furnitureReactionCharacter: { createMany: vi.fn(), deleteMany: vi.fn() },
             furnitureTag: { update: vi.fn() },
           })
         })
