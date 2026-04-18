@@ -30,6 +30,7 @@ const tagFormSchema = createFurnitureTagDtoSchema.pick({ name: true })
 type TagFormValues = z.infer<typeof tagFormSchema>
 
 interface FurnitureEntry {
+  deleted?: boolean
   id: number
   values: FurnitureFormValues
 }
@@ -75,7 +76,13 @@ export function FurnitureTagCreateForm() {
   }, [])
 
   const handleRemoveFurniture = useCallback((id: number) => {
-    setFurnitures((prev) => prev.filter((f) => f.id !== id))
+    setFurnitures((prev) => {
+      const target = prev.find((f) => f.id === id)
+      if (target?.values.id) {
+        return prev.map((f) => (f.id === id ? { ...f, deleted: !f.deleted } : f))
+      }
+      return prev.filter((f) => f.id !== id)
+    })
   }, [])
 
   const onSubmit = useCallback(
@@ -88,7 +95,7 @@ export function FurnitureTagCreateForm() {
       try {
         const result = await mutateAsync({
           data: {
-            furnitures: furnitures.map((f) => f.values),
+            furnitures: furnitures.filter((f) => !f.deleted).map((f) => f.values),
             name: tagValues.name,
           },
         })
@@ -129,7 +136,7 @@ export function FurnitureTagCreateForm() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>家具一覧 ({furnitures.length}件)</CardTitle>
+            <CardTitle>家具一覧 ({furnitures.filter((f) => !f.deleted).length}件)</CardTitle>
             <Button
               type="button"
               variant="primary"
@@ -222,19 +229,47 @@ function FurnitureCard({ furniture, onEdit, onRemove }: FurnitureCardProps) {
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-lg border border-slate-200 p-4 transition-opacity",
+        furniture.deleted ? "bg-slate-50 opacity-50" : "bg-white"
+      )}
+    >
       <div>
-        <div className="font-medium">{furniture.values.name}</div>
+        <div className={cn("font-medium", furniture.deleted && "text-slate-500 line-through")}>
+          {furniture.values.name}
+        </div>
         <div className="text-xs text-slate-500">
           リアクション {furniture.values.reactions.length} 件
         </div>
       </div>
       <div className="flex gap-1">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(true)}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setEditing(true)}
+          disabled={furniture.deleted}
+        >
           <span className="material-symbols-outlined text-sm">edit</span>
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => onRemove(furniture.id)}>
-          <span className="material-symbols-outlined text-sm text-rose-500">delete</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(furniture.id)}
+          title={furniture.deleted ? "復元" : "リストから外す"}
+        >
+          <span
+            className={cn(
+              "material-symbols-outlined text-sm",
+              furniture.deleted
+                ? "text-slate-400 hover:text-teal-600"
+                : "text-slate-400 hover:text-rose-500"
+            )}
+          >
+            {furniture.deleted ? "undo" : "close"}
+          </span>
         </Button>
       </div>
     </div>

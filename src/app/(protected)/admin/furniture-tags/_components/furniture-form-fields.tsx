@@ -19,8 +19,27 @@ import { useCallback, useEffect, useMemo } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
 
-export type FurnitureFormValues = z.infer<typeof furnitureWithReactionsDtoSchema>
-export type ReactionFormValues = z.infer<typeof reactionDtoSchema>
+const uiReactionSchema = reactionDtoSchema.extend({
+  _deleted: z.boolean().optional(),
+})
+
+const uiFurnitureSchema = furnitureWithReactionsDtoSchema
+  .omit({ reactions: true })
+  .extend({
+    reactions: z.array(uiReactionSchema),
+  })
+  .superRefine((val, ctx) => {
+    if (val.reactions.filter((r) => !r._deleted).length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        message: "少なくとも1つのリアクションが必要です",
+        path: ["reactions"],
+      })
+    }
+  })
+
+export type FurnitureFormValues = z.infer<typeof uiFurnitureSchema>
+export type ReactionFormValues = z.infer<typeof uiReactionSchema>
 
 export const defaultReaction: ReactionFormValues = {
   characters: [],
@@ -61,13 +80,14 @@ export function FurnitureFormFields({
   const {
     control,
     formState: { errors },
+    getValues,
     handleSubmit,
     register,
     setValue,
     watch,
   } = useForm<FurnitureFormValues>({
     defaultValues: defaultValues ?? { ...defaultFurniture, reactions: [{ ...defaultReaction }] },
-    resolver: zodResolver(furnitureWithReactionsDtoSchema),
+    resolver: zodResolver(uiFurnitureSchema),
   })
 
   const {
@@ -120,6 +140,19 @@ export function FurnitureFormFields({
     appendReaction({ ...defaultReaction })
   }, [appendReaction])
 
+  const handleFormSubmit = useCallback(
+    (values: FurnitureFormValues) => {
+      const activeReactions = values.reactions
+        .filter((r) => !r._deleted)
+        .map((r) => {
+          const { _deleted, ...rest } = r
+          return rest
+        })
+      onSubmit({ ...values, reactions: activeReactions })
+    },
+    [onSubmit]
+  )
+
   return (
     <div className="space-y-4 rounded-lg border border-slate-200 p-4">
       <FormField
@@ -169,7 +202,16 @@ export function FurnitureFormFields({
             charactersByUnit={charactersByUnit}
             excludedCombinationKeys={excludedCombinationKeys}
             showExcludeFromGroup={!!groupId}
-            onRemove={reactionFields.length > 1 ? () => removeReaction(reactionIndex) : undefined}
+            totalFieldsCount={reactionFields.length}
+            onToggleRemove={() => {
+              const reactionId = getValues(`reactions.${reactionIndex}.id`)
+              if (reactionId) {
+                const currentDeleted = getValues(`reactions.${reactionIndex}._deleted`)
+                setValue(`reactions.${reactionIndex}._deleted`, !currentDeleted)
+              } else {
+                removeReaction(reactionIndex)
+              }
+            }}
           />
         ))}
       </div>
@@ -183,7 +225,7 @@ export function FurnitureFormFields({
           variant="primary"
           size="sm"
           disabled={isPending}
-          onClick={handleSubmit(onSubmit)}
+          onClick={handleSubmit(handleFormSubmit)}
         >
           {isPending ? "処理中..." : submitLabel}
         </Button>
@@ -196,10 +238,11 @@ interface ReactionItemProps {
   charactersByUnit: Map<string, CharacterInfo[]>
   errors: ReturnType<typeof useForm<FurnitureFormValues>>["formState"]["errors"]
   excludedCombinationKeys: Set<string>
-  onRemove?: () => void
+  onToggleRemove?: () => void
   reactionIndex: number
   setValue: ReturnType<typeof useForm<FurnitureFormValues>>["setValue"]
   showExcludeFromGroup: boolean
+  totalFieldsCount: number
   watch: ReturnType<typeof useForm<FurnitureFormValues>>["watch"]
 }
 
@@ -207,15 +250,17 @@ function ReactionItem({
   charactersByUnit,
   errors,
   excludedCombinationKeys,
-  onRemove,
+  onToggleRemove,
   reactionIndex,
   setValue,
   showExcludeFromGroup,
+  totalFieldsCount,
   watch,
 }: ReactionItemProps) {
   const watchedCharacters = watch(`reactions.${reactionIndex}.characters`)
   const selectedCharacters = useMemo(() => watchedCharacters ?? [], [watchedCharacters])
   const excludeFromGroup = watch(`reactions.${reactionIndex}.excludeFromGroup`)
+  const _deleted = watch(`reactions.${reactionIndex}._deleted`)
   const reactionErrors = errors.reactions?.[reactionIndex]
 
   // 選択中のキャラクターがグループの除外組み合わせに一致する場合、自動チェック
@@ -251,6 +296,7 @@ function ReactionItem({
 
   const toggleCharacter = useCallback(
     (characterId: string) => {
+      if (_deleted) return
       const path = `reactions.${reactionIndex}.characters` as const
       if (selectedCharacters.includes(characterId)) {
         setValue(
@@ -261,21 +307,48 @@ function ReactionItem({
         setValue(path, [...selectedCharacters, characterId])
       }
     },
-    [reactionIndex, selectedCharacters, setValue]
+    [reactionIndex, selectedCharacters, setValue, _deleted]
   )
 
   return (
-    <div className="space-y-3 rounded border border-slate-100 bg-slate-50 p-3">
+    <div
+      className={cn(
+        "space-y-3 rounded border border-slate-100 p-3 transition-opacity",
+        _deleted ? "bg-slate-50 opacity-50" : "bg-slate-50"
+      )}
+    >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-500">
+        <span
+          className={cn(
+            "text-xs font-medium",
+            _deleted ? "text-slate-400 line-through" : "text-slate-500"
+          )}
+        >
           リアクション {reactionIndex + 1}
           {selectedCharacters.length > 0 && (
-            <span className="ml-1 text-teal-600">({selectedCharacters.length}/4人)</span>
+            <span className={cn("ml-1", _deleted ? "text-slate-400" : "text-teal-600")}>
+              ({selectedCharacters.length}/4人)
+            </span>
           )}
         </span>
-        {onRemove && (
-          <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-            <span className="material-symbols-outlined text-sm text-rose-400">close</span>
+        {(totalFieldsCount > 1 || _deleted) && onToggleRemove && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onToggleRemove}
+            title={_deleted ? "復元" : "リアクションを削除"}
+          >
+            <span
+              className={cn(
+                "material-symbols-outlined text-sm",
+                _deleted
+                  ? "text-slate-400 hover:text-teal-600"
+                  : "text-slate-400 hover:text-rose-400"
+              )}
+            >
+              {_deleted ? "undo" : "close"}
+            </span>
           </Button>
         )}
       </div>
@@ -292,7 +365,8 @@ function ReactionItem({
               {chars.map((char) => {
                 const isSelected = selectedCharacters.includes(char.id)
                 const isOtherUnit = selectedUnitName !== null && selectedUnitName !== unitName
-                const isDisabled = !isSelected && (selectedCharacters.length >= 4 || isOtherUnit)
+                const isDisabled =
+                  _deleted || (!isSelected && (selectedCharacters.length >= 4 || isOtherUnit))
                 return (
                   <button
                     key={char.id}
@@ -323,6 +397,7 @@ function ReactionItem({
       {showExcludeFromGroup && (
         <label className="flex items-center gap-2 text-sm">
           <Checkbox
+            disabled={_deleted}
             checked={excludeFromGroup}
             onCheckedChange={(checked) => {
               setValue(`reactions.${reactionIndex}.excludeFromGroup`, checked === true)

@@ -22,7 +22,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
-import { ExcludedCombinationFields } from "../../_components/excluded-combination-fields"
+import {
+  CombinationEntry,
+  ExcludedCombinationFields,
+} from "../../_components/excluded-combination-fields"
 
 const groupFormSchema = updateFurnitureGroupDtoSchema.pick({ name: true })
 
@@ -49,7 +52,7 @@ export function FurnitureGroupDetail({ groupId }: FurnitureGroupDetailProps) {
 
   const { isPending, mutateAsync } = usePatchApiAdminFurnitureGroupsGroupId()
 
-  const [combinations, setCombinations] = useState<string[][]>([])
+  const [combinations, setCombinations] = useState<CombinationEntry[]>([])
   const [initialized, setInitialized] = useState(false)
   const initialCombinationsJson = useRef("")
 
@@ -58,13 +61,15 @@ export function FurnitureGroupDetail({ groupId }: FurnitureGroupDetailProps) {
     if (!group) return
     resetForm({ name: group.name })
     const combos = group.excludedCombinations.map((ec) => ec.characters.map((c) => c.id))
-    setCombinations(combos)
+    setCombinations(combos.map((characters, i) => ({ characters, id: i })))
     initialCombinationsJson.current = JSON.stringify(combos)
     setInitialized(true)
   }, [group, resetForm])
 
   const isCombinationsDirty = useMemo(
-    () => JSON.stringify(combinations) !== initialCombinationsJson.current,
+    () =>
+      JSON.stringify(combinations.filter((c) => !c.deleted).map((c) => c.characters)) !==
+      initialCombinationsJson.current,
     [combinations]
   )
   const isDirty = isNameDirty || isCombinationsDirty
@@ -76,7 +81,7 @@ export function FurnitureGroupDetail({ groupId }: FurnitureGroupDetailProps) {
       try {
         await mutateAsync({
           data: {
-            excludedCombinations: combinations,
+            excludedCombinations: combinations.filter((c) => !c.deleted).map((c) => c.characters),
             furnitureIds: group?.furnitures.map((f) => f.id) ?? [],
             name: values.name,
           },

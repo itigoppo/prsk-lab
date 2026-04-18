@@ -13,9 +13,16 @@ type CharacterInfo = {
   short: string
 }
 
+export interface CombinationEntry {
+  characters: string[]
+  deleted?: boolean
+  id: number
+  isNew?: boolean
+}
+
 interface ExcludedCombinationFieldsProps {
-  combinations: string[][]
-  onChange: (combinations: string[][]) => void
+  combinations: CombinationEntry[]
+  onChange: (combinations: CombinationEntry[]) => void
 }
 
 export function ExcludedCombinationFields({
@@ -37,10 +44,22 @@ export function ExcludedCombinationFields({
   }, [characters])
 
   const handleAdd = useCallback(() => {
-    onChange([...combinations, []])
+    onChange([...combinations, { characters: [], id: Date.now(), isNew: true }])
   }, [combinations, onChange])
 
   const handleRemove = useCallback(
+    (index: number) => {
+      onChange(
+        combinations.map((combo, i) => {
+          if (i !== index) return combo
+          return { ...combo, deleted: !combo.deleted }
+        })
+      )
+    },
+    [combinations, onChange]
+  )
+
+  const handleHardRemove = useCallback(
     (index: number) => {
       onChange(combinations.filter((_, i) => i !== index))
     },
@@ -51,11 +70,12 @@ export function ExcludedCombinationFields({
     (combinationIndex: number, characterId: string) => {
       const updated = combinations.map((combo, i) => {
         if (i !== combinationIndex) return combo
-        if (combo.includes(characterId)) {
-          return combo.filter((id) => id !== characterId)
+        if (combo.deleted) return combo
+        if (combo.characters.includes(characterId)) {
+          return { ...combo, characters: combo.characters.filter((id) => id !== characterId) }
         }
-        if (combo.length >= 10) return combo
-        return [...combo, characterId]
+        if (combo.characters.length >= 10) return combo
+        return { ...combo, characters: [...combo.characters, characterId] }
       })
       onChange(updated)
     },
@@ -65,7 +85,7 @@ export function ExcludedCombinationFields({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label>除外組み合わせ ({combinations.length}件)</Label>
+        <Label>除外組み合わせ ({combinations.filter((c) => !c.deleted).length}件)</Label>
         <Button type="button" variant="ghost" size="sm" onClick={handleAdd}>
           <span className="material-symbols-outlined mr-1 text-sm">add</span>
           追加
@@ -78,12 +98,15 @@ export function ExcludedCombinationFields({
 
       {combinations.map((combo, comboIndex) => (
         <CombinationItem
-          key={comboIndex}
+          key={combo.id}
           index={comboIndex}
-          selectedCharacters={combo}
+          selectedCharacters={combo.characters}
+          deleted={combo.deleted}
           charactersByUnit={charactersByUnit}
           onToggle={(charId) => handleToggleCharacter(comboIndex, charId)}
-          onRemove={() => handleRemove(comboIndex)}
+          onRemove={
+            combo.isNew ? () => handleHardRemove(comboIndex) : () => handleRemove(comboIndex)
+          }
         />
       ))}
     </div>
@@ -92,6 +115,7 @@ export function ExcludedCombinationFields({
 
 interface CombinationItemProps {
   charactersByUnit: Map<string, CharacterInfo[]>
+  deleted?: boolean
   index: number
   onRemove: () => void
   onToggle: (characterId: string) => void
@@ -100,22 +124,48 @@ interface CombinationItemProps {
 
 function CombinationItem({
   charactersByUnit,
+  deleted,
   index,
   onRemove,
   onToggle,
   selectedCharacters,
 }: CombinationItemProps) {
   return (
-    <div className="space-y-3 rounded border border-slate-100 bg-slate-50 p-3">
+    <div
+      className={cn(
+        "space-y-3 rounded border border-slate-100 p-3 transition-opacity",
+        deleted ? "bg-slate-50 opacity-50" : "bg-slate-50"
+      )}
+    >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-500">
+        <span
+          className={cn(
+            "text-xs font-medium",
+            deleted ? "text-slate-400 line-through" : "text-slate-500"
+          )}
+        >
           組み合わせ {index + 1}
           {selectedCharacters.length > 0 && (
-            <span className="ml-1 text-teal-600">({selectedCharacters.length}人)</span>
+            <span className={cn("ml-1", deleted ? "text-slate-400" : "text-teal-600")}>
+              ({selectedCharacters.length}人)
+            </span>
           )}
         </span>
-        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-          <span className="material-symbols-outlined text-sm text-rose-400">close</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          title={deleted ? "復元" : "組み合わせを削除"}
+        >
+          <span
+            className={cn(
+              "material-symbols-outlined text-sm",
+              deleted ? "text-slate-400 hover:text-teal-600" : "text-slate-400 hover:text-rose-500"
+            )}
+          >
+            {deleted ? "undo" : "close"}
+          </span>
         </Button>
       </div>
 
@@ -126,7 +176,7 @@ function CombinationItem({
             <div className="flex flex-wrap gap-1">
               {chars.map((char) => {
                 const isSelected = selectedCharacters.includes(char.id)
-                const isDisabled = !isSelected && selectedCharacters.length >= 10
+                const isDisabled = deleted || (!isSelected && selectedCharacters.length >= 10)
                 return (
                   <button
                     key={char.id}

@@ -20,7 +20,10 @@ import { useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
-import { ExcludedCombinationFields } from "../../_components/excluded-combination-fields"
+import {
+  CombinationEntry,
+  ExcludedCombinationFields,
+} from "../../_components/excluded-combination-fields"
 
 const groupFormSchema = createFurnitureGroupDtoSchema.pick({ name: true })
 
@@ -41,7 +44,7 @@ export function FurnitureGroupCreateForm() {
 
   const { isPending, mutateAsync } = usePostApiAdminFurnitureGroups()
 
-  const [combinations, setCombinations] = useState<string[][]>([])
+  const [combinations, setCombinations] = useState<CombinationEntry[]>([])
 
   const isDirty = isNameDirty || combinations.length > 0
   const { dialogProps, handleNavigation } = useUnsavedChanges(isDirty)
@@ -51,7 +54,7 @@ export function FurnitureGroupCreateForm() {
       try {
         const result = await mutateAsync({
           data: {
-            excludedCombinations: combinations,
+            excludedCombinations: combinations.filter((c) => !c.deleted).map((c) => c.characters),
             furnitureIds: [],
             name: values.name,
           },
