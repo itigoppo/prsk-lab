@@ -2,7 +2,9 @@
 
 import { DeleteConfirmDialog } from "@/components/common/delete-confirm-dialog"
 import { useDeleteApiAdminFurnitureTagsTagId } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import { getGetApiFurnituresQueryKey } from "@/lib/api/generated/furnitures/furnitures"
 import { getApiErrorMessage } from "@/lib/utils/error"
+import { useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import toast from "react-hot-toast"
 
@@ -22,16 +24,18 @@ export function FurnitureTagDeleteDialog({
   tagName,
 }: FurnitureTagDeleteDialogProps) {
   const { isPending, mutateAsync } = useDeleteApiAdminFurnitureTagsTagId()
+  const queryClient = useQueryClient()
 
   const handleConfirm = useCallback(async () => {
     try {
       await mutateAsync({ tagId })
       toast.success("タグを削除しました")
+      queryClient.invalidateQueries({ queryKey: getGetApiFurnituresQueryKey() })
       onSuccess()
     } catch (error) {
       toast.error(getApiErrorMessage(error, "タグの削除に失敗しました"))
     }
-  }, [mutateAsync, tagId, onSuccess])
+  }, [mutateAsync, tagId, onSuccess, queryClient])
 
   return (
     <DeleteConfirmDialog

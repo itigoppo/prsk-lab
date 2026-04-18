@@ -8,6 +8,7 @@ import {
   getGetApiAdminFurnitureGroupsQueryKey,
   usePostApiAdminFurnitureGroups,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import { getGetApiFurnituresQueryKey } from "@/lib/api/generated/furnitures/furnitures"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
 import { createFurnitureGroupDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
 import { cn } from "@/lib/utils/common"
@@ -57,6 +58,7 @@ export function FurnitureGroupCreateForm() {
         })
         toast.success("グループを作成しました")
         queryClient.invalidateQueries({ queryKey: getGetApiAdminFurnitureGroupsQueryKey() })
+        queryClient.invalidateQueries({ queryKey: getGetApiFurnituresQueryKey() })
         const groupId = result.data?.id
         router.push(groupId ? `/admin/furniture-groups/${groupId}` : "/admin/furniture-groups")
       } catch (error) {

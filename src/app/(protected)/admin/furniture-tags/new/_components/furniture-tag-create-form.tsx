@@ -8,6 +8,7 @@ import {
   getGetApiAdminFurnitureTagsQueryKey,
   usePostApiAdminFurnitureTags,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import { getGetApiFurnituresQueryKey } from "@/lib/api/generated/furnitures/furnitures"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
 import { createFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import { cn } from "@/lib/utils/common"
@@ -93,6 +94,7 @@ export function FurnitureTagCreateForm() {
         })
         toast.success("タグを作成しました")
         queryClient.invalidateQueries({ queryKey: getGetApiAdminFurnitureTagsQueryKey() })
+        queryClient.invalidateQueries({ queryKey: getGetApiFurnituresQueryKey() })
         const tagId = result.data?.id
         router.push(tagId ? `/admin/furniture-tags/${tagId}` : "/admin/furniture-tags")
       } catch (error) {

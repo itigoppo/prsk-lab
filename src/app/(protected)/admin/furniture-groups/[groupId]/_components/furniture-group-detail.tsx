@@ -11,6 +11,7 @@ import {
   useGetApiAdminFurnitureGroupsGroupId,
   usePatchApiAdminFurnitureGroupsGroupId,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import { getGetApiFurnituresQueryKey } from "@/lib/api/generated/furnitures/furnitures"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
 import { updateFurnitureGroupDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
 import { cn } from "@/lib/utils/common"
@@ -84,6 +85,7 @@ export function FurnitureGroupDetail({ groupId }: FurnitureGroupDetailProps) {
         toast.success("グループを更新しました")
         refetch()
         queryClient.invalidateQueries({ queryKey: getGetApiAdminFurnitureGroupsQueryKey() })
+        queryClient.invalidateQueries({ queryKey: getGetApiFurnituresQueryKey() })
         // 除外組み合わせ変更がタグ詳細のexcludeFromGroup計算に影響するためタグキャッシュも無効化
         queryClient.invalidateQueries({
           predicate: (query) =>

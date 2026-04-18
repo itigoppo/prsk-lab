@@ -11,6 +11,7 @@ import {
   useGetApiAdminFurnitureTagsTagId,
   usePatchApiAdminFurnitureTagsTagId,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import { getGetApiFurnituresQueryKey } from "@/lib/api/generated/furnitures/furnitures"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
 import { updateFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import { cn } from "@/lib/utils/common"
@@ -124,6 +125,7 @@ export function FurnitureTagDetail({ tagId }: FurnitureTagDetailProps) {
         toast.success("タグを更新しました")
         refetch()
         queryClient.invalidateQueries({ queryKey: getGetApiAdminFurnitureTagsQueryKey() })
+        queryClient.invalidateQueries({ queryKey: getGetApiFurnituresQueryKey() })
       } catch (error) {
         toast.error(getApiErrorMessage(error, "タグの更新に失敗しました"))
       }
