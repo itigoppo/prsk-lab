@@ -172,7 +172,7 @@ const jsonRequest = <T extends z.ZodTypeAny>(schema: T) => ({
 })
 
 // 共通セキュリティ定義
-const bearerAuth = { bearerAuth: [] }
+const cookieAuth = { cookieAuth: [] }
 const discordAuth = { discordAuth: [] }
 
 // Routes definition
@@ -185,7 +185,7 @@ const getCurrentUserRoute = createRoute({
     ...commonResponses.unauthorized,
     ...commonResponses.notFound,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get current user",
   tags: [Tags.USERS.name],
 })
@@ -215,7 +215,7 @@ const getSettingRoute = createRoute({
     ...commonResponses.unauthorized,
     ...commonResponses.notFound,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get user settings",
   tags: [Tags.SETTINGS.name],
 })
@@ -231,7 +231,7 @@ const createSettingRoute = createRoute({
     ...commonResponses.unauthorized,
     ...commonResponses.conflict,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Create user settings",
   tags: [Tags.SETTINGS.name],
 })
@@ -247,7 +247,7 @@ const updateSettingRoute = createRoute({
     ...commonResponses.unauthorized,
     ...commonResponses.notFound,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Update user settings",
   tags: [Tags.SETTINGS.name],
 })
@@ -312,7 +312,7 @@ const getFurnituresByUnitRoute = createRoute({
     ...commonResponses.internalServerError,
     ...commonResponses.unauthorized,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get furnitures by unit",
   tags: [Tags.FURNITURES.name],
 })
@@ -334,7 +334,7 @@ const getFurnituresRoute = createRoute({
     ...commonResponses.internalServerError,
     ...commonResponses.unauthorized,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get all furnitures with ownership status",
   tags: [Tags.FURNITURES.name],
 })
@@ -357,7 +357,7 @@ const ownFurnitureRoute = createRoute({
     ...commonResponses.internalServerError,
     ...commonResponses.unauthorized,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Own a furniture",
   tags: [Tags.FURNITURES.name],
 })
@@ -380,7 +380,7 @@ const unownFurnitureRoute = createRoute({
     ...commonResponses.internalServerError,
     ...commonResponses.unauthorized,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Unown a furniture",
   tags: [Tags.FURNITURES.name],
 })
@@ -403,7 +403,7 @@ const checkReactionRoute = createRoute({
     ...commonResponses.internalServerError,
     ...commonResponses.unauthorized,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Check a reaction",
   tags: [Tags.REACTIONS.name],
 })
@@ -426,7 +426,7 @@ const uncheckReactionRoute = createRoute({
     ...commonResponses.internalServerError,
     ...commonResponses.unauthorized,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Uncheck a reaction",
   tags: [Tags.REACTIONS.name],
 })
@@ -444,7 +444,7 @@ const getAdminFurnitureCharactersRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get all characters for furniture management",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -462,7 +462,7 @@ const createFurnitureTagRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Create furniture tag",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -500,7 +500,7 @@ const getFurnitureTagsRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "List furniture tags",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -521,7 +521,7 @@ const getFurnitureTagRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get furniture tag",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -545,7 +545,7 @@ const updateFurnitureTagRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Update furniture tag",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -566,7 +566,7 @@ const deleteFurnitureTagRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Delete furniture tag",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -584,7 +584,7 @@ const createFurnitureGroupRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Create furniture group",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -618,7 +618,7 @@ const getFurnitureGroupsRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "List furniture groups",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -639,7 +639,7 @@ const getFurnitureGroupRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Get furniture group detail",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -663,7 +663,7 @@ const updateFurnitureGroupRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Update furniture group",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -684,7 +684,7 @@ const deleteFurnitureGroupRoute = createRoute({
     ...commonResponses.forbidden,
     ...commonResponses.internalServerError,
   },
-  security: [bearerAuth],
+  security: [cookieAuth],
   summary: "Delete furniture group",
   tags: [Tags.ADMIN_FURNITURES.name],
 })
@@ -860,11 +860,11 @@ app.doc("/api/openapi.json", {
 })
 
 // Register security schemes
-app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
-  bearerFormat: "JWT",
-  description: "NextAuth session token",
-  scheme: "bearer",
-  type: "http",
+app.openAPIRegistry.registerComponent("securitySchemes", "cookieAuth", {
+  description: "NextAuth session token (automatically sent via Browser)",
+  in: "cookie",
+  name: "next-auth.session-token",
+  type: "apiKey",
 })
 
 app.openAPIRegistry.registerComponent("securitySchemes", "discordAuth", {
