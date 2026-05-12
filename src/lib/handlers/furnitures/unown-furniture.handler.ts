@@ -15,7 +15,17 @@ export const unownFurniture: Handler = async (c) => {
     })
 
     if (!user) {
-      return c.json({ message: "ユーザーが見つかりません", success: false }, HTTP_STATUS.NOT_FOUND)
+      return c.json({ message: "セッションが無効です", success: false }, HTTP_STATUS.UNAUTHORIZED)
+    }
+
+    // 家具の存在確認
+    const furniture = await prisma.furniture.findUnique({
+      select: { id: true },
+      where: { id: furnitureId },
+    })
+
+    if (!furniture) {
+      return c.json({ message: "家具が見つかりません", success: false }, HTTP_STATUS.NOT_FOUND)
     }
 
     // 所持状態を削除（存在しなくても成功扱い）

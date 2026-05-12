@@ -155,37 +155,39 @@ export const getFurnituresByUnit: Handler = async (c) => {
       },
       where: { discordId },
     })
-    if (user) {
-      // 所持家具IDを取得
-      ownedFurnitureIds = new Set(user.ownedFurnitures.map((f) => f.furnitureId))
+    if (!user) {
+      return c.json({ message: "セッションが無効です", success: false }, HTTP_STATUS.UNAUTHORIZED)
+    }
 
-      const checks = await prisma.userReactionCheck.findMany({
-        select: {
-          reaction: {
-            select: {
-              characters: {
-                select: { characterId: true },
-              },
-              furniture: {
-                select: { groupId: true },
-              },
+    // 所持家具IDを取得
+    ownedFurnitureIds = new Set(user.ownedFurnitures.map((f) => f.furnitureId))
+
+    const checks = await prisma.userReactionCheck.findMany({
+      select: {
+        reaction: {
+          select: {
+            characters: {
+              select: { characterId: true },
+            },
+            furniture: {
+              select: { groupId: true },
             },
           },
-          reactionId: true,
         },
-        where: { userId: user.id },
-      })
-      checkedReactionIds = new Set(checks.map((c) => c.reactionId))
+        reactionId: true,
+      },
+      where: { userId: user.id },
+    })
+    checkedReactionIds = new Set(checks.map((c) => c.reactionId))
 
-      // グループに属するリアクションのキャラ組み合わせをSetに追加
-      // ただし、除外キャラクターを含むリアクションは追加しない
-      for (const check of checks) {
-        const groupId = check.reaction.furniture.groupId
-        if (groupId) {
-          const charIds = check.reaction.characters.map((c) => c.characterId)
-          if (!isExcludedFromGroup(groupId, charIds)) {
-            checkedGroupCombinations.add(`${groupId}:${charIds.sort().join(",")}`)
-          }
+    // グループに属するリアクションのキャラ組み合わせをSetに追加
+    // ただし、除外キャラクターを含むリアクションは追加しない
+    for (const check of checks) {
+      const groupId = check.reaction.furniture.groupId
+      if (groupId) {
+        const charIds = check.reaction.characters.map((c) => c.characterId)
+        if (!isExcludedFromGroup(groupId, charIds)) {
+          checkedGroupCombinations.add(`${groupId}:${charIds.sort().join(",")}`)
         }
       }
     }

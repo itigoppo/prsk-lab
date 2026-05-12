@@ -15,7 +15,20 @@ export const uncheckReaction: Handler = async (c) => {
     })
 
     if (!user) {
-      return c.json({ message: "ユーザーが見つかりません", success: false }, HTTP_STATUS.NOT_FOUND)
+      return c.json({ message: "セッションが無効です", success: false }, HTTP_STATUS.UNAUTHORIZED)
+    }
+
+    // リアクションの存在確認
+    const reaction = await prisma.furnitureReaction.findUnique({
+      select: { id: true },
+      where: { id: reactionId },
+    })
+
+    if (!reaction) {
+      return c.json(
+        { message: "リアクションが見つかりません", success: false },
+        HTTP_STATUS.NOT_FOUND
+      )
     }
 
     // チェックを削除（存在しない場合も成功扱い）

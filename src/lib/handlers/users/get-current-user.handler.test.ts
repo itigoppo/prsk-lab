@@ -14,7 +14,7 @@ type Env = {
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
-      findFirstOrThrow: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }))
@@ -45,7 +45,7 @@ describe("getCurrentUser", () => {
       role: "Viewer",
     } as User
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
     const res = await app.request("/user")
     const json = await res.json()
@@ -73,7 +73,7 @@ describe("getCurrentUser", () => {
       role: "Viewer",
     } as User
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
     const res = await app.request("/user")
     const json = await res.json()
@@ -92,7 +92,7 @@ describe("getCurrentUser", () => {
       role: "Admin",
     } as User
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
     const res = await app.request("/user")
     const json = await res.json()
@@ -111,7 +111,7 @@ describe("getCurrentUser", () => {
       role: "Editor",
     } as User
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
     const res = await app.request("/user")
     const json = await res.json()
@@ -122,31 +122,19 @@ describe("getCurrentUser", () => {
     expect(json.data.email).toBeNull()
   })
 
-  it("discordIdがセットされていない場合は401を返す", async () => {
-    const noAuthApp = new Hono<Env>()
-    noAuthApp.get("/user", getCurrentUser)
-
-    const res = await noAuthApp.request("/user")
-    const json = await res.json()
-
-    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
-    expect(json.success).toBe(false)
-    expect(json.message).toBe("ユーザー情報の取得に失敗しました")
-  })
-
-  it("ユーザーが存在しない場合は500を返す", async () => {
-    vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(new Error("User not found"))
+  it("ユーザーが存在しない場合は401を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
     const res = await app.request("/user")
     const json = await res.json()
 
-    expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
     expect(json.success).toBe(false)
-    expect(json.message).toBe("ユーザー情報の取得に失敗しました")
+    expect(json.message).toBe("セッションが無効です")
   })
 
   it("データベースエラーの場合は500を返す", async () => {
-    vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(new Error("Database error"))
+    vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 
     const res = await app.request("/user")
     const json = await res.json()

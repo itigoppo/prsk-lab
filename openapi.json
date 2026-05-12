@@ -855,12 +855,11 @@
                         }
                       },
                       "required": ["groupId", "id", "name", "reactions"]
-                    },
-                    "default": []
+                    }
                   },
                   "name": { "type": "string" }
                 },
-                "required": ["name"]
+                "required": ["furnitures", "name"]
               }
             }
           }
@@ -1127,12 +1126,11 @@
                         }
                       },
                       "required": ["groupId", "id", "name", "reactions"]
-                    },
-                    "default": []
+                    }
                   },
                   "name": { "type": "string" }
                 },
-                "required": ["name"]
+                "required": ["furnitures", "name"]
               }
             }
           }

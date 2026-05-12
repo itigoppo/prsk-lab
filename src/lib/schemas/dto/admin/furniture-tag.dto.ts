@@ -30,7 +30,7 @@ export const furnitureWithReactionsDtoSchema = z.object({
  * タグ作成DTO（家具の一括作成に対応）
  */
 export const createFurnitureTagDtoSchema = z.object({
-  furnitures: z.array(furnitureWithReactionsDtoSchema).default([]),
+  furnitures: z.array(furnitureWithReactionsDtoSchema),
   name: zString("タグ名は必須です", {
     max: 100,
     maxMessage: "タグ名は100文字以内で入力してください",
@@ -41,7 +41,7 @@ export const createFurnitureTagDtoSchema = z.object({
  * タグ更新DTO（家具の一括更新に対応）
  */
 export const updateFurnitureTagDtoSchema = z.object({
-  furnitures: z.array(furnitureWithReactionsDtoSchema).default([]),
+  furnitures: z.array(furnitureWithReactionsDtoSchema),
   name: zString("タグ名は必須です", {
     max: 100,
     maxMessage: "タグ名は100文字以内で入力してください",

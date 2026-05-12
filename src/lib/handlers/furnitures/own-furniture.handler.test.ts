@@ -57,7 +57,7 @@ describe("ownFurniture", () => {
     expect(json.data.owned).toBe(true)
   })
 
-  it("ユーザーが見つからない場合は404を返す", async () => {
+  it("ユーザーが見つからない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
     app.use("/furnitures/:furnitureId/own", async (c, next) => {
@@ -69,9 +69,9 @@ describe("ownFurniture", () => {
     const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
     const json = await res.json()
 
-    expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
     expect(json.success).toBe(false)
-    expect(json.message).toBe("ユーザーが見つかりません")
+    expect(json.message).toBe("セッションが無効です")
   })
 
   it("家具が見つからない場合は404を返す", async () => {

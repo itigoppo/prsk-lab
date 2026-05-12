@@ -21,7 +21,7 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
     },
     user: {
-      findFirstOrThrow: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }))
@@ -48,7 +48,7 @@ describe("createSetting", () => {
     const mockUser = { id: "1" } as User
     const mockValidation = { success: true }
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
     vi.mocked(prisma.setting.create).mockResolvedValue({} as Setting)
 
@@ -75,7 +75,7 @@ describe("createSetting", () => {
   it("nullのURLでも設定を作成できる", async () => {
     const mockUser = { id: "1" } as User
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(prisma.setting.create).mockResolvedValue({} as Setting)
 
     const res = await app.request("/settings", {
@@ -99,7 +99,7 @@ describe("createSetting", () => {
       success: false,
     }
 
-    vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue(mockUser)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
 
     const res = await app.request("/settings", {
@@ -129,5 +129,77 @@ describe("createSetting", () => {
     expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
     expect(json.success).toBe(false)
     expect(json.message).toBe("入力内容に誤りがあります")
+  })
+
+  it("ユーザーが存在しない場合は401を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+
+    const res = await app.request("/settings", {
+      body: JSON.stringify({ leaderSheetUrl: null }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("セッションが無効です")
+  })
+
+  it("バリデーションエラー時にメッセージがない場合はデフォルトメッセージを返す", async () => {
+    const mockUser = { id: "1" } as User
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
+    vi.mocked(validateCsvUrl).mockResolvedValue({ success: false }) // errorがundefined
+
+    const res = await app.request("/settings", {
+      body: JSON.stringify({ leaderSheetUrl: "https://example.com/invalid" }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("URLの検証に失敗しました")
+  })
+
+  it("データベースエラーの場合は500を返す", async () => {
+    const mockUser = { id: "1" } as User
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
+    vi.mocked(prisma.setting.create).mockRejectedValue(new Error("Database error"))
+
+    const res = await app.request("/settings", {
+      body: JSON.stringify({ leaderSheetUrl: null }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+    expect(json.success).toBe(false)
+  })
+
+  it("すでに設定が存在する場合は409を返す", async () => {
+    const mockUser = { id: "1", setting: { id: "setting-1" } } as unknown as User
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
+
+    const res = await app.request("/settings", {
+      body: JSON.stringify({ leaderSheetUrl: null }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.CONFLICT)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("すでに設定が存在します")
   })
 })

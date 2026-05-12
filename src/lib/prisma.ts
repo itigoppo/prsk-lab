@@ -16,11 +16,13 @@ const createPrismaClient = (): PrismaClient => {
         const start = Date.now()
         const result = originalQuery(...(args as Parameters<typeof originalQuery>))
         Promise.resolve(result).then(() => {
-          const duration = Date.now() - start
-          /* eslint-disable-next-line no-console */
-          console.log("[Prisma Query]", args[0])
-          /* eslint-disable-next-line no-console */
-          console.log(`[Duration] ${duration}ms`)
+          if (process.env.NODE_ENV !== "test") {
+            const duration = Date.now() - start
+            /* eslint-disable-next-line no-console */
+            console.log("[Prisma Query]", args[0])
+            /* eslint-disable-next-line no-console */
+            console.log(`[Duration] ${duration}ms`)
+          }
         })
         return result
       }) as typeof client.query

@@ -56,7 +56,7 @@ describe("updateFurnitureTag", () => {
     })
 
     const res = await app.request("/admin/furniture-tags/tag-1", {
-      body: JSON.stringify({ name: "更新後のタグ名" }),
+      body: JSON.stringify({ furnitures: [], name: "更新後のタグ名" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
     })
@@ -104,7 +104,7 @@ describe("updateFurnitureTag", () => {
     vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue(null)
 
     const res = await app.request("/admin/furniture-tags/unknown-tag", {
-      body: JSON.stringify({ name: "新しい名前" }),
+      body: JSON.stringify({ furnitures: [], name: "新しい名前" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
     })
@@ -117,7 +117,7 @@ describe("updateFurnitureTag", () => {
 
   it("タグ名が空の場合は400を返す", async () => {
     const res = await app.request("/admin/furniture-tags/tag-1", {
-      body: JSON.stringify({ name: "" }),
+      body: JSON.stringify({ furnitures: [], name: "" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
     })
@@ -138,7 +138,7 @@ describe("updateFurnitureTag", () => {
     )
 
     const res = await app.request("/admin/furniture-tags/tag-1", {
-      body: JSON.stringify({ name: "既存タグ" }),
+      body: JSON.stringify({ furnitures: [], name: "既存タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
     })
@@ -184,7 +184,7 @@ describe("updateFurnitureTag", () => {
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))
 
     const res = await app.request("/admin/furniture-tags/tag-1", {
-      body: JSON.stringify({ name: "新しい名前" }),
+      body: JSON.stringify({ furnitures: [], name: "新しい名前" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
     })

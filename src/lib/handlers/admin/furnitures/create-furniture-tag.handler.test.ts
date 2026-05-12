@@ -52,7 +52,7 @@ describe("createFurnitureTag", () => {
     })
 
     const res = await app.request("/admin/furniture-tags", {
-      body: JSON.stringify({ name: "新タグ" }),
+      body: JSON.stringify({ furnitures: [], name: "新タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
     })
@@ -169,7 +169,7 @@ describe("createFurnitureTag", () => {
 
   it("タグ名が空の場合は400を返す", async () => {
     const res = await app.request("/admin/furniture-tags", {
-      body: JSON.stringify({ name: "" }),
+      body: JSON.stringify({ furnitures: [], name: "" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
     })
@@ -270,7 +270,7 @@ describe("createFurnitureTag", () => {
     )
 
     const res = await app.request("/admin/furniture-tags", {
-      body: JSON.stringify({ name: "既存タグ" }),
+      body: JSON.stringify({ furnitures: [], name: "既存タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
     })
@@ -286,7 +286,7 @@ describe("createFurnitureTag", () => {
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))
 
     const res = await app.request("/admin/furniture-tags", {
-      body: JSON.stringify({ name: "新タグ" }),
+      body: JSON.stringify({ furnitures: [], name: "新タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
     })

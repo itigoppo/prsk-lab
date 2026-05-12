@@ -12,6 +12,9 @@ type Env = {
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    furniture: {
+      findUnique: vi.fn(),
+    },
     user: {
       findUnique: vi.fn(),
     },
@@ -33,6 +36,7 @@ describe("unownFurniture", () => {
 
   it("家具の所持を解除できる", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
     vi.mocked(prisma.userFurniture.deleteMany).mockResolvedValue({ count: 1 } as never)
 
     app.use("/furnitures/:furnitureId/own", async (c, next) => {
@@ -50,8 +54,9 @@ describe("unownFurniture", () => {
     expect(json.data.owned).toBe(false)
   })
 
-  it("ユーザーが見つからない場合は404を返す", async () => {
+  it("ユーザーが見つからない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
 
     app.use("/furnitures/:furnitureId/own", async (c, next) => {
       c.set("discordId", "discord-123")
@@ -62,13 +67,14 @@ describe("unownFurniture", () => {
     const res = await app.request("/furnitures/furniture-1/own", { method: "DELETE" })
     const json = await res.json()
 
-    expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
     expect(json.success).toBe(false)
-    expect(json.message).toBe("ユーザーが見つかりません")
+    expect(json.message).toBe("セッションが無効です")
   })
 
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
 
     app.use("/furnitures/:furnitureId/own", async (c, next) => {
       c.set("discordId", "discord-123")

@@ -22,7 +22,12 @@ export const getFurnitures: Handler = async (c) => {
       },
       where: { discordId },
     })
-    const ownedFurnitureIds = new Set(user?.ownedFurnitures.map((f) => f.furnitureId) ?? [])
+
+    if (!user) {
+      return c.json({ message: "セッションが無効です", success: false }, HTTP_STATUS.UNAUTHORIZED)
+    }
+
+    const ownedFurnitureIds = new Set(user.ownedFurnitures.map((f) => f.furnitureId))
 
     // 全タグと家具を取得
     const tags = await prisma.furnitureTag.findMany({

@@ -90,7 +90,7 @@ describe("requireRole middleware", () => {
       expect(json.message).toBe("認証が必要です")
     })
 
-    it("ユーザーが存在しない場合は404を返す", async () => {
+    it("ユーザーが存在しない場合は401を返す", async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
       app.use("*", (c, next) => {
@@ -103,9 +103,9 @@ describe("requireRole middleware", () => {
       const res = await app.request("/test")
       const json = await res.json()
 
-      expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
+      expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
       expect(json.success).toBe(false)
-      expect(json.message).toBe("ユーザーが見つかりません")
+      expect(json.message).toBe("セッションが無効です")
     })
 
     it("データベースエラーの場合は500を返す", async () => {

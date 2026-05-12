@@ -252,4 +252,29 @@ describe("createUser", () => {
     expect(json.success).toBe(false)
     expect(json.message).toBe("登録中にエラーが発生しました")
   })
+
+  it("DTOバリデーションエラーの場合は400を返す", async () => {
+    const discordUser: DiscordUser = {
+      avatar: "abc123",
+      email: "test@example.com",
+      id: "", // 空文字はバリデーションエラー
+      username: "TestUser",
+    }
+
+    app.use("*", async (c, next) => {
+      c.set("discordId", "")
+      c.set("discordUser", discordUser)
+      await next()
+    })
+    app.post("/user", createUser)
+
+    const res = await app.request("/user", {
+      method: "POST",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("入力内容に誤りがあります")
+  })
 })

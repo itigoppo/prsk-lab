@@ -12,6 +12,9 @@ type Env = {
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    furnitureReaction: {
+      findUnique: vi.fn(),
+    },
     user: {
       findUnique: vi.fn(),
     },
@@ -37,6 +40,7 @@ describe("uncheckReaction", () => {
 
   it("リアクションのチェックを解除できる", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
     vi.mocked(prisma.userReactionCheck.deleteMany).mockResolvedValue({ count: 1 } as never)
 
     app.delete("/reactions/:reactionId/check", uncheckReaction)
@@ -55,6 +59,7 @@ describe("uncheckReaction", () => {
 
   it("チェックが存在しなくても成功を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
     vi.mocked(prisma.userReactionCheck.deleteMany).mockResolvedValue({ count: 0 } as never)
 
     app.delete("/reactions/:reactionId/check", uncheckReaction)
@@ -68,8 +73,25 @@ describe("uncheckReaction", () => {
     expect(json.success).toBe(true)
   })
 
-  it("ユーザーが見つからない場合は404を返す", async () => {
+  it("ユーザーが見つからない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+
+    app.delete("/reactions/:reactionId/check", uncheckReaction)
+
+    const res = await app.request("/reactions/reaction-1/check", {
+      method: "DELETE",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("セッションが無効です")
+  })
+
+  it("リアクションが見つからない場合は404を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue(null)
 
     app.delete("/reactions/:reactionId/check", uncheckReaction)
 
@@ -80,11 +102,29 @@ describe("uncheckReaction", () => {
 
     expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
     expect(json.success).toBe(false)
-    expect(json.message).toBe("ユーザーが見つかりません")
+    expect(json.message).toBe("リアクションが見つかりません")
+  })
+
+  it("deleteManyでエラーが発生した場合は500を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+    vi.mocked(prisma.userReactionCheck.deleteMany).mockRejectedValue(new Error("Database error"))
+
+    app.delete("/reactions/:reactionId/check", uncheckReaction)
+
+    const res = await app.request("/reactions/reaction-1/check", {
+      method: "DELETE",
+    })
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("リアクションのチェック解除に失敗しました")
   })
 
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
 
     app.delete("/reactions/:reactionId/check", uncheckReaction)
 

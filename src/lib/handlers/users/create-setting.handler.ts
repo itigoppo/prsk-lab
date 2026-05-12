@@ -40,14 +40,25 @@ export const createSetting: Handler = async (c) => {
       }
     }
 
-    const user = await prisma.user.findFirstOrThrow({
+    const user = await prisma.user.findUnique({
       select: {
         id: true,
+        setting: {
+          select: { id: true },
+        },
       },
       where: {
         discordId,
       },
     })
+
+    if (!user) {
+      return c.json({ message: "セッションが無効です", success: false }, HTTP_STATUS.UNAUTHORIZED)
+    }
+
+    if (user.setting) {
+      return c.json({ message: "すでに設定が存在します", success: false }, HTTP_STATUS.CONFLICT)
+    }
 
     await prisma.setting.create({
       data: {

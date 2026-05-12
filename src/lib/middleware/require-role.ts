@@ -24,10 +24,7 @@ export const requireRole = (allowedRoles: UserRole[]): MiddlewareHandler => {
       })
 
       if (!user) {
-        return c.json(
-          { message: "ユーザーが見つかりません", success: false },
-          HTTP_STATUS.NOT_FOUND
-        )
+        return c.json({ message: "セッションが無効です", success: false }, HTTP_STATUS.UNAUTHORIZED)
       }
 
       if (!allowedRoles.includes(user.role)) {

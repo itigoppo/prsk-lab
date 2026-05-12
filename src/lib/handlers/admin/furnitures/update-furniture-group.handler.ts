@@ -135,6 +135,15 @@ export const updateFurnitureGroup: Handler = async (c) => {
         }
       }
 
+      // 指定外の家具をグループから除外
+      await tx.furniture.updateMany({
+        data: { groupId: null, updatedAt: now },
+        where: {
+          groupId,
+          id: { notIn: furnitureIds },
+        },
+      })
+
       // 指定された家具をグループに追加
       if (furnitureIds.length > 0) {
         await tx.furniture.updateMany({

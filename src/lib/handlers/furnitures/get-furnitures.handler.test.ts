@@ -127,6 +127,23 @@ describe("getFurnitures", () => {
     expect(json.data.tags[0].name).toBe("リビング")
   })
 
+  it("ユーザーが見つからない場合は401を返す", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
+
+    app.use("/furnitures", async (c, next) => {
+      c.set("discordId", "discord-123")
+      await next()
+    })
+    app.get("/furnitures", getFurnitures)
+
+    const res = await app.request("/furnitures")
+    const json = await res.json()
+
+    expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
+    expect(json.success).toBe(false)
+    expect(json.message).toBe("セッションが無効です")
+  })
+
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 

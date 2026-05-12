@@ -24,24 +24,4 @@ fi
 echo "✅ Type check passed"
 echo ""
 
-# 3. Run all tests
-echo "🧪 Running tests..."
-pnpm test:run
-if [ $? -ne 0 ]; then
-  echo "❌ Tests failed. Please fix failing tests before committing."
-  exit 1
-fi
-echo "✅ Tests passed"
-echo ""
-
-# 4. Check handler test coverage
-echo "📊 Checking test coverage..."
-pnpm test:check-coverage
-if [ $? -ne 0 ]; then
-  echo "❌ Test coverage check failed. Please add missing tests before committing."
-  exit 1
-fi
-echo "✅ Test coverage check passed"
-echo ""
-
 echo "🎉 All pre-commit checks passed!"

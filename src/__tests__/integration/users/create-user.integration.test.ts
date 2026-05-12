@@ -1,35 +1,21 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import type { User } from "@prisma/client"
+import { openAPIApp } from "@/lib/hono/openapi"
+import { prisma } from "@/lib/prisma"
+import type { Context, Next } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { createMockDiscordUser, createMockUser, generateAvatarUrl } from "../mocks/factories"
+import { createMockDiscordUser, insertMockUser } from "../../mocks/factories"
 
 // グローバルfetchのモック
 global.fetch = vi.fn()
 
-// Prismaのモック
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    user: {
-      findFirstOrThrow: vi.fn(),
-      upsert: vi.fn(),
-    },
-  },
-}))
-
 // NextAuth セッション検証ミドルウェアをモック
-import type { Context, Next } from "hono"
-
 const mockVerifyNextAuthSession = vi.fn()
 vi.mock("@/lib/middleware/verify-nextauth-session", () => ({
   verifyNextAuthSession: (c: Context, next: Next) => mockVerifyNextAuthSession(c, next),
 }))
 
-import { openAPIApp } from "@/lib/hono/openapi"
-import { prisma } from "@/lib/prisma"
-
-describe("Users Integration Tests", () => {
+describe("POST /api/users (Discord認証)", () => {
   const MOCK_DISCORD_ID = "discord-123456"
-  const MOCK_SESSION_TOKEN = "mock_session_token"
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -51,20 +37,10 @@ describe("Users Integration Tests", () => {
         username: "discorduser",
       })
 
-      const mockCreatedUser = createMockUser({
-        avatarUrl: generateAvatarUrl(mockDiscordUser.id, mockDiscordUser.avatar!),
-        discordId: mockDiscordUser.id,
-        email: mockDiscordUser.email,
-        id: "user-uuid-123",
-        name: mockDiscordUser.global_name,
-      })
-
       vi.mocked(global.fetch).mockResolvedValueOnce({
         json: async () => mockDiscordUser,
         ok: true,
       } as Response)
-
-      vi.mocked(prisma.user.upsert).mockResolvedValueOnce(mockCreatedUser)
 
       const res = await openAPIApp.request("/api/users", {
         headers: {
@@ -78,7 +54,7 @@ describe("Users Integration Tests", () => {
       const json = await res.json()
       expect(json.success).toBe(true)
       expect(json.data.user.discordId).toBe(mockDiscordUser.id)
-      expect(json.data.user.name).toBe(mockDiscordUser.global_name)
+      expect(json.data.user.name).toBe(mockDiscordUser.username)
       expect(json.data.user.email).toBe(mockDiscordUser.email)
 
       // Discord APIが呼ばれたことを確認
@@ -158,9 +134,20 @@ describe("Users Integration Tests", () => {
       expect(json.error).toBeDefined()
     })
 
-    it("データベースエラーの場合は500を返す", async () => {
+    it("既存ユーザーの場合は更新される", async () => {
+      // 既存ユーザーをデータベースに作成
+      await insertMockUser({
+        discordId: MOCK_DISCORD_ID,
+        email: "old@example.com",
+        name: "Old Name",
+      })
+
       const mockDiscordUser = createMockDiscordUser({
-        id: "discord-db-error",
+        avatar: "new_avatar_hash",
+        email: "new@example.com",
+        global_name: "New Name",
+        id: MOCK_DISCORD_ID,
+        username: "newuser",
       })
 
       vi.mocked(global.fetch).mockResolvedValueOnce({
@@ -168,112 +155,48 @@ describe("Users Integration Tests", () => {
         ok: true,
       } as Response)
 
-      vi.mocked(prisma.user.upsert).mockRejectedValueOnce(new Error("Database error"))
-
       const res = await openAPIApp.request("/api/users", {
         headers: {
-          Authorization: "Bearer valid_discord_token",
+          Authorization: "Bearer valid_token",
         },
         method: "POST",
       })
 
-      expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-
-      const json = await res.json()
-      expect(json.success).toBe(false)
-    })
-  })
-
-  describe("GET /api/users/me (NextAuth認証)", () => {
-    it("認証済みユーザーの情報を取得できる", async () => {
-      const mockUser: Pick<User, "id" | "discordId" | "name" | "email" | "avatarUrl" | "role"> = {
-        avatarUrl: "https://example.com/avatar.png",
-        discordId: MOCK_DISCORD_ID,
-        email: "test@example.com",
-        id: "user-uuid-123",
-        name: "Test User",
-        role: "Viewer",
-      }
-
-      vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValueOnce(mockUser as User)
-
-      const res = await openAPIApp.request("/api/users/me", {
-        headers: {
-          Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
-        },
-        method: "GET",
-      })
-
-      expect(res.status).toBe(HTTP_STATUS.OK)
+      expect(res.status).toBe(HTTP_STATUS.CREATED)
 
       const json = await res.json()
       expect(json.success).toBe(true)
-      expect(json.message).toBe("ユーザー情報を取得しました")
-      expect(json.data).toEqual({
-        avatarUrl: mockUser.avatarUrl,
-        discordId: mockUser.discordId,
-        email: mockUser.email,
-        id: mockUser.id,
-        name: mockUser.name,
-        role: mockUser.role,
+      expect(json.data.user.name).toBe("newuser")
+
+      const updatedUser = await prisma.user.findUnique({
+        where: { discordId: MOCK_DISCORD_ID },
       })
+      expect(updatedUser?.name).toBe("newuser")
+      expect(updatedUser?.email).toBe("new@example.com")
+      expect(updatedUser?.avatarUrl).toContain("new_avatar_hash")
     })
 
-    it("avatarUrlがnullのユーザーも正しく取得できる", async () => {
-      const mockUser: Pick<User, "id" | "discordId" | "name" | "email" | "avatarUrl" | "role"> = {
-        avatarUrl: null,
-        discordId: MOCK_DISCORD_ID,
-        email: "test@example.com",
-        id: "user-uuid-123",
-        name: "Test User",
-        role: "Viewer",
-      }
+    it("Discord APIからのIDが空等でバリデーションエラーの場合は400を返す", async () => {
+      const mockDiscordUser = createMockDiscordUser({
+        id: "", // 空文字はZodでエラーになる
+      })
 
-      vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValueOnce(mockUser as User)
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        json: async () => mockDiscordUser,
+        ok: true,
+      } as Response)
 
-      const res = await openAPIApp.request("/api/users/me", {
+      const res = await openAPIApp.request("/api/users", {
         headers: {
-          Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
+          Authorization: "Bearer valid_token",
         },
-        method: "GET",
+        method: "POST",
       })
 
-      expect(res.status).toBe(HTTP_STATUS.OK)
-
-      const json = await res.json()
-      expect(json.data.avatarUrl).toBeNull()
-    })
-
-    it("認証失敗時は401を返す（Cookie なし）", async () => {
-      mockVerifyNextAuthSession.mockImplementation(async (c) => {
-        return c.json({ message: "Missing session token", success: false }, 401)
-      })
-
-      const res = await openAPIApp.request("/api/users/me", {
-        method: "GET",
-      })
-
-      expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
-
+      expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST)
       const json = await res.json()
       expect(json.success).toBe(false)
-    })
-
-    it("ユーザーが存在しない場合は500を返す", async () => {
-      vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValueOnce(new Error("User not found"))
-
-      const res = await openAPIApp.request("/api/users/me", {
-        headers: {
-          Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
-        },
-        method: "GET",
-      })
-
-      expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-
-      const json = await res.json()
-      expect(json.success).toBe(false)
-      expect(json.message).toBe("ユーザー情報の取得に失敗しました")
+      expect(json.message).toBe("入力内容に誤りがあります")
     })
   })
 })
