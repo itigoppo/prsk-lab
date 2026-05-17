@@ -10,6 +10,10 @@ import {
   useGetApiAdminFurnitureGroupsGroupId,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
 import {
+  type ReorderDirection,
+  ReorderDirection as ReorderDirectionEnum,
+} from "@/lib/api/generated/models"
+import {
   furnitureWithReactionsDtoSchema,
   reactionDtoSchema,
 } from "@/lib/schemas/dto/admin/furniture-tag.dto"
@@ -18,6 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useCallback, useEffect, useMemo } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
+import { CharacterUnitSelector } from "../../_components/character-unit-selector"
 
 const uiReactionSchema = reactionDtoSchema.extend({
   _deleted: z.boolean().optional(),
@@ -53,14 +58,7 @@ export const defaultFurniture: FurnitureFormValues = {
   reactions: [{ ...defaultReaction }],
 }
 
-type CharacterInfo = {
-  bgColor: string
-  code: string
-  color: string
-  id: string
-  name: string
-  short: string
-}
+import type { CharacterInfo } from "../../_components/character-unit-selector"
 
 interface FurnitureFormFieldsProps {
   defaultValues?: FurnitureFormValues
@@ -94,6 +92,7 @@ export function FurnitureFormFields({
     append: appendReaction,
     fields: reactionFields,
     remove: removeReaction,
+    swap: swapReaction,
   } = useFieldArray({
     control,
     name: "reactions",
@@ -203,6 +202,18 @@ export function FurnitureFormFields({
             excludedCombinationKeys={excludedCombinationKeys}
             showExcludeFromGroup={!!groupId}
             totalFieldsCount={reactionFields.length}
+            isFirst={reactionIndex === 0}
+            isLast={reactionIndex === reactionFields.length - 1}
+            onMove={(direction) => {
+              if (direction === ReorderDirectionEnum.up && reactionIndex > 0) {
+                swapReaction(reactionIndex, reactionIndex - 1)
+              } else if (
+                direction === ReorderDirectionEnum.down &&
+                reactionIndex < reactionFields.length - 1
+              ) {
+                swapReaction(reactionIndex, reactionIndex + 1)
+              }
+            }}
             onToggleRemove={() => {
               const reactionId = getValues(`reactions.${reactionIndex}.id`)
               if (reactionId) {
@@ -238,6 +249,9 @@ interface ReactionItemProps {
   charactersByUnit: Map<string, CharacterInfo[]>
   errors: ReturnType<typeof useForm<FurnitureFormValues>>["formState"]["errors"]
   excludedCombinationKeys: Set<string>
+  isFirst: boolean
+  isLast: boolean
+  onMove?: (direction: ReorderDirection) => void
   onToggleRemove?: () => void
   reactionIndex: number
   setValue: ReturnType<typeof useForm<FurnitureFormValues>>["setValue"]
@@ -250,6 +264,9 @@ function ReactionItem({
   charactersByUnit,
   errors,
   excludedCombinationKeys,
+  isFirst,
+  isLast,
+  onMove,
   onToggleRemove,
   reactionIndex,
   setValue,
@@ -283,16 +300,6 @@ function ReactionItem({
     setValue,
     reactionIndex,
   ])
-
-  const selectedUnitName = useMemo(() => {
-    if (selectedCharacters.length === 0) return null
-    for (const [unitName, chars] of charactersByUnit.entries()) {
-      if (chars.some((c) => selectedCharacters.includes(c.id))) {
-        return unitName
-      }
-    }
-    return null
-  }, [selectedCharacters, charactersByUnit])
 
   const toggleCharacter = useCallback(
     (characterId: string) => {
@@ -331,82 +338,66 @@ function ReactionItem({
             </span>
           )}
         </span>
-        {(totalFieldsCount > 1 || _deleted) && onToggleRemove && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onToggleRemove}
-            title={_deleted ? "復元" : "リアクションを削除"}
-          >
-            <span
-              className={cn(
-                "material-symbols-outlined text-sm",
-                _deleted
-                  ? "text-slate-400 hover:text-teal-600"
-                  : "text-slate-400 hover:text-rose-400"
-              )}
+        <div className="flex items-center gap-1">
+          {onMove && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isFirst || _deleted}
+                onClick={() => onMove(ReorderDirectionEnum.up)}
+                className="h-6 w-6 p-0"
+              >
+                <span className="material-symbols-outlined text-sm">arrow_upward</span>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isLast || _deleted}
+                onClick={() => onMove(ReorderDirectionEnum.down)}
+                className="h-6 w-6 p-0"
+              >
+                <span className="material-symbols-outlined text-sm">arrow_downward</span>
+              </Button>
+            </>
+          )}
+          {(totalFieldsCount > 1 || _deleted) && onToggleRemove && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onToggleRemove}
+              title={_deleted ? "復元" : "リアクションを削除"}
+              className="h-6 w-6 p-0"
             >
-              {_deleted ? "undo" : "close"}
-            </span>
-          </Button>
-        )}
+              <span
+                className={cn(
+                  "material-symbols-outlined text-sm",
+                  _deleted
+                    ? "text-slate-400 hover:text-teal-600"
+                    : "text-slate-400 hover:text-rose-400"
+                )}
+              >
+                {_deleted ? "undo" : "close"}
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {reactionErrors?.characters?.message && (
         <p className="text-xs text-rose-600">{reactionErrors.characters.message}</p>
       )}
 
-      <div className="space-y-2">
-        {Array.from(charactersByUnit.entries()).map(([unitName, chars]) => {
-          const isOtherUnitDiv = selectedUnitName !== null && selectedUnitName !== unitName
-          return (
-            <div key={unitName}>
-              <div
-                className={cn(
-                  "mb-1 text-xs font-medium transition-colors",
-                  selectedUnitName === unitName
-                    ? "font-bold text-teal-600"
-                    : isOtherUnitDiv
-                      ? "text-slate-300"
-                      : "text-slate-400"
-                )}
-              >
-                {unitName}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {chars.map((char) => {
-                  const isSelected = selectedCharacters.includes(char.id)
-                  const isOtherUnit = selectedUnitName !== null && selectedUnitName !== unitName
-                  const isDisabled =
-                    _deleted || (!isSelected && (selectedCharacters.length >= 4 || isOtherUnit))
-                  return (
-                    <button
-                      key={char.id}
-                      type="button"
-                      disabled={isDisabled}
-                      onClick={() => toggleCharacter(char.id)}
-                      className={cn(
-                        "cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors",
-                        !isSelected &&
-                          (isDisabled
-                            ? "cursor-not-allowed opacity-30"
-                            : "opacity-70 hover:opacity-100")
-                      )}
-                      style={{
-                        backgroundColor: isSelected ? char.bgColor : `${char.bgColor}40`,
-                        color: char.color,
-                      }}
-                    >
-                      {char.short}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      <CharacterUnitSelector
+        charactersByUnit={charactersByUnit}
+        disabled={_deleted}
+        maxLimit={4}
+        onToggle={toggleCharacter}
+        selectedCharacters={selectedCharacters}
+      />
 
       {showExcludeFromGroup && (
         <label className="flex items-center gap-2 text-sm">

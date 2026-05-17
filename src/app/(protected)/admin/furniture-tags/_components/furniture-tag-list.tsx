@@ -16,10 +16,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { TextLink } from "@/components/ui/text-link"
-import { useGetApiAdminFurnitureTags } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import {
+  useGetApiAdminFurnitureTags,
+  usePatchApiAdminFurnitureTagsTagIdReorder,
+} from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import {
+  type ReorderDirection,
+  ReorderDirection as ReorderDirectionEnum,
+} from "@/lib/api/generated/models"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import Link from "next/link"
 import { useCallback, useMemo, useState } from "react"
+import toast from "react-hot-toast"
 import { FurnitureTagDeleteDialog } from "./furniture-tag-delete-dialog"
 
 const PAGE_SIZE = 20
@@ -47,6 +55,22 @@ export function FurnitureTagList() {
     setDeleteTarget(null)
     refetch()
   }, [refetch])
+
+  const { isPending: isReordering, mutate: reorder } = usePatchApiAdminFurnitureTagsTagIdReorder({
+    mutation: {
+      onError: () => {
+        toast.error("並び順の更新に失敗しました")
+      },
+      onSuccess: () => {
+        toast.success("並び順を更新しました")
+        refetch()
+      },
+    },
+  })
+
+  const handleReorder = (tagId: string, direction: ReorderDirection) => {
+    reorder({ data: { direction }, tagId })
+  }
 
   if (isLoading) return <LoadingState />
   if (error) return <ErrorState title="タグ一覧の取得に失敗しました" onRetry={refetch} />
@@ -80,23 +104,56 @@ export function FurnitureTagList() {
           <>
             <Card>
               <CardContent className="divide-y divide-slate-200">
-                {tags.map((tag) => (
-                  <div key={tag.id} className="flex items-center justify-between py-3">
-                    <TextLink href={`/admin/furniture-tags/${tag.id}`} className="flex-1">
-                      <div className="font-medium">{tag.name}</div>
-                      <div className="text-xs text-slate-500">家具 {tag.furnitureCount} 件</div>
-                    </TextLink>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteTarget({ id: tag.id, name: tag.name })}
-                    >
-                      <span className="material-symbols-outlined text-slate-400 hover:text-rose-500">
-                        delete
-                      </span>
-                    </Button>
-                  </div>
-                ))}
+                {tags.map((tag, index) => {
+                  const isFirst = page === 1 && index === 0
+                  const isLast =
+                    pagination && page === pagination.totalPages && index === tags.length - 1
+                  const isSearching = !!debouncedSearch
+
+                  return (
+                    <div key={tag.id} className="flex items-center justify-between py-3">
+                      <TextLink href={`/admin/furniture-tags/${tag.id}`} className="flex-1">
+                        <div className="font-medium">{tag.name}</div>
+                        <div className="text-xs text-slate-500">家具 {tag.furnitureCount} 件</div>
+                      </TextLink>
+
+                      {!isSearching && (
+                        <div className="mr-4 flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isFirst || isReordering}
+                            onClick={() => handleReorder(tag.id, ReorderDirectionEnum.up)}
+                            className="h-8 w-8 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                          >
+                            <span className="material-symbols-outlined text-xl">arrow_upward</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isLast || isReordering}
+                            onClick={() => handleReorder(tag.id, ReorderDirectionEnum.down)}
+                            className="h-8 w-8 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                          >
+                            <span className="material-symbols-outlined text-xl">
+                              arrow_downward
+                            </span>
+                          </Button>
+                        </div>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteTarget({ id: tag.id, name: tag.name })}
+                      >
+                        <span className="material-symbols-outlined text-slate-400 hover:text-rose-500">
+                          delete
+                        </span>
+                      </Button>
+                    </div>
+                  )
+                })}
               </CardContent>
             </Card>
 

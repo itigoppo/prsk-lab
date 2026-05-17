@@ -6,12 +6,10 @@ import { useGetApiAdminFurnitureCharacters } from "@/lib/api/generated/admin-fur
 import { cn } from "@/lib/utils/common"
 import { useCallback, useMemo } from "react"
 
-type CharacterInfo = {
-  bgColor: string
-  color: string
-  id: string
-  short: string
-}
+import {
+  CharacterUnitSelector,
+  type CharacterInfo,
+} from "../../_components/character-unit-selector"
 
 export interface CombinationEntry {
   characters: string[]
@@ -130,16 +128,6 @@ function CombinationItem({
   onToggle,
   selectedCharacters,
 }: CombinationItemProps) {
-  const selectedUnitName = useMemo(() => {
-    if (selectedCharacters.length === 0) return null
-    for (const [unitName, chars] of charactersByUnit.entries()) {
-      if (chars.some((c) => selectedCharacters.includes(c.id))) {
-        return unitName
-      }
-    }
-    return null
-  }, [selectedCharacters, charactersByUnit])
-
   return (
     <div
       className={cn(
@@ -179,56 +167,13 @@ function CombinationItem({
         </Button>
       </div>
 
-      <div className="space-y-2">
-        {Array.from(charactersByUnit.entries()).map(([unitName, chars]) => {
-          const isOtherUnitDiv = selectedUnitName !== null && selectedUnitName !== unitName
-          return (
-            <div key={unitName}>
-              <div
-                className={cn(
-                  "mb-1 text-xs font-medium transition-colors",
-                  selectedUnitName === unitName
-                    ? "font-bold text-teal-600"
-                    : isOtherUnitDiv
-                      ? "text-slate-300"
-                      : "text-slate-400"
-                )}
-              >
-                {unitName}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {chars.map((char) => {
-                  const isSelected = selectedCharacters.includes(char.id)
-                  const isOtherUnit = selectedUnitName !== null && selectedUnitName !== unitName
-                  const isDisabled =
-                    deleted || (!isSelected && (selectedCharacters.length >= 10 || isOtherUnit))
-                  return (
-                    <button
-                      key={char.id}
-                      type="button"
-                      disabled={isDisabled}
-                      onClick={() => onToggle(char.id)}
-                      className={cn(
-                        "cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors",
-                        !isSelected &&
-                          (isDisabled
-                            ? "cursor-not-allowed opacity-30"
-                            : "opacity-70 hover:opacity-100")
-                      )}
-                      style={{
-                        backgroundColor: isSelected ? char.bgColor : `${char.bgColor}40`,
-                        color: char.color,
-                      }}
-                    >
-                      {char.short}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      <CharacterUnitSelector
+        charactersByUnit={charactersByUnit}
+        disabled={deleted}
+        maxLimit={10}
+        onToggle={onToggle}
+        selectedCharacters={selectedCharacters}
+      />
     </div>
   )
 }

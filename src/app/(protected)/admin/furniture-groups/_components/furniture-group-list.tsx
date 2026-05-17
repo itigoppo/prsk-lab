@@ -15,9 +15,17 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { TextLink } from "@/components/ui/text-link"
-import { useGetApiAdminFurnitureGroups } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import {
+  useGetApiAdminFurnitureGroups,
+  usePatchApiAdminFurnitureGroupsGroupIdReorder,
+} from "@/lib/api/generated/admin-furnitures/admin-furnitures"
+import {
+  type ReorderDirection,
+  ReorderDirection as ReorderDirectionEnum,
+} from "@/lib/api/generated/models"
 import Link from "next/link"
 import { useCallback, useMemo, useState } from "react"
+import toast from "react-hot-toast"
 import { FurnitureGroupDeleteDialog } from "./furniture-group-delete-dialog"
 
 const PAGE_SIZE = 20
@@ -37,6 +45,23 @@ export function FurnitureGroupList() {
     setDeleteTarget(null)
     refetch()
   }, [refetch])
+
+  const { isPending: isReordering, mutate: reorder } =
+    usePatchApiAdminFurnitureGroupsGroupIdReorder({
+      mutation: {
+        onError: () => {
+          toast.error("並び順の更新に失敗しました")
+        },
+        onSuccess: () => {
+          toast.success("並び順を更新しました")
+          refetch()
+        },
+      },
+    })
+
+  const handleReorder = (groupId: string, direction: ReorderDirection) => {
+    reorder({ data: { direction }, groupId })
+  }
 
   if (isLoading) return <LoadingState />
   if (error) return <ErrorState title="グループ一覧の取得に失敗しました" onRetry={refetch} />
@@ -64,25 +89,53 @@ export function FurnitureGroupList() {
           <>
             <Card>
               <CardContent className="divide-y divide-slate-200">
-                {groups.map((group) => (
-                  <div key={group.id} className="flex items-center justify-between py-3">
-                    <TextLink href={`/admin/furniture-groups/${group.id}`} className="flex-1">
-                      <div className="font-medium">{group.name}</div>
-                      <div className="text-xs text-slate-500">
-                        家具 {group.furnitureCount} 件 / 除外 {group.excludedCombinationCount} 件
+                {groups.map((group, index) => {
+                  const isFirst = page === 1 && index === 0
+                  const isLast =
+                    pagination && page === pagination.totalPages && index === groups.length - 1
+
+                  return (
+                    <div key={group.id} className="flex items-center justify-between py-3">
+                      <TextLink href={`/admin/furniture-groups/${group.id}`} className="flex-1">
+                        <div className="font-medium">{group.name}</div>
+                        <div className="text-xs text-slate-500">
+                          家具 {group.furnitureCount} 件 / 除外 {group.excludedCombinationCount} 件
+                        </div>
+                      </TextLink>
+
+                      <div className="mr-4 flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={isFirst || isReordering}
+                          onClick={() => handleReorder(group.id, ReorderDirectionEnum.up)}
+                          className="h-8 w-8 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                        >
+                          <span className="material-symbols-outlined text-xl">arrow_upward</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={isLast || isReordering}
+                          onClick={() => handleReorder(group.id, ReorderDirectionEnum.down)}
+                          className="h-8 w-8 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                        >
+                          <span className="material-symbols-outlined text-xl">arrow_downward</span>
+                        </Button>
                       </div>
-                    </TextLink>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteTarget({ id: group.id, name: group.name })}
-                    >
-                      <span className="material-symbols-outlined text-slate-400 hover:text-rose-500">
-                        delete
-                      </span>
-                    </Button>
-                  </div>
-                ))}
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteTarget({ id: group.id, name: group.name })}
+                      >
+                        <span className="material-symbols-outlined text-slate-400 hover:text-rose-500">
+                          delete
+                        </span>
+                      </Button>
+                    </div>
+                  )
+                })}
               </CardContent>
             </Card>
 

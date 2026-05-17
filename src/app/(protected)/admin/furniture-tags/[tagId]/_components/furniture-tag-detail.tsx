@@ -12,6 +12,10 @@ import {
   usePatchApiAdminFurnitureTagsTagId,
 } from "@/lib/api/generated/admin-furnitures/admin-furnitures"
 import { getGetApiFurnituresQueryKey } from "@/lib/api/generated/furnitures/furnitures"
+import {
+  type ReorderDirection,
+  ReorderDirection as ReorderDirectionEnum,
+} from "@/lib/api/generated/models"
 import { UnsavedChangesDialog, useUnsavedChanges } from "@/lib/hooks/use-unsaved-changes"
 import { updateFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import { cn } from "@/lib/utils/common"
@@ -111,6 +115,22 @@ export function FurnitureTagDetail({ tagId }: FurnitureTagDetailProps) {
     setFurnitures((prev) => prev.map((f) => (f.id === id ? { ...f, values } : f)))
   }, [])
 
+  const handleMoveFurniture = useCallback((id: number, direction: ReorderDirection) => {
+    setFurnitures((prev) => {
+      const index = prev.findIndex((f) => f.id === id)
+      if (index === -1) return prev
+      if (direction === ReorderDirectionEnum.up && index === 0) return prev
+      if (direction === ReorderDirectionEnum.down && index === prev.length - 1) return prev
+
+      const newFurnitures = [...prev]
+      const swapIndex = direction === ReorderDirectionEnum.up ? index - 1 : index + 1
+      const temp = newFurnitures[index]
+      newFurnitures[index] = newFurnitures[swapIndex]
+      newFurnitures[swapIndex] = temp
+      return newFurnitures
+    })
+  }, [])
+
   const handleRemoveFurniture = useCallback((id: number) => {
     setFurnitures((prev) => {
       const target = prev.find((f) => f.id === id)
@@ -186,12 +206,15 @@ export function FurnitureTagDetail({ tagId }: FurnitureTagDetailProps) {
             <div className="py-6 text-center text-sm text-slate-500">家具がありません</div>
           )}
 
-          {furnitures.map((furniture) => (
+          {furnitures.map((furniture, index) => (
             <FurnitureCard
               key={furniture.id}
               furniture={furniture}
+              isFirst={index === 0}
+              isLast={index === furnitures.length - 1}
               onEdit={handleEditFurniture}
               onRemove={handleRemoveFurniture}
+              onMove={handleMoveFurniture}
             />
           ))}
 
@@ -231,11 +254,21 @@ export function FurnitureTagDetail({ tagId }: FurnitureTagDetailProps) {
 
 interface FurnitureCardProps {
   furniture: FurnitureEntry
+  isFirst: boolean
+  isLast: boolean
   onEdit: (id: number, values: FurnitureFormValues) => void
+  onMove: (id: number, direction: ReorderDirection) => void
   onRemove: (id: number) => void
 }
 
-function FurnitureCard({ furniture, onEdit, onRemove }: FurnitureCardProps) {
+function FurnitureCard({
+  furniture,
+  isFirst,
+  isLast,
+  onEdit,
+  onMove,
+  onRemove,
+}: FurnitureCardProps) {
   const [editing, setEditing] = useState(false)
 
   const handleSubmit = useCallback(
@@ -278,8 +311,29 @@ function FurnitureCard({ furniture, onEdit, onRemove }: FurnitureCardProps) {
           type="button"
           variant="ghost"
           size="sm"
+          disabled={isFirst || furniture.deleted}
+          onClick={() => onMove(furniture.id, ReorderDirectionEnum.up)}
+          className="h-8 w-8 px-0 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+        >
+          <span className="material-symbols-outlined text-sm">arrow_upward</span>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={isLast || furniture.deleted}
+          onClick={() => onMove(furniture.id, ReorderDirectionEnum.down)}
+          className="h-8 w-8 px-0 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+        >
+          <span className="material-symbols-outlined text-sm">arrow_downward</span>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setEditing(true)}
           disabled={furniture.deleted}
+          className="h-8 w-8 px-0"
         >
           <span className="material-symbols-outlined text-sm">edit</span>
         </Button>
@@ -289,6 +343,7 @@ function FurnitureCard({ furniture, onEdit, onRemove }: FurnitureCardProps) {
           size="sm"
           onClick={() => onRemove(furniture.id)}
           title={furniture.deleted ? "復元" : "リストから外す"}
+          className="h-8 w-8 px-0"
         >
           <span
             className={cn(
