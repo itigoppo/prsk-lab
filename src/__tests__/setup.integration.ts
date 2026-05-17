@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma"
-import { afterEach } from "vitest"
+import { beforeEach } from "vitest"
 
-afterEach(async () => {
-  // 統合テスト用に、テスト毎にDBの状態をクリーンに保つ
+beforeEach(async () => {
+  // 統合テスト用に、テスト開始時にDBの状態をクリーンに保つ
   // publicスキーマ内のすべてのテーブル名を動的に取得（手動メンテ不要）
   const tablenames = await prisma.$queryRaw<
     Array<{ tablename: string }>

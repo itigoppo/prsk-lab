@@ -19,6 +19,9 @@ vi.mock("@/lib/prisma", () => ({
     furniture: {
       findMany: vi.fn(),
     },
+    furnitureGroup: {
+      findFirst: vi.fn(),
+    },
   },
 }))
 

@@ -1,3 +1,4 @@
+import { reorderDirectionSchema } from "@/lib/schemas/common/reorder"
 import { zString } from "@/lib/utils/zod"
 import { z } from "zod"
 
@@ -40,3 +41,12 @@ export const updateFurnitureGroupDtoSchema = z.object({
 
 export type CreateFurnitureGroupDto = z.infer<typeof createFurnitureGroupDtoSchema>
 export type UpdateFurnitureGroupDto = z.infer<typeof updateFurnitureGroupDtoSchema>
+
+/**
+ * グループ並び替えDTO
+ */
+export const reorderFurnitureGroupDtoSchema = z.object({
+  direction: reorderDirectionSchema,
+})
+
+export type ReorderFurnitureGroupDto = z.infer<typeof reorderFurnitureGroupDtoSchema>

@@ -64,6 +64,12 @@ export const updateFurnitureGroupResponseSchema = z.object({
   success: z.boolean(),
 })
 
+// グループ並び替えレスポンス（データなし）
+export const reorderFurnitureGroupResponseSchema = z.object({
+  message: z.string(),
+  success: z.boolean(),
+})
+
 // グループ詳細レスポンス
 export const getFurnitureGroupResponseSchema = z.object({
   data: z.object({
@@ -85,4 +91,5 @@ export type CreateFurnitureGroupResponse = z.infer<typeof createFurnitureGroupRe
 export type GetFurnitureGroupResponse = z.infer<typeof getFurnitureGroupResponseSchema>
 export type GetFurnitureGroupsResponse = z.infer<typeof getFurnitureGroupsResponseSchema>
 export type UpdateFurnitureGroupResponse = z.infer<typeof updateFurnitureGroupResponseSchema>
+export type ReorderFurnitureGroupResponse = z.infer<typeof reorderFurnitureGroupResponseSchema>
 export type DeleteFurnitureGroupResponse = z.infer<typeof deleteFurnitureGroupResponseSchema>

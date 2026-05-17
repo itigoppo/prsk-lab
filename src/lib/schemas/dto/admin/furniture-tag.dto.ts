@@ -1,3 +1,4 @@
+import { reorderDirectionSchema } from "@/lib/schemas/common/reorder"
 import { zNullableString, zString } from "@/lib/utils/zod"
 import { z } from "zod"
 
@@ -50,4 +51,13 @@ export const updateFurnitureTagDtoSchema = z.object({
 
 export type CreateFurnitureTagDto = z.infer<typeof createFurnitureTagDtoSchema>
 export type UpdateFurnitureTagDto = z.infer<typeof updateFurnitureTagDtoSchema>
+
+/**
+ * タグ並び替えDTO
+ */
+export const reorderFurnitureTagDtoSchema = z.object({
+  direction: reorderDirectionSchema,
+})
+
+export type ReorderFurnitureTagDto = z.infer<typeof reorderFurnitureTagDtoSchema>
 export type FurnitureWithReactionsDto = z.infer<typeof furnitureWithReactionsDtoSchema>

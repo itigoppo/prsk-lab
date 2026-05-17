@@ -112,6 +112,64 @@ describe("POST /api/admin/furniture-tags", () => {
       expect(furnitures[0].reactions[0].characters[0].characterId).toBe("char-1")
     })
 
+    it("家具とリアクションのpriorityが配列のインデックス順に設定される", async () => {
+      await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
+      const unit = await insertMockUnit({ id: "unit-1" })
+      await insertMockCharacter({ code: "char-1", id: "char-1", unitId: unit.id })
+      await insertMockCharacter({ code: "char-2", id: "char-2", unitId: unit.id })
+
+      const res = await openAPIApp.request("/api/admin/furniture-tags", {
+        body: JSON.stringify({
+          furnitures: [
+            {
+              groupId: null,
+              id: null,
+              name: "家具A",
+              reactions: [
+                { characters: ["char-1"], excludeFromGroup: false, id: null },
+                { characters: ["char-2"], excludeFromGroup: false, id: null },
+              ],
+            },
+            {
+              groupId: null,
+              id: null,
+              name: "家具B",
+              reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
+            },
+          ],
+          name: "優先度テストタグ",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
+        },
+        method: "POST",
+      })
+
+      expect(res.status).toBe(HTTP_STATUS.CREATED)
+      const json = await res.json()
+
+      const createdFurnitures = await prisma.furniture.findMany({
+        include: {
+          reactions: {
+            orderBy: { priority: "asc" },
+          },
+        },
+        orderBy: { priority: "asc" },
+        where: { tagId: json.data.id },
+      })
+
+      expect(createdFurnitures).toHaveLength(2)
+      expect(createdFurnitures[0].name).toBe("家具A")
+      expect(createdFurnitures[0].priority).toBe(0)
+      expect(createdFurnitures[1].name).toBe("家具B")
+      expect(createdFurnitures[1].priority).toBe(1)
+
+      expect(createdFurnitures[0].reactions).toHaveLength(2)
+      expect(createdFurnitures[0].reactions[0].priority).toBe(0)
+      expect(createdFurnitures[0].reactions[1].priority).toBe(1)
+    })
+
     it("リアクションが異なるユニットのキャラクターを含む場合はエラーになる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
       const unit1 = await insertMockUnit({ code: "unit1", id: "unit-1" })

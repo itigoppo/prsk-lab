@@ -101,6 +101,12 @@ export const deleteFurnitureTagResponseSchema = z.object({
   success: z.boolean(),
 })
 
+// タグ並び替えレスポンス（データなし）
+export const reorderFurnitureTagResponseSchema = z.object({
+  message: z.string(),
+  success: z.boolean(),
+})
+
 export type AdminCharacter = z.infer<typeof adminCharacterSchema>
 export type AdminReaction = z.infer<typeof adminReactionSchema>
 export type AdminFurnitureSummary = z.infer<typeof adminFurnitureSummarySchema>
@@ -112,3 +118,4 @@ export type GetFurnitureTagsResponse = z.infer<typeof getFurnitureTagsResponseSc
 export type GetFurnitureTagResponse = z.infer<typeof getFurnitureTagResponseSchema>
 export type UpdateFurnitureTagResponse = z.infer<typeof updateFurnitureTagResponseSchema>
 export type DeleteFurnitureTagResponse = z.infer<typeof deleteFurnitureTagResponseSchema>
+export type ReorderFurnitureTagResponse = z.infer<typeof reorderFurnitureTagResponseSchema>

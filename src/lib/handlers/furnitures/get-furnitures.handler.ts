@@ -31,10 +31,10 @@ export const getFurnitures: Handler = async (c) => {
 
     // 全タグと家具を取得
     const tags = await prisma.furnitureTag.findMany({
-      orderBy: { createdAt: Prisma.SortOrder.asc },
+      orderBy: [{ priority: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
       select: {
         furnitures: {
-          orderBy: { createdAt: Prisma.SortOrder.asc },
+          orderBy: [{ priority: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
           select: {
             id: true,
             name: true,

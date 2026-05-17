@@ -102,15 +102,12 @@ export const updateFurnitureGroup: Handler = async (c) => {
       }
     }
 
-    const now = new Date()
-
     // トランザクションで更新
     await prisma.$transaction(async (tx) => {
       // グループを更新
       await tx.furnitureGroup.update({
         data: {
           name,
-          updatedAt: now,
         },
         where: { id: groupId },
       })
@@ -137,7 +134,7 @@ export const updateFurnitureGroup: Handler = async (c) => {
 
       // 指定外の家具をグループから除外
       await tx.furniture.updateMany({
-        data: { groupId: null, updatedAt: now },
+        data: { groupId: null },
         where: {
           groupId,
           id: { notIn: furnitureIds },
@@ -147,7 +144,7 @@ export const updateFurnitureGroup: Handler = async (c) => {
       // 指定された家具をグループに追加
       if (furnitureIds.length > 0) {
         await tx.furniture.updateMany({
-          data: { groupId, updatedAt: now },
+          data: { groupId },
           where: { id: { in: furnitureIds } },
         })
       }

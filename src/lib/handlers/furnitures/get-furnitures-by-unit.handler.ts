@@ -41,14 +41,16 @@ export const getFurnituresByUnit: Handler = async (c) => {
 
     // ユニットのキャラクターが関連するリアクションを持つ家具を取得
     const tags = await prisma.furnitureTag.findMany({
-      orderBy: { createdAt: Prisma.SortOrder.asc },
+      orderBy: [{ priority: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
       select: {
         furnitures: {
+          orderBy: [{ priority: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
           select: {
             groupId: true,
             id: true,
             name: true,
             reactions: {
+              orderBy: [{ priority: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
               select: {
                 characters: {
                   select: {

@@ -1,3 +1,4 @@
+import { FURNITURE_TAG_LIST_ORDER_BY } from "@/constants/furnitures"
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
 import { paginationQuerySchema } from "@/lib/schemas/common/pagination"
@@ -27,7 +28,7 @@ export const getFurnitureTags: Handler = async (c) => {
             select: { furnitures: true },
           },
         },
-        orderBy: { createdAt: Prisma.SortOrder.asc },
+        orderBy: FURNITURE_TAG_LIST_ORDER_BY,
         skip,
         take: limit,
         where,

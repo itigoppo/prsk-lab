@@ -42,6 +42,28 @@ describe("GET /api/admin/furniture-tags", () => {
       expect(json.data.pagination.total).toBe(2)
     })
 
+    it("優先度(priority)の昇順でタグ一覧が取得できる", async () => {
+      await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
+      await insertMockFurnitureTag({ id: "tag-priority-1", name: "優先度2のタグ", priority: 2 })
+      await insertMockFurnitureTag({ id: "tag-priority-2", name: "優先度1のタグ", priority: 1 })
+      await insertMockFurnitureTag({ id: "tag-priority-3", name: "優先度3のタグ", priority: 3 })
+
+      const res = await openAPIApp.request("/api/admin/furniture-tags", {
+        headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
+        method: "GET",
+      })
+
+      expect(res.status).toBe(HTTP_STATUS.OK)
+      const json = await res.json()
+      expect(json.success).toBe(true)
+
+      const tags = json.data.tags
+      expect(tags).toHaveLength(3)
+      expect(tags[0].name).toBe("優先度1のタグ")
+      expect(tags[1].name).toBe("優先度2のタグ")
+      expect(tags[2].name).toBe("優先度3のタグ")
+    })
+
     it("Editor権限でもタグ一覧を取得できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Editor" })
 

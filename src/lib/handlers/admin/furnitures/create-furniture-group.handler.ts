@@ -93,8 +93,14 @@ export const createFurnitureGroup: Handler = async (c) => {
       }
     }
 
-    const now = new Date()
     const groupId = createId()
+
+    // 現在の最大priorityを取得
+    const maxPriorityGroup = await prisma.furnitureGroup.findFirst({
+      orderBy: { priority: "desc" },
+      select: { priority: true },
+    })
+    const priority = maxPriorityGroup ? maxPriorityGroup.priority + 1 : 0
 
     // トランザクションで作成
     await prisma.$transaction(async (tx) => {
@@ -103,7 +109,7 @@ export const createFurnitureGroup: Handler = async (c) => {
         data: {
           id: groupId,
           name,
-          updatedAt: now,
+          priority,
         },
       })
 
@@ -125,7 +131,7 @@ export const createFurnitureGroup: Handler = async (c) => {
       // 指定された家具をグループに追加
       if (furnitureIds.length > 0) {
         await tx.furniture.updateMany({
-          data: { groupId, updatedAt: now },
+          data: { groupId },
           where: { id: { in: furnitureIds } },
         })
       }

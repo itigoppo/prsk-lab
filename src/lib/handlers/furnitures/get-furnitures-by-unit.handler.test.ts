@@ -84,7 +84,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -141,7 +144,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -167,7 +173,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -194,7 +203,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.use("/furnitures/:unitCode", async (c, next) => {
       c.set("discordId", "discord-123")
@@ -316,7 +328,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -349,7 +364,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -389,7 +407,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -421,7 +442,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -679,7 +703,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharactersWithThree as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -699,7 +726,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 
@@ -737,7 +767,10 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.character.findMany)
       .mockResolvedValueOnce(mockCharacters as never)
       .mockResolvedValueOnce(mockVsCharacters as never)
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1", ownedFurnitures: [] } as never)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      ownedFurnitures: [],
+    } as never)
 
     app.get("/furnitures/:unitCode", getFurnituresByUnit)
 

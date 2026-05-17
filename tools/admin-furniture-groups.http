@@ -1,0 +1,61 @@
+@baseUrl = {{$dotenv BASE_URL}}
+@sessionToken = {{$dotenv SESSION_TOKEN}}
+
+### Get furniture groups
+# @name getGroups
+GET {{baseUrl}}/admin/furniture-groups
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Get furniture groups with pagination
+GET {{baseUrl}}/admin/furniture-groups?page=1&limit=20
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Create furniture group
+POST {{baseUrl}}/admin/furniture-groups
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "グループ1",
+  "furnitureIds": [
+  ],
+  "excludedCombinations": [
+  ]
+}
+
+### Get furniture group
+GET {{baseUrl}}/admin/furniture-groups/{{getGroups.response.body.$.data.groups[0].id}}
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Update furniture group
+PATCH {{baseUrl}}/admin/furniture-groups/{{getGroups.response.body.$.data.groups[0].id}}
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "name": "グループ1-1",
+  "furnitureIds": [
+  ],
+  "excludedCombinations": [
+  ]
+}
+
+### Delete furniture group
+DELETE {{baseUrl}}/admin/furniture-groups/{{getGroups.response.body.$.data.groups[0].id}}
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+
+### Reorder furniture group (up or down)
+PATCH {{baseUrl}}/admin/furniture-groups/{{getGroups.response.body.$.data.groups[0].id}}/reorder
+Accept: application/json
+Cookie: next-auth.session-token={{sessionToken}};
+Content-Type: application/json
+
+{
+  "direction": "down"
+}

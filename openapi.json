@@ -33,7 +33,7 @@
         "type": "apiKey"
       }
     },
-    "schemas": {},
+    "schemas": { "ReorderDirection": { "type": "string", "enum": ["up", "down"] } },
     "parameters": {}
   },
   "paths": {
@@ -988,6 +988,55 @@
         }
       }
     },
+    "/api/admin/furniture-tags/{tagId}/reorder": {
+      "patch": {
+        "description": "Swap the priority of a furniture tag with the adjacent tag in the specified direction",
+        "security": [{ "cookieAuth": [] }],
+        "summary": "Reorder furniture tags",
+        "tags": ["Admin - Furnitures"],
+        "parameters": [
+          {
+            "schema": { "type": "string", "description": "Tag ID", "example": "clxxxxx" },
+            "required": true,
+            "description": "Tag ID",
+            "name": "tagId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "direction": { "$ref": "#/components/schemas/ReorderDirection" } },
+                "required": ["direction"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Furniture tags reordered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "success": { "type": "boolean" }
+                  },
+                  "required": ["message", "success"]
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad request - Invalid input data" },
+          "401": { "description": "Unauthorized - Authentication required" },
+          "403": { "description": "Forbidden - Insufficient permissions" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
     "/api/admin/furniture-tags/{tagId}": {
       "get": {
         "description": "Get a furniture tag with its furnitures and reactions",
@@ -1333,6 +1382,55 @@
               }
             }
           },
+          "401": { "description": "Unauthorized - Authentication required" },
+          "403": { "description": "Forbidden - Insufficient permissions" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/api/admin/furniture-groups/{groupId}/reorder": {
+      "patch": {
+        "description": "Swap the priority of a furniture group with the adjacent group in the specified direction",
+        "security": [{ "cookieAuth": [] }],
+        "summary": "Reorder furniture groups",
+        "tags": ["Admin - Furnitures"],
+        "parameters": [
+          {
+            "schema": { "type": "string", "description": "Group ID", "example": "clxxxxx" },
+            "required": true,
+            "description": "Group ID",
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "direction": { "$ref": "#/components/schemas/ReorderDirection" } },
+                "required": ["direction"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Furniture groups reordered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "success": { "type": "boolean" }
+                  },
+                  "required": ["message", "success"]
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad request - Invalid input data" },
           "401": { "description": "Unauthorized - Authentication required" },
           "403": { "description": "Forbidden - Insufficient permissions" },
           "500": { "description": "Internal server error" }

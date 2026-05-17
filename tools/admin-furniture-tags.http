@@ -2,6 +2,7 @@
 @sessionToken = {{$dotenv SESSION_TOKEN}}
 
 ### Get furniture tags
+# @name getTags
 GET {{baseUrl}}/admin/furniture-tags
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
@@ -23,7 +24,8 @@ Cookie: next-auth.session-token={{sessionToken}};
 Content-Type: application/json
 
 {
-  "name": "タグ1"
+  "name": "タグ1",
+  "furnitures": []
 }
 
 ### Create furniture tag with furnitures
@@ -53,22 +55,23 @@ Content-Type: application/json
 }
 
 ### Get furniture tag
-GET {{baseUrl}}/admin/furniture-tags/gj4o4426pawsc3ok0gayqg3x
+GET {{baseUrl}}/admin/furniture-tags/{{getTags.response.body.$.data.tags[0].id}}
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
 
 ### Update furniture tag (name only)
-PATCH {{baseUrl}}/admin/furniture-tags/ls1mdumpd05raqb2qkwuh1hr
+PATCH {{baseUrl}}/admin/furniture-tags/{{getTags.response.body.$.data.tags[0].id}}
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
 Content-Type: application/json
 
 {
-  "name": "タグ1-1"
+  "name": "タグ1-1",
+  "furnitures": []
 }
 
 ### Update furniture tag with furnitures
-PATCH {{baseUrl}}/admin/furniture-tags/ls1mdumpd05raqb2qkwuh1hr
+PATCH {{baseUrl}}/admin/furniture-tags/{{getTags.response.body.$.data.tags[0].id}}
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
 Content-Type: application/json
@@ -90,56 +93,16 @@ Content-Type: application/json
 }
 
 ### Delete furniture tag
-DELETE {{baseUrl}}/admin/furniture-tags/b3iec7s0s5t95zf3grmry9hc
+DELETE {{baseUrl}}/admin/furniture-tags/{{getTags.response.body.$.data.tags[0].id}}
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
 
-
-### Get furniture groups
-GET {{baseUrl}}/admin/furniture-groups
-Accept: application/json
-Cookie: next-auth.session-token={{sessionToken}};
-
-### Get furniture groups with pagination
-GET {{baseUrl}}/admin/furniture-groups?page=1&limit=20
-Accept: application/json
-Cookie: next-auth.session-token={{sessionToken}};
-
-### Create furniture group
-POST {{baseUrl}}/admin/furniture-groups
+### Reorder furniture tag (up or down)
+PATCH {{baseUrl}}/admin/furniture-tags/{{getTags.response.body.$.data.tags[0].id}}/reorder
 Accept: application/json
 Cookie: next-auth.session-token={{sessionToken}};
 Content-Type: application/json
 
 {
-  "name": "グループ1",
-  "furnitureIds": [
-  ],
-  "excludedCombinations": [
-  ]
+  "direction": "down"
 }
-
-### Get furniture group
-GET {{baseUrl}}/admin/furniture-groups/c560refezobhp6tmyqw82g5c
-Accept: application/json
-Cookie: next-auth.session-token={{sessionToken}};
-
-### Update furniture group
-PATCH {{baseUrl}}/admin/furniture-groups/c560refezobhp6tmyqw82g5c
-Accept: application/json
-Cookie: next-auth.session-token={{sessionToken}};
-Content-Type: application/json
-
-{
-  "name": "グループ1-1",
-  "furnitureIds": [
-  ],
-  "excludedCombinations": [
-  ]
-}
-
-### Delete furniture group
-DELETE {{baseUrl}}/admin/furniture-groups/c560refezobhp6tmyqw82g5c
-Accept: application/json
-Cookie: next-auth.session-token={{sessionToken}};
-

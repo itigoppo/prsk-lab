@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
 import type { GetFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
+import { Prisma } from "@prisma/client"
 import type { Handler } from "hono"
 
 export const getFurnitureGroup: Handler = async (c) => {
@@ -20,7 +21,7 @@ export const getFurnitureGroup: Handler = async (c) => {
           include: {
             tag: { select: { name: true } },
           },
-          orderBy: { createdAt: "asc" },
+          orderBy: [{ priority: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
         },
       },
       where: { id: groupId },

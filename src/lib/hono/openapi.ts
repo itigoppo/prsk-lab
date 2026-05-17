@@ -7,6 +7,8 @@ import { getFurnitureGroup } from "@/lib/handlers/admin/furnitures/get-furniture
 import { getFurnitureGroups } from "@/lib/handlers/admin/furnitures/get-furniture-groups.handler"
 import { getFurnitureTag } from "@/lib/handlers/admin/furnitures/get-furniture-tag.handler"
 import { getFurnitureTags } from "@/lib/handlers/admin/furnitures/get-furniture-tags.handler"
+import { reorderFurnitureGroups } from "@/lib/handlers/admin/furnitures/reorder-furniture-groups.handler"
+import { reorderFurnitureTags } from "@/lib/handlers/admin/furnitures/reorder-furniture-tags.handler"
 import { updateFurnitureGroup } from "@/lib/handlers/admin/furnitures/update-furniture-group.handler"
 import { updateFurnitureTag } from "@/lib/handlers/admin/furnitures/update-furniture-tag.handler"
 import { getCharacters } from "@/lib/handlers/characters/get-characters.handler"
@@ -26,10 +28,12 @@ import { verifyDiscordToken } from "@/lib/middleware/verify-discord-token"
 import { verifyNextAuthSession } from "@/lib/middleware/verify-nextauth-session"
 import {
   createFurnitureGroupDtoSchema,
+  reorderFurnitureGroupDtoSchema,
   updateFurnitureGroupDtoSchema,
 } from "@/lib/schemas/dto/admin/furniture-group.dto"
 import {
   createFurnitureTagDtoSchema,
+  reorderFurnitureTagDtoSchema,
   updateFurnitureTagDtoSchema,
 } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import { createSettingDtoSchema, updateSettingDtoSchema } from "@/lib/schemas/dto/setting.dto"
@@ -39,6 +43,7 @@ import {
   deleteFurnitureGroupResponseSchema,
   getFurnitureGroupResponseSchema,
   getFurnitureGroupsResponseSchema,
+  reorderFurnitureGroupResponseSchema,
   updateFurnitureGroupResponseSchema,
 } from "@/lib/schemas/response/admin/furniture-group.response"
 import {
@@ -46,6 +51,7 @@ import {
   deleteFurnitureTagResponseSchema,
   getFurnitureTagResponseSchema,
   getFurnitureTagsResponseSchema,
+  reorderFurnitureTagResponseSchema,
   updateFurnitureTagResponseSchema,
 } from "@/lib/schemas/response/admin/furniture-tag.response"
 import { characterListResponseSchema } from "@/lib/schemas/response/character.response"
@@ -571,6 +577,39 @@ const deleteFurnitureTagRoute = createRoute({
   tags: [Tags.ADMIN_FURNITURES.name],
 })
 
+const reorderFurnitureTagsRoute = createRoute({
+  description:
+    "Swap the priority of a furniture tag with the adjacent tag in the specified direction",
+  method: "patch",
+  path: "/api/admin/furniture-tags/{tagId}/reorder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: reorderFurnitureTagDtoSchema,
+        },
+      },
+    },
+    params: z.object({
+      tagId: z.string().openapi({ description: "Tag ID", example: "clxxxxx" }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(
+      200,
+      reorderFurnitureTagResponseSchema,
+      "Furniture tags reordered successfully"
+    ),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "Reorder furniture tags",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
 // Furniture Group Routes
 const createFurnitureGroupRoute = createRoute({
   description: "Create a new furniture group with optional excluded character combinations",
@@ -689,6 +728,39 @@ const deleteFurnitureGroupRoute = createRoute({
   tags: [Tags.ADMIN_FURNITURES.name],
 })
 
+const reorderFurnitureGroupsRoute = createRoute({
+  description:
+    "Swap the priority of a furniture group with the adjacent group in the specified direction",
+  method: "patch",
+  path: "/api/admin/furniture-groups/{groupId}/reorder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: reorderFurnitureGroupDtoSchema,
+        },
+      },
+    },
+    params: z.object({
+      groupId: z.string().openapi({ description: "Group ID", example: "clxxxxx" }),
+    }),
+  },
+  responses: {
+    ...jsonResponse(
+      200,
+      reorderFurnitureGroupResponseSchema,
+      "Furniture groups reordered successfully"
+    ),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "Reorder furniture groups",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
 // Register routes with actual handlers and middleware
 // 構造化されたルート登録でパス重複を削減
 type RouteDefinition = {
@@ -780,6 +852,11 @@ const routes: RouteDefinition[] = [
     route: createFurnitureTagRoute,
   },
   {
+    handler: reorderFurnitureTags,
+    middlewares: [verifyNextAuthSession, requireEditorOrAdmin],
+    route: reorderFurnitureTagsRoute,
+  },
+  {
     handler: getFurnitureTags,
     middlewares: [verifyNextAuthSession, requireEditorOrAdmin],
     route: getFurnitureTagsRoute,
@@ -809,6 +886,11 @@ const routes: RouteDefinition[] = [
     handler: getFurnitureGroups,
     middlewares: [verifyNextAuthSession, requireEditorOrAdmin],
     route: getFurnitureGroupsRoute,
+  },
+  {
+    handler: reorderFurnitureGroups,
+    middlewares: [verifyNextAuthSession, requireEditorOrAdmin],
+    route: reorderFurnitureGroupsRoute,
   },
   {
     handler: getFurnitureGroup,

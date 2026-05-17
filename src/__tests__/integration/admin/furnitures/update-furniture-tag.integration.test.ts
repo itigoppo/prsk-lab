@@ -4,7 +4,12 @@ import { prisma } from "@/lib/prisma"
 import type { Context, Next } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { insertMockFurnitureTag, insertMockUser } from "../../../mocks/factories"
+import {
+  insertMockCharacter,
+  insertMockFurnitureTag,
+  insertMockUnit,
+  insertMockUser,
+} from "../../../mocks/factories"
 
 // NextAuth セッション検証ミドルウェアをモック
 const mockVerifyNextAuthSession = vi.fn()
@@ -63,6 +68,64 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
       })
 
       expect(res.status).toBe(HTTP_STATUS.OK)
+    })
+
+    it("家具とリアクションのpriorityが更新時に配列のインデックス順に設定される", async () => {
+      await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
+      const unit = await insertMockUnit({ id: "unit-1" })
+      await insertMockCharacter({ code: "char-1", id: "char-1", unitId: unit.id })
+      await insertMockCharacter({ code: "char-2", id: "char-2", unitId: unit.id })
+      await insertMockFurnitureTag({ id: "tag-priority", name: "古いタグ" })
+
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-priority", {
+        body: JSON.stringify({
+          furnitures: [
+            {
+              groupId: null,
+              id: null,
+              name: "家具A",
+              reactions: [
+                { characters: ["char-1"], excludeFromGroup: false, id: null },
+                { characters: ["char-2"], excludeFromGroup: false, id: null },
+              ],
+            },
+            {
+              groupId: null,
+              id: null,
+              name: "家具B",
+              reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
+            },
+          ],
+          name: "優先度更新タグ",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
+        },
+        method: "PATCH",
+      })
+
+      expect(res.status).toBe(HTTP_STATUS.OK)
+
+      const updatedFurnitures = await prisma.furniture.findMany({
+        include: {
+          reactions: {
+            orderBy: { priority: "asc" },
+          },
+        },
+        orderBy: { priority: "asc" },
+        where: { tagId: "tag-priority" },
+      })
+
+      expect(updatedFurnitures).toHaveLength(2)
+      expect(updatedFurnitures[0].name).toBe("家具A")
+      expect(updatedFurnitures[0].priority).toBe(0)
+      expect(updatedFurnitures[1].name).toBe("家具B")
+      expect(updatedFurnitures[1].priority).toBe(1)
+
+      expect(updatedFurnitures[0].reactions).toHaveLength(2)
+      expect(updatedFurnitures[0].reactions[0].priority).toBe(0)
+      expect(updatedFurnitures[0].reactions[1].priority).toBe(1)
     })
 
     it("タグが見つからない場合は404を返す", async () => {

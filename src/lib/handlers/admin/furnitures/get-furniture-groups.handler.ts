@@ -1,8 +1,8 @@
+import { FURNITURE_GROUP_LIST_ORDER_BY } from "@/constants/furnitures"
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
 import { paginationQuerySchema } from "@/lib/schemas/common/pagination"
 import type { GetFurnitureGroupsResponse } from "@/lib/schemas/response/admin/furniture-group.response"
-import { Prisma } from "@prisma/client"
 import type { Handler } from "hono"
 
 export const getFurnitureGroups: Handler = async (c) => {
@@ -25,7 +25,7 @@ export const getFurnitureGroups: Handler = async (c) => {
             select: { combinationId: true },
           },
         },
-        orderBy: { createdAt: Prisma.SortOrder.asc },
+        orderBy: FURNITURE_GROUP_LIST_ORDER_BY,
         skip,
         take: limit,
       }),
