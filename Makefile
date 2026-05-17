@@ -6,7 +6,7 @@ POSTGRES_CONTAINER := prsk-postgres
 	prisma-generate prisma-migrate prisma-deploy prisma-reset prisma-studio open-studio \
 	seed fix open-api-generate \
 	test test-all test-unit test-integration test-coverage \
-	check check-coverage check-lint check-type
+	check check-handler-tests check-lint check-type
 
 # Start Docker containers
 docker-up:
@@ -95,7 +95,7 @@ open-api-generate:
 
 # Run all tests (unit + integration)
 test:
-	pnpm test:all && pnpm test:check-coverage
+	pnpm test:all && pnpm test:check-handler-tests
 
 # Run all tests (alias for test)
 test-all:
@@ -109,17 +109,17 @@ test-unit:
 test-integration:
 	pnpm test:integration
 
-# Run test coverage check
+# Run test coverage
 test-coverage:
-	pnpm test:check-coverage
+	pnpm test:coverage
 
 # Run check
 check:
 	pnpm check
 
-# Run check:coverage
-check-coverage:
-	pnpm test:check-coverage
+# Run check:handler-tests
+check-handler-tests:
+	pnpm test:check-handler-tests
 
 # Run check:lint
 check-lint:
