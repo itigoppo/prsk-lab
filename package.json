@@ -2,6 +2,9 @@
   "name": "prsk-lab",
   "description": "PrskLab",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=24.16.0"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
