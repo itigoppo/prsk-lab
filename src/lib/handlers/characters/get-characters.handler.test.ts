@@ -1,40 +1,30 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import { prisma } from "@/lib/prisma"
+import type { CharacterListItem } from "@/lib/schemas/response/character.response"
+import { OpenAPIHono } from "@hono/zod-openapi"
+import { Prisma } from "@prisma/client"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCharacters } from "./get-characters.handler"
+import { getCharacters, getCharactersRoute } from "./get-characters.handler"
 
-type MockCharacter = {
-  avatarUrl: string
-  bgColor: string
-  code: string
-  color: string
-  name: string
-  short: string
-  unit: {
-    bgColor: string
-    code: string
-    color: string
-    name: string
-    short: string
-  } | null
-}
-
-type CharacterResponse = {
-  avatarUrl: string
-  bgColor: string
-  code: string
-  color: string
-  isVirtualSinger: boolean
-  name: string
-  short: string
-  unit: {
-    bgColor: string
-    code: string
-    color: string
-    name: string
-    short: string
-  } | null
-}
+type CharacterWithUnit = Prisma.CharacterGetPayload<{
+  select: {
+    avatarUrl: true
+    bgColor: true
+    code: true
+    color: true
+    name: true
+    short: true
+    unit: {
+      select: {
+        bgColor: true
+        code: true
+        color: true
+        name: true
+        short: true
+      }
+    }
+  }
+}>
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -45,19 +35,17 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-
 describe("Character Handlers", () => {
-  let app: Hono
+  let app: OpenAPIHono
 
   beforeEach(() => {
-    app = new Hono()
+    app = new OpenAPIHono()
     vi.clearAllMocks()
   })
 
   describe("GET /characters (getCharacters)", () => {
     it("キャラクター一覧を取得できる", async () => {
-      const mockCharacters: MockCharacter[] = [
+      const mockCharacters: CharacterWithUnit[] = [
         {
           avatarUrl: "https://example.com/miku.png",
           bgColor: "#33ccbb",
@@ -84,13 +72,10 @@ describe("Character Handlers", () => {
         },
       ]
 
-      vi.mocked(prisma.character.findMany).mockResolvedValue(
-        mockCharacters as unknown as Awaited<ReturnType<typeof prisma.character.findMany>>
-      )
+      vi.mocked(prisma.character.findMany).mockResolvedValue(mockCharacters as never)
 
-      app.get("/characters", getCharacters)
-
-      const res = await app.request("/characters")
+      app.openapi(getCharactersRoute, getCharacters)
+      const res = await app.request("/api/characters")
       const json = await res.json()
 
       expect(res.status).toBe(200)
@@ -116,7 +101,7 @@ describe("Character Handlers", () => {
     })
 
     it("全てのバーチャルシンガーを正しく判定できる", async () => {
-      const virtualSingers: MockCharacter[] = [
+      const virtualSingers: CharacterWithUnit[] = [
         {
           avatarUrl: "",
           bgColor: "",
@@ -173,26 +158,23 @@ describe("Character Handlers", () => {
         },
       ]
 
-      vi.mocked(prisma.character.findMany).mockResolvedValue(
-        virtualSingers as unknown as Awaited<ReturnType<typeof prisma.character.findMany>>
-      )
+      vi.mocked(prisma.character.findMany).mockResolvedValue(virtualSingers as never)
 
-      app.get("/characters", getCharacters)
-
-      const res = await app.request("/characters")
+      app.openapi(getCharactersRoute, getCharacters)
+      const res = await app.request("/api/characters")
       const json = await res.json()
 
       expect(res.status).toBe(200)
       expect(json.data.characters).toHaveLength(6)
 
       // 全てがバーチャルシンガーとして判定されることを確認
-      json.data.characters.forEach((character: CharacterResponse) => {
+      json.data.characters.forEach((character: CharacterListItem) => {
         expect(character.isVirtualSinger).toBe(true)
       })
     })
 
     it("通常キャラクターは全てisVirtualSinger=falseになる", async () => {
-      const normalCharacters: MockCharacter[] = [
+      const normalCharacters: CharacterWithUnit[] = [
         {
           avatarUrl: "",
           bgColor: "",
@@ -228,20 +210,17 @@ describe("Character Handlers", () => {
         },
       ]
 
-      vi.mocked(prisma.character.findMany).mockResolvedValue(
-        normalCharacters as unknown as Awaited<ReturnType<typeof prisma.character.findMany>>
-      )
+      vi.mocked(prisma.character.findMany).mockResolvedValue(normalCharacters as never)
 
-      app.get("/characters", getCharacters)
-
-      const res = await app.request("/characters")
+      app.openapi(getCharactersRoute, getCharacters)
+      const res = await app.request("/api/characters")
       const json = await res.json()
 
       expect(res.status).toBe(200)
       expect(json.data.characters).toHaveLength(3)
 
       // 全てが通常キャラクターとして判定されることを確認
-      json.data.characters.forEach((character: CharacterResponse) => {
+      json.data.characters.forEach((character: CharacterListItem) => {
         expect(character.isVirtualSinger).toBe(false)
         expect(character.unit).not.toBeNull()
       })
@@ -250,9 +229,8 @@ describe("Character Handlers", () => {
     it("キャラクターが0件の場合は空配列を返す", async () => {
       vi.mocked(prisma.character.findMany).mockResolvedValue([])
 
-      app.get("/characters", getCharacters)
-
-      const res = await app.request("/characters")
+      app.openapi(getCharactersRoute, getCharacters)
+      const res = await app.request("/api/characters")
       const json = await res.json()
 
       expect(res.status).toBe(200)
@@ -263,9 +241,8 @@ describe("Character Handlers", () => {
     it("データベースエラーの場合は500を返す", async () => {
       vi.mocked(prisma.character.findMany).mockRejectedValue(new Error("Database error"))
 
-      app.get("/characters", getCharacters)
-
-      const res = await app.request("/characters")
+      app.openapi(getCharactersRoute, getCharacters)
+      const res = await app.request("/api/characters")
       const json = await res.json()
 
       expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
@@ -274,7 +251,7 @@ describe("Character Handlers", () => {
     })
 
     it("unitがnullのキャラクターも正しく処理できる", async () => {
-      const mockCharacters: MockCharacter[] = [
+      const mockCharacters: CharacterWithUnit[] = [
         {
           avatarUrl: "https://example.com/special.png",
           bgColor: "#ffffff",
@@ -286,13 +263,10 @@ describe("Character Handlers", () => {
         },
       ]
 
-      vi.mocked(prisma.character.findMany).mockResolvedValue(
-        mockCharacters as unknown as Awaited<ReturnType<typeof prisma.character.findMany>>
-      )
+      vi.mocked(prisma.character.findMany).mockResolvedValue(mockCharacters as never)
 
-      app.get("/characters", getCharacters)
-
-      const res = await app.request("/characters")
+      app.openapi(getCharactersRoute, getCharacters)
+      const res = await app.request("/api/characters")
       const json = await res.json()
 
       expect(res.status).toBe(200)

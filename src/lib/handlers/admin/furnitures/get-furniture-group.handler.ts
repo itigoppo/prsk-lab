@@ -1,10 +1,33 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
+import { furnitureGroupParamDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
 import type { GetFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
+import { getFurnitureGroupResponseSchema } from "@/lib/schemas/response/admin/furniture-group.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const getFurnitureGroup: Handler = async (c) => {
+export const getFurnitureGroupRoute = createRoute({
+  description: "除外設定および家具を含む家具グループの詳細を取得する",
+  method: "get",
+  path: "/api/admin/furniture-groups/{groupId}",
+  request: {
+    params: furnitureGroupParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, getFurnitureGroupResponseSchema, "家具グループを取得しました"),
+    ...commonResponses.notFound,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具グループ詳細取得",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const getFurnitureGroup: RouteHandler<typeof getFurnitureGroupRoute, AppEnv> = async (c) => {
   try {
     const groupId = c.req.param("groupId")
 

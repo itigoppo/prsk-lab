@@ -29,13 +29,13 @@ describe("GET /api/admin/furniture-groups/:groupId", () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
       await prisma.furnitureGroup.create({
         data: {
-          id: "group-1",
+          id: "group1",
           name: "テストグループ",
           updatedAt: new Date(),
         },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "GET",
       })
@@ -43,16 +43,16 @@ describe("GET /api/admin/furniture-groups/:groupId", () => {
       expect(res.status).toBe(HTTP_STATUS.OK)
       const json = await res.json()
       expect(json.success).toBe(true)
-      expect(json.data.group.id).toBe("group-1")
+      expect(json.data.group.id).toBe("group1")
     })
 
     it("Editor権限でもグループ詳細を取得できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Editor" })
       await prisma.furnitureGroup.create({
-        data: { id: "group-editor", name: "詳細取得", updatedAt: new Date() },
+        data: { id: "groupeditor", name: "詳細取得", updatedAt: new Date() },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-editor", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/groupeditor", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "GET",
       })
@@ -74,7 +74,7 @@ describe("GET /api/admin/furniture-groups/:groupId", () => {
     it("Viewer権限では403を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Viewer" })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "GET",
       })
@@ -87,7 +87,7 @@ describe("GET /api/admin/furniture-groups/:groupId", () => {
         return c.json({ message: "Missing session token", success: false }, 401)
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         method: "GET",
       })
 

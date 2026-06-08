@@ -2,29 +2,49 @@ import { FURNITURE_TAG_LIST_ORDER_BY } from "@/constants/furnitures"
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
 import { REORDER_DIRECTION } from "@/lib/schemas/common/reorder"
-import { reorderFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
-import type { ReorderFurnitureTagResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
-import { formatZodErrors } from "@/lib/utils/zod"
-import type { Handler } from "hono"
+import {
+  furnitureTagParamDtoSchema,
+  reorderFurnitureTagDtoSchema,
+} from "@/lib/schemas/dto/admin/furniture-tag.dto"
+import { reorderFurnitureTagResponseSchema } from "@/lib/schemas/response/admin/furniture-tag.response"
 
-export const reorderFurnitureTags: Handler = async (c) => {
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
+import type { ReorderFurnitureTagResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
+
+export const reorderFurnitureTagsRoute = createRoute({
+  description: "家具タグの優先度を指定した方向の隣接タグと入れ替える",
+  method: "patch",
+  path: "/api/admin/furniture-tags/{tagId}/reorder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: reorderFurnitureTagDtoSchema,
+        },
+      },
+    },
+    params: furnitureTagParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, reorderFurnitureTagResponseSchema, "家具タグの順序を変更しました"),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具タグ順序変更",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const reorderFurnitureTags: RouteHandler<typeof reorderFurnitureTagsRoute, AppEnv> = async (
+  c
+) => {
   try {
     const tagId = c.req.param("tagId")
-    const body = await c.req.json()
-    const parsed = reorderFurnitureTagDtoSchema.safeParse(body)
-
-    if (!parsed.success) {
-      return c.json(
-        {
-          errors: formatZodErrors(parsed.error),
-          message: "入力内容に誤りがあります",
-          success: false,
-        },
-        HTTP_STATUS.BAD_REQUEST
-      )
-    }
-
-    const { direction } = parsed.data
+    const { direction } = c.req.valid("json")
 
     // 全タグを「現在の正しい順番」で取得
     const allTags = await prisma.furnitureTag.findMany({

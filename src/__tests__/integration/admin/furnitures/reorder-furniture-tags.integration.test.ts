@@ -34,13 +34,13 @@ describe("PATCH /api/admin/furniture-tags/:tagId/reorder", () => {
     await insertMockUser("Admin")
 
     const tag1 = await prisma.furnitureTag.create({
-      data: { id: "tag-1", name: "T1", priority: 10 },
+      data: { id: "tag1", name: "T1", priority: 10 },
     })
     const tag2 = await prisma.furnitureTag.create({
-      data: { id: "tag-2", name: "T2", priority: 20 }, // 対象
+      data: { id: "tag2", name: "T2", priority: 20 }, // 対象
     })
     const tag3 = await prisma.furnitureTag.create({
-      data: { id: "tag-3", name: "T3", priority: 30 },
+      data: { id: "tag3", name: "T3", priority: 30 },
     })
 
     const res = await openAPIApp.request(`/api/admin/furniture-tags/${tag2.id}/reorder`, {
@@ -67,13 +67,13 @@ describe("PATCH /api/admin/furniture-tags/:tagId/reorder", () => {
     await insertMockUser("Editor")
 
     const tag1 = await prisma.furnitureTag.create({
-      data: { id: "tag-1", name: "T1", priority: 10 },
+      data: { id: "tag1", name: "T1", priority: 10 },
     })
     const tag2 = await prisma.furnitureTag.create({
-      data: { id: "tag-2", name: "T2", priority: 20 }, // 対象
+      data: { id: "tag2", name: "T2", priority: 20 }, // 対象
     })
     const tag3 = await prisma.furnitureTag.create({
-      data: { id: "tag-3", name: "T3", priority: 30 },
+      data: { id: "tag3", name: "T3", priority: 30 },
     })
 
     const res = await openAPIApp.request(`/api/admin/furniture-tags/${tag2.id}/reorder`, {
@@ -100,7 +100,7 @@ describe("PATCH /api/admin/furniture-tags/:tagId/reorder", () => {
     await insertMockUser("Admin")
 
     const tag = await prisma.furnitureTag.create({
-      data: { id: "tag-top", name: "Top", priority: 0 },
+      data: { id: "tagtop", name: "Top", priority: 0 },
     })
 
     const res = await openAPIApp.request(`/api/admin/furniture-tags/${tag.id}/reorder`, {
@@ -120,7 +120,7 @@ describe("PATCH /api/admin/furniture-tags/:tagId/reorder", () => {
   it("Viewer権限では403を返す", async () => {
     await insertMockUser("Viewer")
 
-    const res = await openAPIApp.request("/api/admin/furniture-tags/tag-1/reorder", {
+    const res = await openAPIApp.request("/api/admin/furniture-tags/tag1/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: {
         "Content-Type": "application/json",

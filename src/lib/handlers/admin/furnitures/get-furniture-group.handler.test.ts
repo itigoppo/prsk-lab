@@ -1,7 +1,9 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getFurnitureGroup } from "./get-furniture-group.handler"
+import { getFurnitureGroup, getFurnitureGroupRoute } from "./get-furniture-group.handler"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -14,11 +16,23 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("getFurnitureGroup", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.get("/admin/furniture-groups/:groupId", getFurnitureGroup)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(getFurnitureGroupRoute, getFurnitureGroup)
     vi.clearAllMocks()
   })
 
@@ -36,18 +50,18 @@ describe("getFurnitureGroup", () => {
           combinationId: "combo-1",
         },
       ],
-      furnitures: [{ id: "furniture-1", name: "家具1", tag: { name: "タグ1" }, tagId: "tag-1" }],
-      id: "group-1",
+      furnitures: [{ id: "furniture-1", name: "家具1", tag: { name: "タグ1" }, tagId: "tag1" }],
+      id: "group1",
       name: "グループ1",
     } as never)
 
-    const res = await app.request("/admin/furniture-groups/group-1", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups/group1", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
     expect(json.success).toBe(true)
     expect(json.message).toBe("グループを取得しました")
-    expect(json.data.group.id).toBe("group-1")
+    expect(json.data.group.id).toBe("group1")
     expect(json.data.group.name).toBe("グループ1")
     expect(json.data.group.furnitures).toHaveLength(1)
     expect(json.data.group.furnitures[0].name).toBe("家具1")
@@ -60,11 +74,11 @@ describe("getFurnitureGroup", () => {
     vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({
       excludedCharacters: [],
       furnitures: [],
-      id: "group-1",
+      id: "group1",
       name: "グループ1",
     } as never)
 
-    const res = await app.request("/admin/furniture-groups/group-1", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups/group1", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -76,7 +90,7 @@ describe("getFurnitureGroup", () => {
   it("グループが見つからない場合は404を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue(null)
 
-    const res = await app.request("/admin/furniture-groups/unknown-group", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups/unknowngroup", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
@@ -87,7 +101,7 @@ describe("getFurnitureGroup", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findUnique).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-groups/group-1", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups/group1", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

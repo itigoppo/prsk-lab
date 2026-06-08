@@ -1,7 +1,11 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getAdminCharacters } from "./get-admin-characters.handler"
+import {
+  getAdminCharacters,
+  getAdminFurnitureCharactersRoute,
+} from "./get-admin-characters.handler"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -14,11 +18,11 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("getAdminCharacters", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.get("/admin/furniture-characters", getAdminCharacters)
+    app = new OpenAPIHono<AppEnv>()
+    app.openapi(getAdminFurnitureCharactersRoute, getAdminCharacters)
     vi.clearAllMocks()
   })
 
@@ -58,7 +62,7 @@ describe("getAdminCharacters", () => {
       },
     ] as never)
 
-    const res = await app.request("/admin/furniture-characters", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-characters", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -84,7 +88,7 @@ describe("getAdminCharacters", () => {
       },
     ] as never)
 
-    const res = await app.request("/admin/furniture-characters", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-characters", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -94,7 +98,7 @@ describe("getAdminCharacters", () => {
   it("キャラクターが0件の場合は空配列を返す", async () => {
     vi.mocked(prisma.character.findMany).mockResolvedValue([])
 
-    const res = await app.request("/admin/furniture-characters", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-characters", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -105,7 +109,7 @@ describe("getAdminCharacters", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.character.findMany).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-characters", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-characters", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

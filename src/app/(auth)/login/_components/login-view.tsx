@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation"
 export function LoginView() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl = searchParams.get("callbackUrl") || "/mysekai"
 
   const handleSignIn = async () => {
     await signIn("discord", { callbackUrl })

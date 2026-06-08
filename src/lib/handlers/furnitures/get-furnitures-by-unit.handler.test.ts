@@ -1,13 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { prisma } from "@/lib/prisma"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getFurnituresByUnit } from "./get-furnitures-by-unit.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { getFurnituresByUnit, getFurnituresByUnitRoute } from "./get-furnitures-by-unit.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -33,10 +30,8 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-
 describe("getFurnituresByUnit", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   const mockUnit = {
     bgColor: "#4455dd",
@@ -72,7 +67,20 @@ describe("getFurnituresByUnit", () => {
   ]
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success) {
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+        }
+      },
+    })
     vi.clearAllMocks()
     vi.mocked(prisma.furnitureGroupExcludedCharacter.findMany).mockResolvedValue([])
     vi.mocked(prisma.userReactionCheck.findMany).mockResolvedValue([] as never)
@@ -89,9 +97,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -107,9 +115,9 @@ describe("getFurnituresByUnit", () => {
   it("存在しないユニットコードの場合は404を返す", async () => {
     vi.mocked(prisma.unit.findUnique).mockResolvedValue(null)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/invalid")
+    const res = await app.request("/api/furnitures/invalid")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
@@ -149,9 +157,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -178,9 +186,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -208,13 +216,13 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -228,13 +236,13 @@ describe("getFurnituresByUnit", () => {
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
@@ -245,9 +253,9 @@ describe("getFurnituresByUnit", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.unit.findUnique).mockRejectedValue(new Error("Database error"))
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
@@ -288,13 +296,13 @@ describe("getFurnituresByUnit", () => {
     } as never)
     vi.mocked(prisma.userReactionCheck.findMany).mockResolvedValue([] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?ownedOnly=true")
+    const res = await app.request("/api/furnitures/leoneed?ownedOnly=true")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -333,9 +341,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -369,9 +377,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?q=ソファ")
+    const res = await app.request("/api/furnitures/leoneed?q=ソファ")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -412,9 +420,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -447,9 +455,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?q=simple")
+    const res = await app.request("/api/furnitures/leoneed?q=simple")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -498,13 +506,13 @@ describe("getFurnituresByUnit", () => {
       },
     ] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?hideCompleted=true")
+    const res = await app.request("/api/furnitures/leoneed?hideCompleted=true")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -560,13 +568,13 @@ describe("getFurnituresByUnit", () => {
       },
     ] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?hideCompleted=true")
+    const res = await app.request("/api/furnitures/leoneed?hideCompleted=true")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -601,13 +609,13 @@ describe("getFurnituresByUnit", () => {
     } as never)
     vi.mocked(prisma.userReactionCheck.findMany).mockResolvedValue([] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?hideCompleted=false")
+    const res = await app.request("/api/furnitures/leoneed?hideCompleted=false")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -652,13 +660,13 @@ describe("getFurnituresByUnit", () => {
       },
     ] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -708,9 +716,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?characterIds=char-1,char-2")
+    const res = await app.request("/api/furnitures/leoneed?characterIds=char-1,char-2")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -731,9 +739,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?characterIds=")
+    const res = await app.request("/api/furnitures/leoneed?characterIds=")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -772,9 +780,9 @@ describe("getFurnituresByUnit", () => {
       ownedFurnitures: [],
     } as never)
 
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed?characterIds=char-1")
+    const res = await app.request("/api/furnitures/leoneed?characterIds=char-1")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -833,13 +841,13 @@ describe("getFurnituresByUnit", () => {
       },
     ] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -912,13 +920,13 @@ describe("getFurnituresByUnit", () => {
       },
     ] as never)
 
-    app.use("/furnitures/:unitCode", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures/:unitCode", getFurnituresByUnit)
+    app.openapi(getFurnituresByUnitRoute, getFurnituresByUnit)
 
-    const res = await app.request("/furnitures/leoneed")
+    const res = await app.request("/api/furnitures/leoneed")
     const json = await res.json()
 
     expect(res.status).toBe(200)

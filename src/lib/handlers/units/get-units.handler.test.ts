@@ -1,15 +1,19 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { prisma } from "@/lib/prisma"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { getUnits, getUnitsRoute } from "./get-units.handler"
 
-type MockUnit = {
-  bgColor: string
-  code: string
-  color: string
-  name: string
-  short: string
-}
+type MockUnit = Prisma.UnitGetPayload<{
+  select: {
+    bgColor: true
+    code: true
+    color: true
+    name: true
+    short: true
+  }
+}>
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -20,14 +24,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-import { getUnits } from "./get-units.handler"
-
 describe("Unit Handlers", () => {
-  let app: Hono
+  let app: OpenAPIHono
 
   beforeEach(() => {
-    app = new Hono()
+    app = new OpenAPIHono()
     vi.clearAllMocks()
   })
 
@@ -43,13 +44,10 @@ describe("Unit Handlers", () => {
         },
       ]
 
-      vi.mocked(prisma.unit.findMany).mockResolvedValue(
-        mockUnits as unknown as Awaited<ReturnType<typeof prisma.unit.findMany>>
-      )
+      vi.mocked(prisma.unit.findMany).mockResolvedValue(mockUnits as never)
 
-      app.get("/units", getUnits)
-
-      const res = await app.request("/units")
+      app.openapi(getUnitsRoute, getUnits)
+      const res = await app.request("/api/units")
       const json = await res.json()
 
       expect(res.status).toBe(200)
@@ -93,9 +91,8 @@ describe("Unit Handlers", () => {
         mockUnits as unknown as Awaited<ReturnType<typeof prisma.unit.findMany>>
       )
 
-      app.get("/units", getUnits)
-
-      const res = await app.request("/units")
+      app.openapi(getUnitsRoute, getUnits)
+      const res = await app.request("/api/units")
       const json = await res.json()
 
       expect(res.status).toBe(200)
@@ -115,9 +112,8 @@ describe("Unit Handlers", () => {
     it("ユニットが0件の場合は空配列を返す", async () => {
       vi.mocked(prisma.unit.findMany).mockResolvedValue([])
 
-      app.get("/units", getUnits)
-
-      const res = await app.request("/units")
+      app.openapi(getUnitsRoute, getUnits)
+      const res = await app.request("/api/units")
       const json = await res.json()
 
       expect(res.status).toBe(200)
@@ -128,9 +124,8 @@ describe("Unit Handlers", () => {
     it("データベースエラーの場合は500を返す", async () => {
       vi.mocked(prisma.unit.findMany).mockRejectedValue(new Error("Database error"))
 
-      app.get("/units", getUnits)
-
-      const res = await app.request("/units")
+      app.openapi(getUnitsRoute, getUnits)
+      const res = await app.request("/api/units")
       const json = await res.json()
 
       expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

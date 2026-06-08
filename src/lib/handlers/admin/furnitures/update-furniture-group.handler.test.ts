@@ -1,7 +1,9 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { updateFurnitureGroup } from "./update-furniture-group.handler"
+import { updateFurnitureGroup, updateFurnitureGroupRoute } from "./update-furniture-group.handler"
 
 const mockTx = {
   furniture: { updateMany: vi.fn() },
@@ -27,21 +29,33 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("updateFurnitureGroup", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.patch("/admin/furniture-groups/:groupId", updateFurnitureGroup)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(updateFurnitureGroupRoute, updateFurnitureGroup)
     vi.clearAllMocks()
   })
 
   it("グループ名を更新できる", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({
         excludedCombinations: [],
         furnitureIds: [],
@@ -58,13 +72,13 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("除外組み合わせを更新できる", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([{ id: "char-1" }] as never)
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({
         excludedCombinations: [["char-1"]],
         furnitureIds: [],
@@ -81,12 +95,12 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("除外組み合わせを空にできる", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "グループ名" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -101,7 +115,7 @@ describe("updateFurnitureGroup", () => {
   it("グループが見つからない場合は404を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue(null)
 
-    const res = await app.request("/admin/furniture-groups/unknown-group", {
+    const res = await app.request("/api/admin/furniture-groups/unknowngroup", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "新しい名前" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -114,7 +128,7 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("グループ名が空の場合は400を返す", async () => {
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -126,10 +140,10 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("不明なキャラクターIDの場合は400を返す", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({
         excludedCombinations: [["unknown_code"]],
         furnitureIds: [],
@@ -146,13 +160,13 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("除外組み合わせが異なるユニットのキャラクターを含む場合はエラーになる", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([
       { id: "char-1", unitId: "unit-1" },
       { id: "char-2", unitId: "unit-2" },
     ] as never)
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({
         excludedCombinations: [["char-1", "char-2"]],
         furnitureIds: [],
@@ -169,10 +183,10 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("データベースエラーの場合は500を返す", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "新しい名前" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -184,7 +198,7 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("家具を指定してグループを更新できる", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.furniture.findMany).mockResolvedValue([
       { id: "furniture-1" },
       { id: "furniture-2" },
@@ -193,7 +207,7 @@ describe("updateFurnitureGroup", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({
         excludedCombinations: [],
         furnitureIds: ["furniture-1", "furniture-2"],
@@ -211,10 +225,10 @@ describe("updateFurnitureGroup", () => {
   })
 
   it("不明な家具IDの場合は400を返す", async () => {
-    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group-1" } as never)
+    vi.mocked(prisma.furnitureGroup.findUnique).mockResolvedValue({ id: "group1" } as never)
     vi.mocked(prisma.furniture.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-groups/group-1", {
+    const res = await app.request("/api/admin/furniture-groups/group1", {
       body: JSON.stringify({
         excludedCombinations: [],
         furnitureIds: ["unknown-furniture"],

@@ -1,7 +1,9 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getFurnitureGroups } from "./get-furniture-groups.handler"
+import { getFurnitureGroups, getFurnitureGroupsRoute } from "./get-furniture-groups.handler"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -15,11 +17,23 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("getFurnitureGroups", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.get("/admin/furniture-groups", getFurnitureGroups)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(getFurnitureGroupsRoute, getFurnitureGroups)
     vi.clearAllMocks()
   })
 
@@ -29,7 +43,7 @@ describe("getFurnitureGroups", () => {
         _count: { furnitures: 3 },
         createdAt: new Date(),
         excludedCharacters: [{ combinationId: "comb-1" }, { combinationId: "comb-1" }],
-        id: "group-1",
+        id: "group1",
         name: "グループ1",
         updatedAt: new Date(),
       },
@@ -41,14 +55,14 @@ describe("getFurnitureGroups", () => {
           { combinationId: "comb-2" },
           { combinationId: "comb-2" },
         ],
-        id: "group-2",
+        id: "group2",
         name: "グループ2",
         updatedAt: new Date(),
       },
     ] as never)
     vi.mocked(prisma.furnitureGroup.count).mockResolvedValue(2)
 
-    const res = await app.request("/admin/furniture-groups", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -73,14 +87,14 @@ describe("getFurnitureGroups", () => {
         _count: { furnitures: 1 },
         createdAt: new Date(),
         excludedCharacters: [],
-        id: "group-11",
+        id: "group11",
         name: "グループ11",
         updatedAt: new Date(),
       },
     ] as never)
     vi.mocked(prisma.furnitureGroup.count).mockResolvedValue(25)
 
-    const res = await app.request("/admin/furniture-groups?page=2&limit=10", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups?page=2&limit=10", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -102,7 +116,7 @@ describe("getFurnitureGroups", () => {
     vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([])
     vi.mocked(prisma.furnitureGroup.count).mockResolvedValue(0)
 
-    const res = await app.request("/admin/furniture-groups", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -115,7 +129,7 @@ describe("getFurnitureGroups", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findMany).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-groups", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-groups", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

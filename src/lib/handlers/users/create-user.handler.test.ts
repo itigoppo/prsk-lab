@@ -1,22 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { DiscordAuthEnv, DiscordUser } from "@/lib/hono/types"
+import { prisma } from "@/lib/prisma"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import type { User } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { createUser } from "./create-user.handler"
-
-type DiscordUser = {
-  avatar?: string | null
-  email?: string | null
-  id: string
-  username?: string | null
-}
-
-type Env = {
-  Variables: {
-    discordId: string
-    discordUser: DiscordUser
-  }
-}
+import { createUser, createUserRoute } from "./create-user.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -27,13 +15,23 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-
 describe("createUser", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<DiscordAuthEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<DiscordAuthEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success) {
+          return c.json(
+            {
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+        }
+      },
+    })
     vi.clearAllMocks()
   })
 
@@ -64,9 +62,9 @@ describe("createUser", () => {
       c.set("discordUser", discordUser)
       await next()
     })
-    app.post("/user", createUser)
+    app.openapi(createUserRoute, createUser)
 
-    const res = await app.request("/user", {
+    const res = await app.request("/api/users", {
       method: "POST",
     })
     const json = await res.json()
@@ -121,9 +119,9 @@ describe("createUser", () => {
       c.set("discordUser", discordUser)
       await next()
     })
-    app.post("/user", createUser)
+    app.openapi(createUserRoute, createUser)
 
-    const res = await app.request("/user", {
+    const res = await app.request("/api/users", {
       method: "POST",
     })
     const json = await res.json()
@@ -167,9 +165,9 @@ describe("createUser", () => {
       c.set("discordUser", discordUser)
       await next()
     })
-    app.post("/user", createUser)
+    app.openapi(createUserRoute, createUser)
 
-    const res = await app.request("/user", {
+    const res = await app.request("/api/users", {
       method: "POST",
     })
     const json = await res.json()
@@ -205,9 +203,9 @@ describe("createUser", () => {
       c.set("discordUser", discordUser)
       await next()
     })
-    app.post("/user", createUser)
+    app.openapi(createUserRoute, createUser)
 
-    const res = await app.request("/user", {
+    const res = await app.request("/api/users", {
       method: "POST",
     })
     const json = await res.json()
@@ -241,9 +239,9 @@ describe("createUser", () => {
       c.set("discordUser", discordUser)
       await next()
     })
-    app.post("/user", createUser)
+    app.openapi(createUserRoute, createUser)
 
-    const res = await app.request("/user", {
+    const res = await app.request("/api/users", {
       method: "POST",
     })
     const json = await res.json()
@@ -266,9 +264,9 @@ describe("createUser", () => {
       c.set("discordUser", discordUser)
       await next()
     })
-    app.post("/user", createUser)
+    app.openapi(createUserRoute, createUser)
 
-    const res = await app.request("/user", {
+    const res = await app.request("/api/users", {
       method: "POST",
     })
     const json = await res.json()

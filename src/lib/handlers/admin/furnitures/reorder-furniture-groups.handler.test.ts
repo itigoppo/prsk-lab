@@ -1,8 +1,13 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
-import { Hono } from "hono"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { reorderFurnitureGroups } from "./reorder-furniture-groups.handler"
+import {
+  reorderFurnitureGroups,
+  reorderFurnitureGroupsRoute,
+} from "./reorder-furniture-groups.handler"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -17,24 +22,36 @@ vi.mock("@/lib/prisma", () => ({
 }))
 
 describe("reorderFurnitureGroups", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.patch("/admin/furniture-groups/:groupId/reorder", reorderFurnitureGroups)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(reorderFurnitureGroupsRoute, reorderFurnitureGroups)
     vi.clearAllMocks()
   })
 
   it("上に移動できる（priorityをスワップする）", async () => {
     vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([
-      { id: "group-1", priority: 0 },
-      { id: "group-2", priority: 1 },
-      { id: "group-3", priority: 2 },
+      { id: "group1", priority: 0 },
+      { id: "group2", priority: 1 },
+      { id: "group3", priority: 2 },
     ] as never)
 
     vi.mocked(prisma.$transaction).mockResolvedValue([])
 
-    const res = await app.request("/admin/furniture-groups/group-2/reorder", {
+    const res = await app.request("/api/admin/furniture-groups/group2/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -49,14 +66,14 @@ describe("reorderFurnitureGroups", () => {
 
   it("下に移動できる（priorityをスワップする）", async () => {
     vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([
-      { id: "group-1", priority: 0 },
-      { id: "group-2", priority: 1 },
-      { id: "group-3", priority: 2 },
+      { id: "group1", priority: 0 },
+      { id: "group2", priority: 1 },
+      { id: "group3", priority: 2 },
     ] as never)
 
     vi.mocked(prisma.$transaction).mockResolvedValue([])
 
-    const res = await app.request("/admin/furniture-groups/group-2/reorder", {
+    const res = await app.request("/api/admin/furniture-groups/group2/reorder", {
       body: JSON.stringify({ direction: "down" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -71,11 +88,11 @@ describe("reorderFurnitureGroups", () => {
 
   it("一番上にあるグループをupしようとした場合は何もせず200を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([
-      { id: "group-1", priority: 0 },
-      { id: "group-2", priority: 1 },
+      { id: "group1", priority: 0 },
+      { id: "group2", priority: 1 },
     ] as never)
 
-    const res = await app.request("/admin/furniture-groups/group-1/reorder", {
+    const res = await app.request("/api/admin/furniture-groups/group1/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -90,7 +107,7 @@ describe("reorderFurnitureGroups", () => {
   it("存在しないグループIDの場合は404を返す", async () => {
     vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-groups/group-unknown/reorder", {
+    const res = await app.request("/api/admin/furniture-groups/groupunknown/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -103,7 +120,7 @@ describe("reorderFurnitureGroups", () => {
   })
 
   it("directionが不正な場合は400を返す", async () => {
-    const res = await app.request("/admin/furniture-groups/group-1/reorder", {
+    const res = await app.request("/api/admin/furniture-groups/group1/reorder", {
       body: JSON.stringify({ direction: "left" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",

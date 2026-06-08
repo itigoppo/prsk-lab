@@ -1,12 +1,35 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
+import { furnitureTagParamDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import type { GetFurnitureTagResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { getFurnitureTagResponseSchema } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const getFurnitureTag: Handler = async (c) => {
+export const getFurnitureTagRoute = createRoute({
+  description: "家具およびリアクションを含む家具タグの詳細を取得する",
+  method: "get",
+  path: "/api/admin/furniture-tags/{tagId}",
+  request: {
+    params: furnitureTagParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, getFurnitureTagResponseSchema, "家具タグを取得しました"),
+    ...commonResponses.notFound,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具タグ詳細取得",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const getFurnitureTag: RouteHandler<typeof getFurnitureTagRoute, AppEnv> = async (c) => {
   try {
-    const tagId = c.req.param("tagId")
+    const { tagId } = c.req.valid("param")
 
     const tag = await prisma.furnitureTag.findUnique({
       include: {
@@ -109,7 +132,7 @@ export const getFurnitureTag: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("[getFurnitureTag] error:", error)

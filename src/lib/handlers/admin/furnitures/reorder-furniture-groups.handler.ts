@@ -2,29 +2,50 @@ import { FURNITURE_GROUP_LIST_ORDER_BY } from "@/constants/furnitures"
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
 import { REORDER_DIRECTION } from "@/lib/schemas/common/reorder"
-import { reorderFurnitureGroupDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
-import type { ReorderFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
-import { formatZodErrors } from "@/lib/utils/zod"
-import type { Handler } from "hono"
+import {
+  furnitureGroupParamDtoSchema,
+  reorderFurnitureGroupDtoSchema,
+} from "@/lib/schemas/dto/admin/furniture-group.dto"
+import { reorderFurnitureGroupResponseSchema } from "@/lib/schemas/response/admin/furniture-group.response"
 
-export const reorderFurnitureGroups: Handler = async (c) => {
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
+import type { ReorderFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
+
+export const reorderFurnitureGroupsRoute = createRoute({
+  description: "家具グループの優先度を指定した方向の隣接グループと入れ替える",
+  method: "patch",
+  path: "/api/admin/furniture-groups/{groupId}/reorder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: reorderFurnitureGroupDtoSchema,
+        },
+      },
+    },
+    params: furnitureGroupParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, reorderFurnitureGroupResponseSchema, "家具グループの順序を変更しました"),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具グループ順序変更",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const reorderFurnitureGroups: RouteHandler<
+  typeof reorderFurnitureGroupsRoute,
+  AppEnv
+> = async (c) => {
   try {
     const groupId = c.req.param("groupId")
-    const body = await c.req.json()
-    const parsed = reorderFurnitureGroupDtoSchema.safeParse(body)
-
-    if (!parsed.success) {
-      return c.json(
-        {
-          errors: formatZodErrors(parsed.error),
-          message: "入力内容に誤りがあります",
-          success: false,
-        },
-        HTTP_STATUS.BAD_REQUEST
-      )
-    }
-
-    const { direction } = parsed.data
+    const { direction } = c.req.valid("json")
 
     // 全グループを「現在の正しい順番」で取得
     const allGroups = await prisma.furnitureGroup.findMany({

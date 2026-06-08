@@ -1,11 +1,33 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
+import { furnitureParamDtoSchema } from "@/lib/schemas/dto/furniture.dto"
 import type { FurnitureOwnershipResponse } from "@/lib/schemas/response/furniture.response"
-import type { Handler } from "hono"
+import { furnitureOwnershipResponseSchema } from "@/lib/schemas/response/furniture.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 
-export const unownFurniture: Handler = async (c) => {
+export const unownFurnitureRoute = createRoute({
+  description: "現在のユーザーの家具の所持状態を解除する",
+  method: "delete",
+  path: "/api/furnitures/own/{furnitureId}",
+  request: {
+    params: furnitureParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, furnitureOwnershipResponseSchema, "Furniture ownership removed"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [cookieAuth],
+  summary: "家具所持解除",
+  tags: [Tags.FURNITURES.name],
+})
+
+export const unownFurniture: RouteHandler<typeof unownFurnitureRoute, AppEnv> = async (c) => {
   try {
-    const furnitureId = c.req.param("furnitureId")
+    const { furnitureId } = c.req.valid("param")
     const discordId = c.get("discordId")
 
     // ユーザーを取得

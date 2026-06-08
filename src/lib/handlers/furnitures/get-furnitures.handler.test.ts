@@ -1,13 +1,8 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getFurnitures } from "./get-furnitures.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { getFurnitures, getFurnituresRoute } from "./get-furnitures.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -21,10 +16,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
 
 describe("getFurnitures", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   const mockTags = [
     {
@@ -43,7 +39,19 @@ describe("getFurnitures", () => {
   ]
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
     vi.clearAllMocks()
   })
 
@@ -53,13 +61,13 @@ describe("getFurnitures", () => {
     } as never)
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue(mockTags as never)
 
-    app.use("/furnitures", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures", getFurnitures)
+    app.openapi(getFurnituresRoute, getFurnitures)
 
-    const res = await app.request("/furnitures")
+    const res = await app.request("/api/furnitures")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -81,13 +89,13 @@ describe("getFurnitures", () => {
       },
     ] as never)
 
-    app.use("/furnitures", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures", getFurnitures)
+    app.openapi(getFurnituresRoute, getFurnitures)
 
-    const res = await app.request("/furnitures?q=ソファ")
+    const res = await app.request("/api/furnitures?q=ソファ")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -113,13 +121,13 @@ describe("getFurnitures", () => {
       },
     ] as never)
 
-    app.use("/furnitures", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures", getFurnitures)
+    app.openapi(getFurnituresRoute, getFurnitures)
 
-    const res = await app.request("/furnitures")
+    const res = await app.request("/api/furnitures")
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -130,13 +138,13 @@ describe("getFurnitures", () => {
   it("ユーザーが見つからない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
-    app.use("/furnitures", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures", getFurnitures)
+    app.openapi(getFurnituresRoute, getFurnitures)
 
-    const res = await app.request("/furnitures")
+    const res = await app.request("/api/furnitures")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
@@ -147,13 +155,13 @@ describe("getFurnitures", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 
-    app.use("/furnitures", async (c, next) => {
+    app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.get("/furnitures", getFurnitures)
+    app.openapi(getFurnituresRoute, getFurnitures)
 
-    const res = await app.request("/furnitures")
+    const res = await app.request("/api/furnitures")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

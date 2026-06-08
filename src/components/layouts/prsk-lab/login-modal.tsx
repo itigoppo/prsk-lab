@@ -23,7 +23,7 @@ interface LoginModalProps {
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl = searchParams.get("callbackUrl") || "/mysekai"
 
   const handleSignIn = useCallback(async () => {
     await signIn("discord", { callbackUrl })

@@ -32,9 +32,9 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
   describe("PATCH /api/admin/furniture-tags/:tagId", () => {
     it("タグ名を更新できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
-      await insertMockFurnitureTag({ id: "tag-1", name: "古いタグ名" })
+      await insertMockFurnitureTag({ id: "tag1", name: "古いタグ名" })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tag1", {
         body: JSON.stringify({ furnitures: [], name: "更新後のタグ名" }),
         headers: {
           "Content-Type": "application/json",
@@ -48,17 +48,17 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
       expect(json.success).toBe(true)
       expect(json.message).toBe("タグを更新しました")
 
-      const updatedTag = await prisma.furnitureTag.findUnique({ where: { id: "tag-1" } })
+      const updatedTag = await prisma.furnitureTag.findUnique({ where: { id: "tag1" } })
       expect(updatedTag?.name).toBe("更新後のタグ名")
     })
 
     it("Editor権限でもタグを更新できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Editor" })
       await prisma.furnitureTag.create({
-        data: { id: "tag-editor", name: "古い", updatedAt: new Date() },
+        data: { id: "tageditor", name: "古い", updatedAt: new Date() },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-editor", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tageditor", {
         body: JSON.stringify({ furnitures: [], name: "更新Editorタグ" }),
         headers: {
           "Content-Type": "application/json",
@@ -75,9 +75,9 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
       const unit = await insertMockUnit({ id: "unit-1" })
       await insertMockCharacter({ code: "char-1", id: "char-1", unitId: unit.id })
       await insertMockCharacter({ code: "char-2", id: "char-2", unitId: unit.id })
-      await insertMockFurnitureTag({ id: "tag-priority", name: "古いタグ" })
+      await insertMockFurnitureTag({ id: "tagpriority", name: "古いタグ" })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-priority", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tagpriority", {
         body: JSON.stringify({
           furnitures: [
             {
@@ -114,7 +114,7 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
           },
         },
         orderBy: { priority: "asc" },
-        where: { tagId: "tag-priority" },
+        where: { tagId: "tagpriority" },
       })
 
       expect(updatedFurnitures).toHaveLength(2)
@@ -149,7 +149,7 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
     it("Viewer権限では403を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Viewer" })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tag1", {
         body: JSON.stringify({ furnitures: [], name: "更新後のタグ名" }),
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +166,7 @@ describe("PATCH /api/admin/furniture-tags/:tagId", () => {
         return c.json({ message: "Missing session token", success: false }, 401)
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tag1", {
         body: JSON.stringify({ furnitures: [], name: "更新後のタグ名" }),
         headers: {
           "Content-Type": "application/json",

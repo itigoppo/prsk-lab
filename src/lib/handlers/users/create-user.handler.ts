@@ -1,11 +1,30 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, discordAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { DiscordAuthEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
 import { CreateUserDto, createUserDtoSchema } from "@/lib/schemas/dto/user.dto"
+import { currentUserResponseSchema } from "@/lib/schemas/response/user.response"
 import { formatZodErrors } from "@/lib/utils/zod"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { UserRole } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const createUser: Handler = async (c) => {
+export const createUserRoute = createRoute({
+  description: "Discord認証を利用して新規ユーザーを登録する",
+  method: "post",
+  path: "/api/users",
+  responses: {
+    ...jsonResponse(HTTP_STATUS.CREATED, currentUserResponseSchema, "ユーザー登録が完了しました"),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.conflict,
+    ...commonResponses.internalServerError,
+  },
+  security: [discordAuth],
+  summary: "ユーザー登録",
+  tags: [Tags.USERS.name],
+})
+
+export const createUser: RouteHandler<typeof createUserRoute, DiscordAuthEnv> = async (c) => {
   const discordId = c.get("discordId")
   const discordUser = c.get("discordUser")
 

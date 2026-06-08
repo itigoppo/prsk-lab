@@ -28,11 +28,11 @@ describe("GET /api/admin/furniture-tags/:tagId", () => {
     it("タグ詳細を取得できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
       await insertMockFurnitureTag({
-        id: "tag-1",
+        id: "tag1",
         name: "タグ1",
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tag1", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "GET",
       })
@@ -40,16 +40,16 @@ describe("GET /api/admin/furniture-tags/:tagId", () => {
       expect(res.status).toBe(HTTP_STATUS.OK)
       const json = await res.json()
       expect(json.success).toBe(true)
-      expect(json.data.tag.id).toBe("tag-1")
+      expect(json.data.tag.id).toBe("tag1")
     })
 
     it("Editor権限でもタグ詳細を取得できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Editor" })
       await prisma.furnitureTag.create({
-        data: { id: "tag-editor", name: "Editorタグ", updatedAt: new Date() },
+        data: { id: "tageditor", name: "Editorタグ", updatedAt: new Date() },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-tags/tag-editor", {
+      const res = await openAPIApp.request("/api/admin/furniture-tags/tageditor", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "GET",
       })

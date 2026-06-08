@@ -29,13 +29,13 @@ describe("DELETE /api/admin/furniture-groups/:groupId", () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
       await prisma.furnitureGroup.create({
         data: {
-          id: "group-1",
+          id: "group1",
           name: "テストグループ",
           updatedAt: new Date(),
         },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "DELETE",
       })
@@ -45,7 +45,7 @@ describe("DELETE /api/admin/furniture-groups/:groupId", () => {
       expect(json.success).toBe(true)
       expect(json.message).toBe("グループを削除しました")
 
-      const group = await prisma.furnitureGroup.findUnique({ where: { id: "group-1" } })
+      const group = await prisma.furnitureGroup.findUnique({ where: { id: "group1" } })
       expect(group).toBeNull()
     })
 
@@ -53,13 +53,13 @@ describe("DELETE /api/admin/furniture-groups/:groupId", () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Editor" })
       await prisma.furnitureGroup.create({
         data: {
-          id: "group-editor",
+          id: "groupeditor",
           name: "消すグループ",
           updatedAt: new Date(),
         },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-editor", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/groupeditor", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "DELETE",
       })
@@ -81,7 +81,7 @@ describe("DELETE /api/admin/furniture-groups/:groupId", () => {
     it("Viewer権限では403を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Viewer" })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         headers: { Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}` },
         method: "DELETE",
       })
@@ -94,7 +94,7 @@ describe("DELETE /api/admin/furniture-groups/:groupId", () => {
         return c.json({ message: "Missing session token", success: false }, 401)
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         method: "DELETE",
       })
 

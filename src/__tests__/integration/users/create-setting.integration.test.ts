@@ -47,7 +47,7 @@ describe("POST /api/users/settings", () => {
         method: "POST",
       })
 
-      expect(res.status).toBe(HTTP_STATUS.OK)
+      expect(res.status).toBe(HTTP_STATUS.CREATED)
 
       const json = await res.json()
       expect(json.success).toBe(true)
@@ -74,7 +74,7 @@ describe("POST /api/users/settings", () => {
         method: "POST",
       })
 
-      expect(res.status).toBe(HTTP_STATUS.OK)
+      expect(res.status).toBe(HTTP_STATUS.CREATED)
 
       const json = await res.json()
       expect(json.success).toBe(true)

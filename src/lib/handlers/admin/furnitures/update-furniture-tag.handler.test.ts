@@ -1,8 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { updateFurnitureTag } from "./update-furniture-tag.handler"
+import { updateFurnitureTag, updateFurnitureTagRoute } from "./update-furniture-tag.handler"
 
 const mockTx = {
   furniture: {
@@ -40,22 +42,34 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("updateFurnitureTag", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.patch("/admin/furniture-tags/:tagId", updateFurnitureTag)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(updateFurnitureTagRoute, updateFurnitureTag)
     vi.clearAllMocks()
   })
 
   it("タグ名を更新できる", async () => {
-    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag-1" } as never)
+    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-tags/tag-1", {
+    const res = await app.request("/api/admin/furniture-tags/tag1", {
       body: JSON.stringify({ furnitures: [], name: "更新後のタグ名" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -68,7 +82,7 @@ describe("updateFurnitureTag", () => {
   })
 
   it("タグと家具を一括更新できる", async () => {
-    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag-1" } as never)
+    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([
       { code: "leoneed_ichika", id: "char-1", priority: 1 },
     ] as never)
@@ -77,7 +91,7 @@ describe("updateFurnitureTag", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-tags/tag-1", {
+    const res = await app.request("/api/admin/furniture-tags/tag1", {
       body: JSON.stringify({
         furnitures: [
           {
@@ -103,7 +117,7 @@ describe("updateFurnitureTag", () => {
   it("タグが見つからない場合は404を返す", async () => {
     vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue(null)
 
-    const res = await app.request("/admin/furniture-tags/unknown-tag", {
+    const res = await app.request("/api/admin/furniture-tags/unknowntag", {
       body: JSON.stringify({ furnitures: [], name: "新しい名前" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -116,7 +130,7 @@ describe("updateFurnitureTag", () => {
   })
 
   it("タグ名が空の場合は400を返す", async () => {
-    const res = await app.request("/admin/furniture-tags/tag-1", {
+    const res = await app.request("/api/admin/furniture-tags/tag1", {
       body: JSON.stringify({ furnitures: [], name: "" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -128,7 +142,7 @@ describe("updateFurnitureTag", () => {
   })
 
   it("同名のタグが存在する場合は409を返す", async () => {
-    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag-1" } as never)
+    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.$transaction).mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
@@ -137,7 +151,7 @@ describe("updateFurnitureTag", () => {
       })
     )
 
-    const res = await app.request("/admin/furniture-tags/tag-1", {
+    const res = await app.request("/api/admin/furniture-tags/tag1", {
       body: JSON.stringify({ furnitures: [], name: "既存タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -150,13 +164,13 @@ describe("updateFurnitureTag", () => {
   })
 
   it("リアクションが異なるユニットのキャラクターを含む場合はエラーになる", async () => {
-    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag-1" } as never)
+    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([
       { code: "leoneed_ichika", id: "char-1", priority: 1, unitId: "unit-1" },
       { code: "miku", id: "char-2", priority: 1, unitId: "unit-2" },
     ] as never)
 
-    const res = await app.request("/admin/furniture-tags/tag-1", {
+    const res = await app.request("/api/admin/furniture-tags/tag1", {
       body: JSON.stringify({
         furnitures: [
           {
@@ -179,11 +193,11 @@ describe("updateFurnitureTag", () => {
   })
 
   it("データベースエラーの場合は500を返す", async () => {
-    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag-1" } as never)
+    vi.mocked(prisma.furnitureTag.findUnique).mockResolvedValue({ id: "tag1" } as never)
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-tags/tag-1", {
+    const res = await app.request("/api/admin/furniture-tags/tag1", {
       body: JSON.stringify({ furnitures: [], name: "新しい名前" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",

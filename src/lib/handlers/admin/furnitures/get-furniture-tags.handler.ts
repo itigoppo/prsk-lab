@@ -1,18 +1,37 @@
 import { FURNITURE_TAG_LIST_ORDER_BY } from "@/constants/furnitures"
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
-import { paginationQuerySchema } from "@/lib/schemas/common/pagination"
+import { furnitureTagsQueryDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import type { GetFurnitureTagsResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { getFurnitureTagsResponseSchema } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const getFurnitureTags: Handler = async (c) => {
+export const getFurnitureTagsRoute = createRoute({
+  description: "家具のカウントを含むすべての家具タグを取得する",
+  method: "get",
+  path: "/api/admin/furniture-tags",
+  request: {
+    query: furnitureTagsQueryDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, getFurnitureTagsResponseSchema, "家具タグ一覧を取得しました"),
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具タグ一覧取得",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const getFurnitureTags: RouteHandler<typeof getFurnitureTagsRoute, AppEnv> = async (c) => {
   try {
-    const query = c.req.query()
-    const { limit, page } = paginationQuerySchema.parse({
-      limit: query.limit,
-      page: query.page,
-    })
+    const query = c.req.valid("query")
+    const limit = query.limit || 10
+    const page = query.page || 1
     const searchQuery = query.q?.trim() || null
 
     const skip = (page - 1) * limit
@@ -56,7 +75,7 @@ export const getFurnitureTags: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch {
     return c.json(
       { message: "タグ一覧の取得に失敗しました", success: false },

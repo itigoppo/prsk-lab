@@ -1,8 +1,32 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
-import type { AdminCharacterListResponse } from "@/lib/schemas/response/admin/character.response"
+import {
+  AdminCharacterListResponse,
+  adminCharacterListResponseSchema,
+} from "@/lib/schemas/response/admin/character.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
+
+export const getAdminFurnitureCharactersRoute = createRoute({
+  description: "家具管理用に全キャラクターの情報を取得する",
+  method: "get",
+  path: "/api/admin/furniture-characters",
+  responses: {
+    ...jsonResponse(
+      HTTP_STATUS.OK,
+      adminCharacterListResponseSchema,
+      "キャラクター情報を取得しました"
+    ),
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "管理用キャラクター一覧取得",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
 
 // ユニットごとに許可するバーチャルシンガー
 const allowedVsPerUnit: Record<string, string[]> = {
@@ -24,7 +48,10 @@ for (const [unit, allowed] of Object.entries(allowedVsPerUnit)) {
   }
 }
 
-export const getAdminCharacters: Handler = async (c) => {
+export const getAdminCharacters: RouteHandler<
+  typeof getAdminFurnitureCharactersRoute,
+  AppEnv
+> = async (c) => {
   try {
     const characters = await prisma.character.findMany({
       orderBy: {
@@ -78,7 +105,7 @@ export const getAdminCharacters: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch {
     return c.json(
       { message: "キャラクター情報の取得に失敗しました", success: false },

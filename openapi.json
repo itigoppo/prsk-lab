@@ -33,41 +33,270 @@
         "type": "apiKey"
       }
     },
-    "schemas": { "ReorderDirection": { "type": "string", "enum": ["up", "down"] } },
+    "schemas": {
+      "CurrentUserResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "success": { "type": "boolean" },
+          "data": { "$ref": "#/components/schemas/CurrentUser" }
+        },
+        "required": ["message", "success"]
+      },
+      "CurrentUser": {
+        "type": "object",
+        "properties": {
+          "avatarUrl": { "type": "string", "nullable": true },
+          "discordId": { "type": "string" },
+          "email": { "type": "string", "nullable": true },
+          "id": { "type": "string" },
+          "name": { "type": "string", "nullable": true },
+          "role": { "$ref": "#/components/schemas/UserRole" }
+        },
+        "required": ["avatarUrl", "discordId", "email", "id", "name", "role"]
+      },
+      "UserRole": { "type": "string", "enum": ["Admin", "Editor", "Viewer"] },
+      "CurrentSettingResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "success": { "type": "boolean" },
+          "data": { "$ref": "#/components/schemas/CurrentSetting" }
+        },
+        "required": ["message", "success"]
+      },
+      "CurrentSetting": {
+        "type": "object",
+        "properties": {
+          "isRegistered": { "type": "boolean" },
+          "leaderSheetUrl": { "type": "string", "nullable": true }
+        },
+        "required": ["isRegistered", "leaderSheetUrl"]
+      },
+      "CharacterListResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "success": { "type": "boolean" },
+          "data": { "$ref": "#/components/schemas/CharacterListData" }
+        },
+        "required": ["message", "success"]
+      },
+      "CharacterListData": {
+        "type": "object",
+        "properties": {
+          "characters": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CharacterListItem" }
+          }
+        },
+        "required": ["characters"]
+      },
+      "CharacterListItem": {
+        "type": "object",
+        "properties": {
+          "avatarUrl": { "type": "string", "nullable": true },
+          "bgColor": { "type": "string" },
+          "code": { "type": "string" },
+          "color": { "type": "string" },
+          "isVirtualSinger": { "type": "boolean" },
+          "name": { "type": "string" },
+          "short": { "type": "string" },
+          "unit": { "$ref": "#/components/schemas/CharacterUnitListItem" }
+        },
+        "required": [
+          "avatarUrl",
+          "bgColor",
+          "code",
+          "color",
+          "isVirtualSinger",
+          "name",
+          "short",
+          "unit"
+        ]
+      },
+      "CharacterUnitListItem": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "bgColor": { "type": "string" },
+          "code": { "type": "string" },
+          "color": { "type": "string" },
+          "name": { "type": "string" },
+          "short": { "type": "string" }
+        },
+        "required": ["bgColor", "code", "color", "name", "short"]
+      },
+      "UnitListResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "success": { "type": "boolean" },
+          "data": { "$ref": "#/components/schemas/UnitList" }
+        },
+        "required": ["message", "success"]
+      },
+      "UnitList": {
+        "type": "object",
+        "properties": {
+          "units": { "type": "array", "items": { "$ref": "#/components/schemas/UnitListItem" } }
+        },
+        "required": ["units"]
+      },
+      "UnitListItem": {
+        "type": "object",
+        "properties": {
+          "bgColor": { "type": "string" },
+          "code": { "type": "string" },
+          "color": { "type": "string" },
+          "name": { "type": "string" },
+          "short": { "type": "string" }
+        },
+        "required": ["bgColor", "code", "color", "name", "short"]
+      },
+      "FurnitureOwnershipListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "tags": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/FurnitureOwnershipTag" }
+              }
+            },
+            "required": ["tags"]
+          },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        },
+        "required": ["data", "message", "success"]
+      },
+      "FurnitureOwnershipTag": {
+        "type": "object",
+        "properties": {
+          "furnitures": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FurnitureOwnershipItem" }
+          },
+          "id": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": ["furnitures", "id", "name"]
+      },
+      "FurnitureOwnershipItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "owned": { "type": "boolean" }
+        },
+        "required": ["id", "name", "owned"]
+      },
+      "FurnitureListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "tags": { "type": "array", "items": { "$ref": "#/components/schemas/FurnitureTag" } },
+              "unitCode": { "type": "string" },
+              "unitName": { "type": "string" }
+            },
+            "required": ["tags", "unitCode", "unitName"]
+          },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        },
+        "required": ["data", "message", "success"]
+      },
+      "FurnitureTag": {
+        "type": "object",
+        "properties": {
+          "furnitures": { "type": "array", "items": { "$ref": "#/components/schemas/Furniture" } },
+          "id": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": ["furnitures", "id", "name"]
+      },
+      "Furniture": {
+        "type": "object",
+        "properties": {
+          "groupId": { "type": "string", "nullable": true },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "reactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FurnitureReaction" }
+          }
+        },
+        "required": ["groupId", "id", "name", "reactions"]
+      },
+      "FurnitureReaction": {
+        "type": "object",
+        "properties": {
+          "characters": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FurnitureReactionCharacter" }
+          },
+          "checked": { "type": "boolean" },
+          "checkedByGroup": { "type": "boolean" },
+          "id": { "type": "string" }
+        },
+        "required": ["characters", "checked", "checkedByGroup", "id"]
+      },
+      "FurnitureReactionCharacter": {
+        "type": "object",
+        "properties": {
+          "color": { "type": "string" },
+          "id": { "type": "string" },
+          "short": { "type": "string" }
+        },
+        "required": ["color", "id", "short"]
+      },
+      "FurnitureOwnershipResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": { "furnitureId": { "type": "string" }, "owned": { "type": "boolean" } },
+            "required": ["furnitureId", "owned"]
+          },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        },
+        "required": ["data", "message", "success"]
+      },
+      "ReactionCheckResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": { "checked": { "type": "boolean" }, "reactionId": { "type": "string" } },
+            "required": ["checked", "reactionId"]
+          },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        },
+        "required": ["data", "message", "success"]
+      },
+      "ReorderDirection": { "type": "string", "enum": ["up", "down"] }
+    },
     "parameters": {}
   },
   "paths": {
     "/api/users/me": {
       "get": {
-        "description": "Get the currently authenticated user's information",
+        "description": "現在のユーザー情報を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get current user",
+        "summary": "現在のユーザー取得",
         "tags": ["Users"],
         "responses": {
           "200": {
-            "description": "User found",
+            "description": "ユーザー情報を取得しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "avatarUrl": { "type": "string", "nullable": true },
-                        "discordId": { "type": "string" },
-                        "email": { "type": "string", "nullable": true },
-                        "id": { "type": "string" },
-                        "name": { "type": "string", "nullable": true },
-                        "role": { "type": "string", "enum": ["Admin", "Editor", "Viewer"] }
-                      },
-                      "required": ["avatarUrl", "discordId", "email", "id", "name", "role"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/CurrentUserResponse" }
               }
             }
           },
@@ -78,71 +307,38 @@
     },
     "/api/users": {
       "post": {
-        "description": "Register a new user with Discord OAuth",
+        "description": "Discord認証を利用して新規ユーザーを登録する",
         "security": [{ "discordAuth": [] }],
-        "summary": "Create a new user",
+        "summary": "ユーザー登録",
         "tags": ["Users"],
         "responses": {
           "201": {
-            "description": "User created successfully",
+            "description": "ユーザー登録が完了しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "avatarUrl": { "type": "string", "nullable": true },
-                        "discordId": { "type": "string" },
-                        "email": { "type": "string", "nullable": true },
-                        "id": { "type": "string" },
-                        "name": { "type": "string", "nullable": true },
-                        "role": { "type": "string", "enum": ["Admin", "Editor", "Viewer"] }
-                      },
-                      "required": ["avatarUrl", "discordId", "email", "id", "name", "role"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/CurrentUserResponse" }
               }
             }
           },
           "400": { "description": "Bad request - Invalid input data" },
           "401": { "description": "Unauthorized - Authentication required" },
-          "409": { "description": "Conflict - Resource already exists" }
+          "409": { "description": "Conflict - Resource already exists" },
+          "500": { "description": "Internal server error" }
         }
       }
     },
     "/api/users/settings": {
       "get": {
-        "description": "Get the current user's settings",
+        "description": "現在のユーザーの設定情報を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get user settings",
+        "summary": "ユーザー設定取得",
         "tags": ["Settings"],
         "responses": {
           "200": {
-            "description": "Settings found",
+            "description": "設定情報を取得しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "isRegistered": { "type": "boolean" },
-                        "leaderSheetUrl": { "type": "string", "nullable": true }
-                      },
-                      "required": ["isRegistered", "leaderSheetUrl"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/CurrentSettingResponse" }
               }
             }
           },
@@ -151,9 +347,9 @@
         }
       },
       "post": {
-        "description": "Create new settings for the current user",
+        "description": "現在のユーザーの設定情報を新規作成する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Create user settings",
+        "summary": "ユーザー設定作成",
         "tags": ["Settings"],
         "requestBody": {
           "content": {
@@ -168,25 +364,10 @@
         },
         "responses": {
           "201": {
-            "description": "Settings created successfully",
+            "description": "設定情報を更新しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "isRegistered": { "type": "boolean" },
-                        "leaderSheetUrl": { "type": "string", "nullable": true }
-                      },
-                      "required": ["isRegistered", "leaderSheetUrl"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/CurrentSettingResponse" }
               }
             }
           },
@@ -196,9 +377,9 @@
         }
       },
       "patch": {
-        "description": "Update the current user's settings",
+        "description": "現在のユーザーの設定情報を更新する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Update user settings",
+        "summary": "ユーザー設定更新",
         "tags": ["Settings"],
         "requestBody": {
           "content": {
@@ -213,25 +394,10 @@
         },
         "responses": {
           "200": {
-            "description": "Settings updated successfully",
+            "description": "設定情報を更新しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "isRegistered": { "type": "boolean" },
-                        "leaderSheetUrl": { "type": "string", "nullable": true }
-                      },
-                      "required": ["isRegistered", "leaderSheetUrl"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/CurrentSettingResponse" }
               }
             }
           },
@@ -243,65 +409,15 @@
     },
     "/api/characters": {
       "get": {
-        "description": "Retrieve all characters with their unit information",
-        "summary": "Get all characters",
+        "description": "全キャラクターの情報をユニット情報と共に取得する",
+        "summary": "キャラクター一覧取得",
         "tags": ["Characters"],
         "responses": {
           "200": {
-            "description": "Characters retrieved successfully",
+            "description": "キャラクター情報を取得しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "characters": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "avatarUrl": { "type": "string", "nullable": true },
-                              "bgColor": { "type": "string" },
-                              "code": { "type": "string" },
-                              "color": { "type": "string" },
-                              "isVirtualSinger": { "type": "boolean" },
-                              "name": { "type": "string" },
-                              "short": { "type": "string" },
-                              "unit": {
-                                "type": "object",
-                                "nullable": true,
-                                "properties": {
-                                  "bgColor": { "type": "string" },
-                                  "code": { "type": "string" },
-                                  "color": { "type": "string" },
-                                  "name": { "type": "string" },
-                                  "short": { "type": "string" }
-                                },
-                                "required": ["bgColor", "code", "color", "name", "short"]
-                              }
-                            },
-                            "required": [
-                              "avatarUrl",
-                              "bgColor",
-                              "code",
-                              "color",
-                              "isVirtualSinger",
-                              "name",
-                              "short",
-                              "unit"
-                            ]
-                          }
-                        }
-                      },
-                      "required": ["characters"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/CharacterListResponse" }
               }
             }
           },
@@ -311,43 +427,14 @@
     },
     "/api/units": {
       "get": {
-        "description": "Retrieve all units",
-        "summary": "Get all units",
+        "description": "ユニット一覧を取得する",
+        "summary": "ユニット一覧取得",
         "tags": ["Units"],
         "responses": {
           "200": {
-            "description": "Units retrieved successfully",
+            "description": "ユニット一覧を取得しました",
             "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "units": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "bgColor": { "type": "string" },
-                              "code": { "type": "string" },
-                              "color": { "type": "string" },
-                              "name": { "type": "string" },
-                              "short": { "type": "string" }
-                            },
-                            "required": ["bgColor", "code", "color", "name", "short"]
-                          }
-                        }
-                      },
-                      "required": ["units"]
-                    }
-                  },
-                  "required": ["message", "success"]
-                }
-              }
+              "application/json": { "schema": { "$ref": "#/components/schemas/UnitListResponse" } }
             }
           },
           "500": { "description": "Internal server error" }
@@ -356,9 +443,9 @@
     },
     "/api/furnitures": {
       "get": {
-        "description": "Retrieve all furnitures with ownership status for the current user",
+        "description": "現在のユーザーの所持状態を含むすべての家具を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get all furnitures with ownership status",
+        "summary": "全家具一覧取得",
         "tags": ["Furnitures"],
         "parameters": [
           {
@@ -375,46 +462,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Furnitures retrieved successfully",
+            "description": "家具一覧を取得しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "tags": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "furnitures": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "id": { "type": "string" },
-                                    "name": { "type": "string" },
-                                    "owned": { "type": "boolean" }
-                                  },
-                                  "required": ["id", "name", "owned"]
-                                }
-                              },
-                              "id": { "type": "string" },
-                              "name": { "type": "string" }
-                            },
-                            "required": ["furnitures", "id", "name"]
-                          }
-                        }
-                      },
-                      "required": ["tags"]
-                    },
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" }
-                  },
-                  "required": ["data", "message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/FurnitureOwnershipListResponse" }
               }
             }
           },
@@ -425,9 +476,9 @@
     },
     "/api/furnitures/{unitCode}": {
       "get": {
-        "description": "Retrieve furniture list with reactions for a specific unit",
+        "description": "特定のユニットのリアクション情報を含む家具一覧を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get furnitures by unit",
+        "summary": "ユニット別家具一覧取得",
         "tags": ["Furnitures"],
         "parameters": [
           {
@@ -488,77 +539,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Furnitures retrieved successfully",
+            "description": "家具情報を取得しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "tags": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "furnitures": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "groupId": { "type": "string", "nullable": true },
-                                    "id": { "type": "string" },
-                                    "name": { "type": "string" },
-                                    "reactions": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "object",
-                                        "properties": {
-                                          "characters": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "object",
-                                              "properties": {
-                                                "color": { "type": "string" },
-                                                "id": { "type": "string" },
-                                                "short": { "type": "string" }
-                                              },
-                                              "required": ["color", "id", "short"]
-                                            }
-                                          },
-                                          "checked": { "type": "boolean" },
-                                          "checkedByGroup": { "type": "boolean" },
-                                          "id": { "type": "string" }
-                                        },
-                                        "required": [
-                                          "characters",
-                                          "checked",
-                                          "checkedByGroup",
-                                          "id"
-                                        ]
-                                      }
-                                    }
-                                  },
-                                  "required": ["groupId", "id", "name", "reactions"]
-                                }
-                              },
-                              "id": { "type": "string" },
-                              "name": { "type": "string" }
-                            },
-                            "required": ["furnitures", "id", "name"]
-                          }
-                        },
-                        "unitCode": { "type": "string" },
-                        "unitName": { "type": "string" }
-                      },
-                      "required": ["tags", "unitCode", "unitName"]
-                    },
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" }
-                  },
-                  "required": ["data", "message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/FurnitureListResponse" }
               }
             }
           },
@@ -570,13 +554,19 @@
     },
     "/api/furnitures/own/{furnitureId}": {
       "post": {
-        "description": "Mark a furniture as owned by the current user",
+        "description": "家具を現在のユーザーの所持済みとしてマークする",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Own a furniture",
+        "summary": "家具所持登録",
         "tags": ["Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Furniture ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Furniture ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Furniture ID",
             "name": "furnitureId",
@@ -588,22 +578,7 @@
             "description": "Furniture marked as owned",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "furnitureId": { "type": "string" },
-                        "owned": { "type": "boolean" }
-                      },
-                      "required": ["furnitureId", "owned"]
-                    },
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" }
-                  },
-                  "required": ["data", "message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/FurnitureOwnershipResponse" }
               }
             }
           },
@@ -613,13 +588,19 @@
         }
       },
       "delete": {
-        "description": "Remove ownership of a furniture for the current user",
+        "description": "現在のユーザーの家具の所持状態を解除する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Unown a furniture",
+        "summary": "家具所持解除",
         "tags": ["Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Furniture ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Furniture ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Furniture ID",
             "name": "furnitureId",
@@ -631,22 +612,7 @@
             "description": "Furniture ownership removed",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "furnitureId": { "type": "string" },
-                        "owned": { "type": "boolean" }
-                      },
-                      "required": ["furnitureId", "owned"]
-                    },
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" }
-                  },
-                  "required": ["data", "message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/FurnitureOwnershipResponse" }
               }
             }
           },
@@ -658,40 +624,31 @@
     },
     "/api/reactions/{reactionId}/check": {
       "post": {
-        "description": "Mark a reaction as checked for the current user",
+        "description": "リアクションをチェック済みにする",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Check a reaction",
+        "summary": "リアクションをチェック済みにする",
         "tags": ["Reactions"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Reaction ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "リアクションID",
+              "example": "clxxxxx"
+            },
             "required": true,
-            "description": "Reaction ID",
+            "description": "リアクションID",
             "name": "reactionId",
             "in": "path"
           }
         ],
         "responses": {
           "200": {
-            "description": "Reaction checked successfully",
+            "description": "リアクションをチェック済みにしました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "checked": { "type": "boolean" },
-                        "reactionId": { "type": "string" }
-                      },
-                      "required": ["checked", "reactionId"]
-                    },
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" }
-                  },
-                  "required": ["data", "message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/ReactionCheckResponse" }
               }
             }
           },
@@ -701,40 +658,31 @@
         }
       },
       "delete": {
-        "description": "Remove check from a reaction for the current user",
+        "description": "リアクションのチェックを外す",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Uncheck a reaction",
+        "summary": "リアクションのチェックを外す",
         "tags": ["Reactions"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Reaction ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "リアクションID",
+              "example": "clxxxxx"
+            },
             "required": true,
-            "description": "Reaction ID",
+            "description": "リアクションID",
             "name": "reactionId",
             "in": "path"
           }
         ],
         "responses": {
           "200": {
-            "description": "Reaction unchecked successfully",
+            "description": "リアクションのチェックを外しました",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "checked": { "type": "boolean" },
-                        "reactionId": { "type": "string" }
-                      },
-                      "required": ["checked", "reactionId"]
-                    },
-                    "message": { "type": "string" },
-                    "success": { "type": "boolean" }
-                  },
-                  "required": ["data", "message", "success"]
-                }
+                "schema": { "$ref": "#/components/schemas/ReactionCheckResponse" }
               }
             }
           },
@@ -746,13 +694,13 @@
     },
     "/api/admin/furniture-characters": {
       "get": {
-        "description": "Retrieve all characters with their IDs for furniture admin use",
+        "description": "家具管理用に全キャラクターの情報を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get all characters for furniture management",
+        "summary": "管理用キャラクター一覧取得",
         "tags": ["Admin - Furnitures"],
         "responses": {
           "200": {
-            "description": "Characters retrieved successfully",
+            "description": "キャラクター情報を取得しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -817,9 +765,9 @@
     },
     "/api/admin/furniture-tags": {
       "post": {
-        "description": "Create a new furniture tag with optional furnitures (bulk creation)",
+        "description": "家具（任意）を含む新しい家具タグを作成する（一括作成）",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Create furniture tag",
+        "summary": "家具タグ作成",
         "tags": ["Admin - Furnitures"],
         "requestBody": {
           "content": {
@@ -866,7 +814,7 @@
         },
         "responses": {
           "201": {
-            "description": "Tag created successfully",
+            "description": "家具タグを作成しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -892,9 +840,9 @@
         }
       },
       "get": {
-        "description": "Get all furniture tags with furniture count",
+        "description": "家具のカウントを含むすべての家具タグを取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "List furniture tags",
+        "summary": "家具タグ一覧取得",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
@@ -940,7 +888,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tags retrieved successfully",
+            "description": "家具タグ一覧を取得しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -990,13 +938,19 @@
     },
     "/api/admin/furniture-tags/{tagId}/reorder": {
       "patch": {
-        "description": "Swap the priority of a furniture tag with the adjacent tag in the specified direction",
+        "description": "家具タグの優先度を指定した方向の隣接タグと入れ替える",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Reorder furniture tags",
+        "summary": "家具タグ順序変更",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Tag ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Tag ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Tag ID",
             "name": "tagId",
@@ -1016,7 +970,7 @@
         },
         "responses": {
           "200": {
-            "description": "Furniture tags reordered successfully",
+            "description": "家具タグの順序を変更しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1039,13 +993,19 @@
     },
     "/api/admin/furniture-tags/{tagId}": {
       "get": {
-        "description": "Get a furniture tag with its furnitures and reactions",
+        "description": "家具およびリアクションを含む家具タグの詳細を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get furniture tag",
+        "summary": "家具タグ詳細取得",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Tag ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Tag ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Tag ID",
             "name": "tagId",
@@ -1054,7 +1014,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tag retrieved successfully",
+            "description": "家具タグを取得しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1128,13 +1088,19 @@
         }
       },
       "patch": {
-        "description": "Update a furniture tag with its furnitures and reactions",
+        "description": "家具タグとそれに紐づく家具およびリアクションを更新する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Update furniture tag",
+        "summary": "家具タグ更新",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Tag ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Tag ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Tag ID",
             "name": "tagId",
@@ -1186,7 +1152,7 @@
         },
         "responses": {
           "200": {
-            "description": "Tag updated successfully",
+            "description": "家具タグを更新しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1209,13 +1175,19 @@
         }
       },
       "delete": {
-        "description": "Delete a furniture tag and all its furnitures (cascade)",
+        "description": "家具タグとそのタグに紐づくすべての家具を削除する（カスケード削除）",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Delete furniture tag",
+        "summary": "家具タグ削除",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Tag ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Tag ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Tag ID",
             "name": "tagId",
@@ -1224,7 +1196,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Tag deleted successfully",
+            "description": "家具タグを削除しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1247,9 +1219,9 @@
     },
     "/api/admin/furniture-groups": {
       "post": {
-        "description": "Create a new furniture group with optional excluded character combinations",
+        "description": "除外キャラクターの組み合わせ（任意）を含む新しい家具グループを作成する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Create furniture group",
+        "summary": "家具グループ作成",
         "tags": ["Admin - Furnitures"],
         "requestBody": {
           "content": {
@@ -1276,7 +1248,7 @@
         },
         "responses": {
           "201": {
-            "description": "Group created successfully",
+            "description": "家具グループを作成しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1302,9 +1274,9 @@
         }
       },
       "get": {
-        "description": "Get all furniture groups",
+        "description": "すべての家具グループを取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "List furniture groups",
+        "summary": "家具グループ一覧取得",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
@@ -1339,7 +1311,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Groups retrieved successfully",
+            "description": "家具グループ一覧を取得しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1390,13 +1362,19 @@
     },
     "/api/admin/furniture-groups/{groupId}/reorder": {
       "patch": {
-        "description": "Swap the priority of a furniture group with the adjacent group in the specified direction",
+        "description": "家具グループの優先度を指定した方向の隣接グループと入れ替える",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Reorder furniture groups",
+        "summary": "家具グループ順序変更",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Group ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Group ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Group ID",
             "name": "groupId",
@@ -1416,7 +1394,7 @@
         },
         "responses": {
           "200": {
-            "description": "Furniture groups reordered successfully",
+            "description": "家具グループの順序を変更しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1439,13 +1417,19 @@
     },
     "/api/admin/furniture-groups/{groupId}": {
       "get": {
-        "description": "Get a furniture group with excluded combinations and furnitures",
+        "description": "除外設定および家具を含む家具グループの詳細を取得する",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Get furniture group detail",
+        "summary": "家具グループ詳細取得",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Group ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Group ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Group ID",
             "name": "groupId",
@@ -1454,7 +1438,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Group retrieved successfully",
+            "description": "家具グループを取得しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1525,13 +1509,19 @@
         }
       },
       "patch": {
-        "description": "Update a furniture group. If excludedCombinations are provided, they replace existing ones.",
+        "description": "家具グループを更新する。excludedCombinationsが指定された場合、既存の設定は置き換えられます。",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Update furniture group",
+        "summary": "家具グループ更新",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Group ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Group ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Group ID",
             "name": "groupId",
@@ -1563,7 +1553,7 @@
         },
         "responses": {
           "200": {
-            "description": "Group updated successfully",
+            "description": "家具グループを更新しました",
             "content": {
               "application/json": {
                 "schema": {
@@ -1585,13 +1575,19 @@
         }
       },
       "delete": {
-        "description": "Delete a furniture group (furnitures will have groupId set to null)",
+        "description": "家具グループを削除する（家具のgroupIdはnullに設定されます）",
         "security": [{ "cookieAuth": [] }],
-        "summary": "Delete furniture group",
+        "summary": "家具グループ削除",
         "tags": ["Admin - Furnitures"],
         "parameters": [
           {
-            "schema": { "type": "string", "description": "Group ID", "example": "clxxxxx" },
+            "schema": {
+              "type": "string",
+              "format": "cuid2",
+              "pattern": "^[a-z0-9]+$",
+              "description": "Group ID",
+              "example": "clxxxxx"
+            },
             "required": true,
             "description": "Group ID",
             "name": "groupId",
@@ -1600,7 +1596,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Group deleted successfully",
+            "description": "家具グループを削除しました",
             "content": {
               "application/json": {
                 "schema": {

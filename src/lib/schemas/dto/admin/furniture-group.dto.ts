@@ -50,3 +50,34 @@ export const reorderFurnitureGroupDtoSchema = z.object({
 })
 
 export type ReorderFurnitureGroupDto = z.infer<typeof reorderFurnitureGroupDtoSchema>
+
+/**
+ * グループ検索クエリDTO
+ */
+export const furnitureGroupsQueryDtoSchema = z.object({
+  limit: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(100)
+    .optional()
+    .default(20)
+    .openapi({ description: "Number of items per page", example: 20 }),
+  page: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(1)
+    .openapi({ description: "Page number", example: 1 }),
+})
+
+/**
+ * グループIDパスパラメータDTO
+ */
+export const furnitureGroupParamDtoSchema = z.object({
+  groupId: z
+    .string()
+    .regex(/^[a-z0-9]+$/, "不正なIDフォーマットです")
+    .openapi({ description: "Group ID", example: "clxxxxx", format: "cuid2" }),
+})

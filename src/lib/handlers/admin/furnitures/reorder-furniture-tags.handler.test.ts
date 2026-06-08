@@ -1,8 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
-import { Hono } from "hono"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { reorderFurnitureTags } from "./reorder-furniture-tags.handler"
+import { reorderFurnitureTags, reorderFurnitureTagsRoute } from "./reorder-furniture-tags.handler"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -17,24 +19,36 @@ vi.mock("@/lib/prisma", () => ({
 }))
 
 describe("reorderFurnitureTags", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.patch("/admin/furniture-tags/:tagId/reorder", reorderFurnitureTags)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(reorderFurnitureTagsRoute, reorderFurnitureTags)
     vi.clearAllMocks()
   })
 
   it("上に移動できる（priorityをスワップする）", async () => {
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue([
-      { id: "tag-1", priority: 0 },
-      { id: "tag-2", priority: 1 },
-      { id: "tag-3", priority: 2 },
+      { id: "tag1", priority: 0 },
+      { id: "tag2", priority: 1 },
+      { id: "tag3", priority: 2 },
     ] as never)
 
     vi.mocked(prisma.$transaction).mockResolvedValue([])
 
-    const res = await app.request("/admin/furniture-tags/tag-2/reorder", {
+    const res = await app.request("/api/admin/furniture-tags/tag2/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -49,14 +63,14 @@ describe("reorderFurnitureTags", () => {
 
   it("下に移動できる（priorityをスワップする）", async () => {
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue([
-      { id: "tag-1", priority: 0 },
-      { id: "tag-2", priority: 1 },
-      { id: "tag-3", priority: 2 },
+      { id: "tag1", priority: 0 },
+      { id: "tag2", priority: 1 },
+      { id: "tag3", priority: 2 },
     ] as never)
 
     vi.mocked(prisma.$transaction).mockResolvedValue([])
 
-    const res = await app.request("/admin/furniture-tags/tag-2/reorder", {
+    const res = await app.request("/api/admin/furniture-tags/tag2/reorder", {
       body: JSON.stringify({ direction: "down" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -71,11 +85,11 @@ describe("reorderFurnitureTags", () => {
 
   it("一番上にあるタグをupしようとした場合は何もせず200を返す", async () => {
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue([
-      { id: "tag-1", priority: 0 },
-      { id: "tag-2", priority: 1 },
+      { id: "tag1", priority: 0 },
+      { id: "tag6", priority: 1 },
     ] as never)
 
-    const res = await app.request("/admin/furniture-tags/tag-1/reorder", {
+    const res = await app.request("/api/admin/furniture-tags/tag1/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -90,7 +104,7 @@ describe("reorderFurnitureTags", () => {
   it("存在しないタグIDの場合は404を返す", async () => {
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-tags/tag-unknown/reorder", {
+    const res = await app.request("/api/admin/furniture-tags/tagunknown/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
@@ -103,7 +117,7 @@ describe("reorderFurnitureTags", () => {
   })
 
   it("directionが不正な場合は400を返す", async () => {
-    const res = await app.request("/admin/furniture-tags/tag-1/reorder", {
+    const res = await app.request("/api/admin/furniture-tags/tag1/reorder", {
       body: JSON.stringify({ direction: "left" }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",

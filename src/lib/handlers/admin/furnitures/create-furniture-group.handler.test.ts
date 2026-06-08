@@ -1,8 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { createFurnitureGroup } from "./create-furniture-group.handler"
+import { createFurnitureGroup, createFurnitureGroupRoute } from "./create-furniture-group.handler"
 
 const mockTx = {
   furniture: { updateMany: vi.fn() },
@@ -28,11 +30,23 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("createFurnitureGroup", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.post("/admin/furniture-groups", createFurnitureGroup)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(createFurnitureGroupRoute, createFurnitureGroup)
     vi.clearAllMocks()
   })
 
@@ -41,7 +55,7 @@ describe("createFurnitureGroup", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "新グループ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -63,7 +77,7 @@ describe("createFurnitureGroup", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({
         excludedCombinations: [["char-1", "char-2"]],
         furnitureIds: [],
@@ -88,7 +102,7 @@ describe("createFurnitureGroup", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({
         excludedCombinations: [],
         furnitureIds: ["furniture-1", "furniture-2"],
@@ -108,7 +122,7 @@ describe("createFurnitureGroup", () => {
   it("不明な家具IDの場合は400を返す", async () => {
     vi.mocked(prisma.furniture.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({
         excludedCombinations: [],
         furnitureIds: ["unknown-furniture"],
@@ -125,7 +139,7 @@ describe("createFurnitureGroup", () => {
   })
 
   it("グループ名が空の場合は400を返す", async () => {
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -139,7 +153,7 @@ describe("createFurnitureGroup", () => {
   it("不明なキャラクターIDの場合は400を返す", async () => {
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({
         excludedCombinations: [["unknown_code"]],
         furnitureIds: [],
@@ -161,7 +175,7 @@ describe("createFurnitureGroup", () => {
       { id: "char-2", unitId: "unit-2" },
     ] as never)
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({
         excludedCombinations: [["char-1", "char-2"]],
         furnitureIds: [],
@@ -185,7 +199,7 @@ describe("createFurnitureGroup", () => {
       })
     )
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "既存グループ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -200,7 +214,7 @@ describe("createFurnitureGroup", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-groups", {
+    const res = await app.request("/api/admin/furniture-groups", {
       body: JSON.stringify({ excludedCombinations: [], furnitureIds: [], name: "新グループ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",

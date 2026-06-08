@@ -1,21 +1,51 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
+import {
+  furnitureQueryDtoSchema,
+  furnitureUnitParamDtoSchema,
+} from "@/lib/schemas/dto/furniture.dto"
 import {
   Furniture,
   FurnitureListResponse,
   FurnitureReaction,
   FurnitureTag,
+  furnitureListResponseSchema,
 } from "@/lib/schemas/response/furniture.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const getFurnituresByUnit: Handler = async (c) => {
+export const getFurnituresByUnitRoute = createRoute({
+  description: "特定のユニットのリアクション情報を含む家具一覧を取得する",
+  method: "get",
+  path: "/api/furnitures/{unitCode}",
+  request: {
+    params: furnitureUnitParamDtoSchema,
+    query: furnitureQueryDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(HTTP_STATUS.OK, furnitureListResponseSchema, "家具情報を取得しました"),
+    ...commonResponses.notFound,
+    ...commonResponses.internalServerError,
+    ...commonResponses.unauthorized,
+  },
+  security: [cookieAuth],
+  summary: "ユニット別家具一覧取得",
+  tags: [Tags.FURNITURES.name],
+})
+
+export const getFurnituresByUnit: RouteHandler<typeof getFurnituresByUnitRoute, AppEnv> = async (
+  c
+) => {
   try {
-    const unitCode = c.req.param("unitCode")
-    const searchQuery = c.req.query("q")
-    const hideCompleted = c.req.query("hideCompleted") === "true"
-    const ownedOnly = c.req.query("ownedOnly") === "true"
-    const characterIdsParam = c.req.query("characterIds")
+    const { unitCode } = c.req.valid("param")
+    const {
+      characterIds: characterIdsParam,
+      hideCompleted,
+      ownedOnly,
+      q: searchQuery,
+    } = c.req.valid("query")
     const filterCharacterIds = characterIdsParam ? characterIdsParam.split(",") : []
     const discordId = c.get("discordId")
 
@@ -334,7 +364,7 @@ export const getFurnituresByUnit: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch {
     return c.json(
       { message: "家具一覧の取得に失敗しました", success: false },

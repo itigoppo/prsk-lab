@@ -1,10 +1,27 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, jsonResponse } from "@/lib/hono/openapi-helpers"
 import { prisma } from "@/lib/prisma"
-import { UnitListItem, UnitListResponse } from "@/lib/schemas/response/unit.response"
+import {
+  UnitListItem,
+  UnitListResponse,
+  unitListResponseSchema,
+} from "@/lib/schemas/response/unit.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const getUnits: Handler = async (c) => {
+export const getUnitsRoute = createRoute({
+  description: "ユニット一覧を取得する",
+  method: "get",
+  path: "/api/units",
+  responses: {
+    ...jsonResponse(HTTP_STATUS.OK, unitListResponseSchema, "ユニット一覧を取得しました"),
+    ...commonResponses.internalServerError,
+  },
+  summary: "ユニット一覧取得",
+  tags: [Tags.UNITS.name],
+})
+
+export const getUnits: RouteHandler<typeof getUnitsRoute> = async (c) => {
   try {
     const units = await prisma.unit.findMany({
       orderBy: {
@@ -37,7 +54,7 @@ export const getUnits: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch {
     return c.json(
       { message: "ユニット情報の取得に失敗しました", success: false },

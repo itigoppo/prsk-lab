@@ -1,29 +1,55 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { updateFurnitureGroupDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
-import type { UpdateFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
-import { formatZodErrors } from "@/lib/utils/zod"
-import { createId } from "@paralleldrive/cuid2"
-import type { Handler } from "hono"
+import {
+  furnitureGroupParamDtoSchema,
+  updateFurnitureGroupDtoSchema,
+} from "@/lib/schemas/dto/admin/furniture-group.dto"
+import { updateFurnitureGroupResponseSchema } from "@/lib/schemas/response/admin/furniture-group.response"
 
-export const updateFurnitureGroup: Handler = async (c) => {
+import {
+  Tags,
+  commonResponses,
+  cookieAuth,
+  jsonRequest,
+  jsonResponse,
+} from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
+import type { UpdateFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
+import { createId } from "@paralleldrive/cuid2"
+
+export const updateFurnitureGroupRoute = createRoute({
+  description:
+    "家具グループを更新する。excludedCombinationsが指定された場合、既存の設定は置き換えられます。",
+  method: "patch",
+  path: "/api/admin/furniture-groups/{groupId}",
+  request: {
+    ...jsonRequest(updateFurnitureGroupDtoSchema),
+    params: furnitureGroupParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(
+      HTTP_STATUS.OK,
+      updateFurnitureGroupResponseSchema,
+      "家具グループを更新しました"
+    ),
+    ...commonResponses.badRequest,
+    ...commonResponses.notFound,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具グループ更新",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const updateFurnitureGroup: RouteHandler<typeof updateFurnitureGroupRoute, AppEnv> = async (
+  c
+) => {
   try {
     const groupId = c.req.param("groupId")
-    const body = await c.req.json()
-    const parsed = updateFurnitureGroupDtoSchema.safeParse(body)
-
-    if (!parsed.success) {
-      return c.json(
-        {
-          errors: formatZodErrors(parsed.error),
-          message: "入力内容に誤りがあります",
-          success: false,
-        },
-        HTTP_STATUS.BAD_REQUEST
-      )
-    }
-
-    const { excludedCombinations, furnitureIds, name } = parsed.data
+    const { excludedCombinations, furnitureIds, name } = c.req.valid("json")
 
     // グループの存在確認
     const existingGroup = await prisma.furnitureGroup.findUnique({
@@ -155,7 +181,7 @@ export const updateFurnitureGroup: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch {
     return c.json(
       { message: "グループの更新に失敗しました", success: false },

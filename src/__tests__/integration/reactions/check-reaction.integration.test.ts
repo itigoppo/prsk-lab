@@ -33,9 +33,9 @@ describe("POST /api/reactions/{reactionId}/check", () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID })
       const tag = await insertMockFurnitureTag({ id: "tag-1" })
       const furniture = await insertMockFurniture(tag.id, { id: "furniture-1" })
-      await insertMockFurnitureReaction(furniture.id, { id: "reaction-1" })
+      await insertMockFurnitureReaction(furniture.id, { id: "reaction1" })
 
-      const res = await openAPIApp.request("/api/reactions/reaction-1/check", {
+      const res = await openAPIApp.request("/api/reactions/reaction1/check", {
         headers: {
           Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
         },
@@ -46,16 +46,16 @@ describe("POST /api/reactions/{reactionId}/check", () => {
 
       const json = await res.json()
       expect(json.success).toBe(true)
-      expect(json.data.reactionId).toBe("reaction-1")
+      expect(json.data.reactionId).toBe("reaction1")
       expect(json.data.checked).toBe(true)
     })
 
     it("ユーザーが見つからない場合は401を返す", async () => {
       const tag = await insertMockFurnitureTag({ id: "tag-1" })
       const furniture = await insertMockFurniture(tag.id, { id: "furniture-1" })
-      await insertMockFurnitureReaction(furniture.id, { id: "reaction-1" })
+      await insertMockFurnitureReaction(furniture.id, { id: "reaction1" })
 
-      const res = await openAPIApp.request("/api/reactions/reaction-1/check", {
+      const res = await openAPIApp.request("/api/reactions/reaction1/check", {
         headers: {
           Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
         },
@@ -72,7 +72,7 @@ describe("POST /api/reactions/{reactionId}/check", () => {
     it("リアクションが存在しない場合は404を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID })
 
-      const res = await openAPIApp.request("/api/reactions/invalid-reaction/check", {
+      const res = await openAPIApp.request("/api/reactions/invalidreaction/check", {
         headers: {
           Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
         },
@@ -90,7 +90,7 @@ describe("POST /api/reactions/{reactionId}/check", () => {
         return c.json({ message: "Missing session token", success: false }, 401)
       })
 
-      const res = await openAPIApp.request("/api/reactions/reaction-1/check", {
+      const res = await openAPIApp.request("/api/reactions/reaction1/check", {
         method: "POST",
       })
 

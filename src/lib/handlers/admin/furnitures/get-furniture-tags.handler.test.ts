@@ -1,7 +1,9 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getFurnitureTags } from "./get-furniture-tags.handler"
+import { getFurnitureTags, getFurnitureTagsRoute } from "./get-furniture-tags.handler"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -15,11 +17,23 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("getFurnitureTags", () => {
-  let app: Hono
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono()
-    app.get("/admin/furniture-tags", getFurnitureTags)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(getFurnitureTagsRoute, getFurnitureTags)
     vi.clearAllMocks()
   })
 
@@ -28,21 +42,21 @@ describe("getFurnitureTags", () => {
       {
         _count: { furnitures: 3 },
         createdAt: new Date(),
-        id: "tag-1",
+        id: "tag1",
         name: "タグ1",
         updatedAt: new Date(),
       },
       {
         _count: { furnitures: 5 },
         createdAt: new Date(),
-        id: "tag-2",
+        id: "tag2",
         name: "タグ2",
         updatedAt: new Date(),
       },
     ] as never)
     vi.mocked(prisma.furnitureTag.count).mockResolvedValue(2)
 
-    const res = await app.request("/admin/furniture-tags", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-tags", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -64,14 +78,14 @@ describe("getFurnitureTags", () => {
       {
         _count: { furnitures: 1 },
         createdAt: new Date(),
-        id: "tag-11",
+        id: "tag11",
         name: "タグ11",
         updatedAt: new Date(),
       },
     ] as never)
     vi.mocked(prisma.furnitureTag.count).mockResolvedValue(25)
 
-    const res = await app.request("/admin/furniture-tags?page=2&limit=10", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-tags?page=2&limit=10", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -93,7 +107,7 @@ describe("getFurnitureTags", () => {
     vi.mocked(prisma.furnitureTag.findMany).mockResolvedValue([])
     vi.mocked(prisma.furnitureTag.count).mockResolvedValue(0)
 
-    const res = await app.request("/admin/furniture-tags", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-tags", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -108,14 +122,14 @@ describe("getFurnitureTags", () => {
       {
         _count: { furnitures: 2 },
         createdAt: new Date(),
-        id: "tag-1",
+        id: "tag1",
         name: "フラワーパレード",
         updatedAt: new Date(),
       },
     ] as never)
     vi.mocked(prisma.furnitureTag.count).mockResolvedValue(1)
 
-    const res = await app.request("/admin/furniture-tags?q=フラワー", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-tags?q=フラワー", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -135,7 +149,7 @@ describe("getFurnitureTags", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.furnitureTag.findMany).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-tags", { method: "GET" })
+    const res = await app.request("/api/admin/furniture-tags", { method: "GET" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

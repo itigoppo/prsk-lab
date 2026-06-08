@@ -1,11 +1,19 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import {
+  Tags,
+  commonResponses,
+  cookieAuth,
+  jsonRequest,
+  jsonResponse,
+} from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
 import { createFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import type { CreateFurnitureTagResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
-import { formatZodErrors } from "@/lib/utils/zod"
+import { createFurnitureTagResponseSchema } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { createId } from "@paralleldrive/cuid2"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
 import {
   getCharacterSorter,
@@ -16,23 +24,28 @@ import {
   validateSameUnitReactions,
 } from "./furniture-tag.helper"
 
-export const createFurnitureTag: Handler = async (c) => {
+export const createFurnitureTagRoute = createRoute({
+  description: "家具（任意）を含む新しい家具タグを作成する（一括作成）",
+  method: "post",
+  path: "/api/admin/furniture-tags",
+  request: jsonRequest(createFurnitureTagDtoSchema),
+  responses: {
+    ...jsonResponse(201, createFurnitureTagResponseSchema, "家具タグを作成しました"),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具タグ作成",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const createFurnitureTag: RouteHandler<typeof createFurnitureTagRoute, AppEnv> = async (
+  c
+) => {
   try {
-    const body = await c.req.json()
-    const parsed = createFurnitureTagDtoSchema.safeParse(body)
-
-    if (!parsed.success) {
-      return c.json(
-        {
-          errors: formatZodErrors(parsed.error),
-          message: "入力内容に誤りがあります",
-          success: false,
-        },
-        HTTP_STATUS.BAD_REQUEST
-      )
-    }
-
-    const { furnitures, name } = parsed.data
+    const { furnitures, name } = c.req.valid("json")
 
     // キャラクターIDの検証とマップ取得
     const characterMapResult = await validateAndGetCharacterMap(c, furnitures)

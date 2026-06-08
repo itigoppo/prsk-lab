@@ -61,3 +61,38 @@ export const reorderFurnitureTagDtoSchema = z.object({
 
 export type ReorderFurnitureTagDto = z.infer<typeof reorderFurnitureTagDtoSchema>
 export type FurnitureWithReactionsDto = z.infer<typeof furnitureWithReactionsDtoSchema>
+
+/**
+ * タグ検索クエリDTO
+ */
+export const furnitureTagsQueryDtoSchema = z.object({
+  limit: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(100)
+    .optional()
+    .default(20)
+    .openapi({ description: "Number of items per page", example: 20 }),
+  page: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(1)
+    .openapi({ description: "Page number", example: 1 }),
+  q: z.string().optional().openapi({
+    description: "Search query for tag name (partial match, case insensitive)",
+    example: "フラワー",
+  }),
+})
+
+/**
+ * タグIDパスパラメータDTO
+ */
+export const furnitureTagParamDtoSchema = z.object({
+  tagId: z
+    .string()
+    .regex(/^[a-z0-9]+$/, "不正なIDフォーマットです")
+    .openapi({ description: "Tag ID", example: "clxxxxx", format: "cuid2" }),
+})

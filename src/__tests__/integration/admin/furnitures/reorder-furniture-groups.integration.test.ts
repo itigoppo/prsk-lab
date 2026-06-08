@@ -34,13 +34,13 @@ describe("PATCH /api/admin/furniture-groups/:groupId/reorder", () => {
     await insertMockUser("Admin")
 
     const group1 = await prisma.furnitureGroup.create({
-      data: { id: "group-1", name: "G1", priority: 10 },
+      data: { id: "group1", name: "G1", priority: 10 },
     })
     const group2 = await prisma.furnitureGroup.create({
-      data: { id: "group-2", name: "G2", priority: 20 }, // 対象
+      data: { id: "group2", name: "G2", priority: 20 }, // 対象
     })
     const group3 = await prisma.furnitureGroup.create({
-      data: { id: "group-3", name: "G3", priority: 30 },
+      data: { id: "group3", name: "G3", priority: 30 },
     })
 
     const res = await openAPIApp.request(`/api/admin/furniture-groups/${group2.id}/reorder`, {
@@ -67,13 +67,13 @@ describe("PATCH /api/admin/furniture-groups/:groupId/reorder", () => {
     await insertMockUser("Editor")
 
     const group1 = await prisma.furnitureGroup.create({
-      data: { id: "group-1", name: "G1", priority: 10 },
+      data: { id: "group1", name: "G1", priority: 10 },
     })
     const group2 = await prisma.furnitureGroup.create({
-      data: { id: "group-2", name: "G2", priority: 20 }, // 対象
+      data: { id: "group2", name: "G2", priority: 20 }, // 対象
     })
     const group3 = await prisma.furnitureGroup.create({
-      data: { id: "group-3", name: "G3", priority: 30 },
+      data: { id: "group3", name: "G3", priority: 30 },
     })
 
     const res = await openAPIApp.request(`/api/admin/furniture-groups/${group2.id}/reorder`, {
@@ -100,7 +100,7 @@ describe("PATCH /api/admin/furniture-groups/:groupId/reorder", () => {
     await insertMockUser("Admin")
 
     const group = await prisma.furnitureGroup.create({
-      data: { id: "group-top", name: "Top", priority: 0 },
+      data: { id: "grouptop", name: "Top", priority: 0 },
     })
 
     const res = await openAPIApp.request(`/api/admin/furniture-groups/${group.id}/reorder`, {
@@ -120,7 +120,7 @@ describe("PATCH /api/admin/furniture-groups/:groupId/reorder", () => {
   it("Viewer権限では403を返す", async () => {
     await insertMockUser("Viewer")
 
-    const res = await openAPIApp.request("/api/admin/furniture-groups/group-1/reorder", {
+    const res = await openAPIApp.request("/api/admin/furniture-groups/group1/reorder", {
       body: JSON.stringify({ direction: "up" }),
       headers: {
         "Content-Type": "application/json",

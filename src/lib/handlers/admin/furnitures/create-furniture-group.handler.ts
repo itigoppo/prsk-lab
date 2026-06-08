@@ -1,29 +1,42 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import {
+  Tags,
+  commonResponses,
+  cookieAuth,
+  jsonRequest,
+  jsonResponse,
+} from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
 import { createFurnitureGroupDtoSchema } from "@/lib/schemas/dto/admin/furniture-group.dto"
 import type { CreateFurnitureGroupResponse } from "@/lib/schemas/response/admin/furniture-group.response"
-import { formatZodErrors } from "@/lib/utils/zod"
+import { createFurnitureGroupResponseSchema } from "@/lib/schemas/response/admin/furniture-group.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { createId } from "@paralleldrive/cuid2"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const createFurnitureGroup: Handler = async (c) => {
+export const createFurnitureGroupRoute = createRoute({
+  description: "除外キャラクターの組み合わせ（任意）を含む新しい家具グループを作成する",
+  method: "post",
+  path: "/api/admin/furniture-groups",
+  request: jsonRequest(createFurnitureGroupDtoSchema),
+  responses: {
+    ...jsonResponse(201, createFurnitureGroupResponseSchema, "家具グループを作成しました"),
+    ...commonResponses.badRequest,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具グループ作成",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const createFurnitureGroup: RouteHandler<typeof createFurnitureGroupRoute, AppEnv> = async (
+  c
+) => {
   try {
-    const body = await c.req.json()
-    const parsed = createFurnitureGroupDtoSchema.safeParse(body)
-
-    if (!parsed.success) {
-      return c.json(
-        {
-          errors: formatZodErrors(parsed.error),
-          message: "入力内容に誤りがあります",
-          success: false,
-        },
-        HTTP_STATUS.BAD_REQUEST
-      )
-    }
-
-    const { excludedCombinations, furnitureIds, name } = parsed.data
+    const { excludedCombinations, furnitureIds, name } = c.req.valid("json")
 
     // 全てのキャラクターIDを収集
     const allCharacterIds = new Set<string>()

@@ -1,14 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
+import { prisma } from "@/lib/prisma"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import type { User } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCurrentUser } from "./get-current-user.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { getCurrentUser, getCurrentUserRoute } from "./get-current-user.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -19,19 +15,17 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-
 describe("getCurrentUser", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>()
     // 認証済み前提: discordIdが常にセットされている状態でテスト
     app.use("*", async (c, next) => {
       c.set("discordId", "123456789")
       await next()
     })
-    app.get("/user", getCurrentUser)
+    app.openapi(getCurrentUserRoute, getCurrentUser)
     vi.clearAllMocks()
   })
 
@@ -47,7 +41,7 @@ describe("getCurrentUser", () => {
 
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
-    const res = await app.request("/user")
+    const res = await app.request("/api/users/me")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -75,7 +69,7 @@ describe("getCurrentUser", () => {
 
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
-    const res = await app.request("/user")
+    const res = await app.request("/api/users/me")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -94,7 +88,7 @@ describe("getCurrentUser", () => {
 
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
-    const res = await app.request("/user")
+    const res = await app.request("/api/users/me")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -113,7 +107,7 @@ describe("getCurrentUser", () => {
 
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
-    const res = await app.request("/user")
+    const res = await app.request("/api/users/me")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.OK)
@@ -125,7 +119,7 @@ describe("getCurrentUser", () => {
   it("ユーザーが存在しない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
-    const res = await app.request("/user")
+    const res = await app.request("/api/users/me")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
@@ -136,7 +130,7 @@ describe("getCurrentUser", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/user")
+    const res = await app.request("/api/users/me")
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

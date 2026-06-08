@@ -34,7 +34,7 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
       const group = await prisma.furnitureGroup.create({
         data: {
-          id: "group-1",
+          id: "group1",
           name: "古いグループ名",
           updatedAt: new Date(),
         },
@@ -63,7 +63,7 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
         },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         body: JSON.stringify({
           excludedCombinations: [["char-1", "char-2"]],
           furnitureIds: ["furniture-1"], // 2を外して1のみにする
@@ -81,10 +81,10 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
       expect(json.success).toBe(true)
       expect(json.message).toBe("グループを更新しました")
 
-      const updatedGroup = await prisma.furnitureGroup.findUnique({ where: { id: "group-1" } })
+      const updatedGroup = await prisma.furnitureGroup.findUnique({ where: { id: "group1" } })
       expect(updatedGroup?.name).toBe("更新後のグループ名")
 
-      const furnitures = await prisma.furniture.findMany({ where: { groupId: "group-1" } })
+      const furnitures = await prisma.furniture.findMany({ where: { groupId: "group1" } })
       expect(furnitures).toHaveLength(1)
       expect(furnitures[0].id).toBe("furniture-1")
     })
@@ -92,10 +92,10 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
     it("Editor権限でもグループを更新できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Editor" })
       await prisma.furnitureGroup.create({
-        data: { id: "group-editor", name: "古い", updatedAt: new Date() },
+        data: { id: "groupeditor", name: "古い", updatedAt: new Date() },
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-editor", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/groupeditor", {
         body: JSON.stringify({
           excludedCombinations: [],
           furnitureIds: [],
@@ -133,14 +133,14 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
     it("組み合わせに異なるユニットのキャラクターが含まれる場合は400を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Admin" })
       await prisma.furnitureGroup.create({
-        data: { id: "group-1", name: "グループ", updatedAt: new Date() },
+        data: { id: "group1", name: "グループ", updatedAt: new Date() },
       })
       const unit1 = await insertMockUnit({ code: "unit1", id: "unit-1" })
       const unit2 = await insertMockUnit({ code: "unit2", id: "unit-2" })
       await insertMockCharacter({ code: "char1", id: "char-1", unitId: unit1.id })
       await insertMockCharacter({ code: "char2", id: "char-2", unitId: unit2.id })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         body: JSON.stringify({
           excludedCombinations: [["char-1", "char-2"]],
           furnitureIds: [],
@@ -159,7 +159,7 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
     it("Viewer権限では403を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID, role: "Viewer" })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         body: JSON.stringify({
           excludedCombinations: [],
           furnitureIds: [],
@@ -180,7 +180,7 @@ describe("PATCH /api/admin/furniture-groups/:groupId", () => {
         return c.json({ message: "Missing session token", success: false }, 401)
       })
 
-      const res = await openAPIApp.request("/api/admin/furniture-groups/group-1", {
+      const res = await openAPIApp.request("/api/admin/furniture-groups/group1", {
         body: JSON.stringify({
           excludedCombinations: [],
           furnitureIds: [],

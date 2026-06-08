@@ -27,9 +27,9 @@ describe("POST /api/furnitures/own/{furnitureId}", () => {
     it("認証済みユーザーが家具を所持登録できる", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID })
       const tag = await insertMockFurnitureTag({ id: "tag-1" })
-      await insertMockFurniture(tag.id, { id: "furniture-1" })
+      await insertMockFurniture(tag.id, { id: "furniture1" })
 
-      const res = await openAPIApp.request("/api/furnitures/own/furniture-1", {
+      const res = await openAPIApp.request("/api/furnitures/own/furniture1", {
         headers: {
           Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
         },
@@ -40,15 +40,15 @@ describe("POST /api/furnitures/own/{furnitureId}", () => {
 
       const json = await res.json()
       expect(json.success).toBe(true)
-      expect(json.data.furnitureId).toBe("furniture-1")
+      expect(json.data.furnitureId).toBe("furniture1")
       expect(json.data.owned).toBe(true)
     })
 
     it("ユーザーが見つからない場合は401を返す", async () => {
       const tag = await insertMockFurnitureTag({ id: "tag-1" })
-      await insertMockFurniture(tag.id, { id: "furniture-1" })
+      await insertMockFurniture(tag.id, { id: "furniture1" })
 
-      const res = await openAPIApp.request("/api/furnitures/own/furniture-1", {
+      const res = await openAPIApp.request("/api/furnitures/own/furniture1", {
         headers: {
           Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
         },
@@ -65,7 +65,7 @@ describe("POST /api/furnitures/own/{furnitureId}", () => {
     it("家具が見つからない場合は404を返す", async () => {
       await insertMockUser({ discordId: MOCK_DISCORD_ID })
 
-      const res = await openAPIApp.request("/api/furnitures/own/furniture-1", {
+      const res = await openAPIApp.request("/api/furnitures/own/furniture1", {
         headers: {
           Cookie: `next-auth.session-token=${MOCK_SESSION_TOKEN}`,
         },
@@ -84,7 +84,7 @@ describe("POST /api/furnitures/own/{furnitureId}", () => {
         return c.json({ message: "Missing session token", success: false }, 401)
       })
 
-      const res = await openAPIApp.request("/api/furnitures/own/furniture-1", {
+      const res = await openAPIApp.request("/api/furnitures/own/furniture1", {
         method: "POST",
       })
 

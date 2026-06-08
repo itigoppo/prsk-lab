@@ -1,13 +1,8 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { ownFurniture } from "./own-furniture.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { ownFurniture, ownFurnitureRoute } from "./own-furniture.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -24,21 +19,34 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
 
 describe("ownFurniture", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
     vi.clearAllMocks()
   })
 
   it("家具を所持登録できる", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
-    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture1" } as never)
     vi.mocked(prisma.userFurniture.upsert).mockResolvedValue({
-      furnitureId: "furniture-1",
+      furnitureId: "furniture1",
       userId: "user-1",
     } as never)
 
@@ -46,14 +54,14 @@ describe("ownFurniture", () => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.post("/furnitures/:furnitureId/own", ownFurniture)
+    app.openapi(ownFurnitureRoute, ownFurniture)
 
-    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const res = await app.request("/api/furnitures/own/furniture1", { method: "POST" })
     const json = await res.json()
 
     expect(res.status).toBe(200)
     expect(json.success).toBe(true)
-    expect(json.data.furnitureId).toBe("furniture-1")
+    expect(json.data.furnitureId).toBe("furniture1")
     expect(json.data.owned).toBe(true)
   })
 
@@ -64,9 +72,9 @@ describe("ownFurniture", () => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.post("/furnitures/:furnitureId/own", ownFurniture)
+    app.openapi(ownFurnitureRoute, ownFurniture)
 
-    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const res = await app.request("/api/furnitures/own/furniture1", { method: "POST" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED)
@@ -82,9 +90,9 @@ describe("ownFurniture", () => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.post("/furnitures/:furnitureId/own", ownFurniture)
+    app.openapi(ownFurnitureRoute, ownFurniture)
 
-    const res = await app.request("/furnitures/invalid-id/own", { method: "POST" })
+    const res = await app.request("/api/furnitures/own/invalidid", { method: "POST" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.NOT_FOUND)
@@ -94,9 +102,9 @@ describe("ownFurniture", () => {
 
   it("既に所持している家具を再登録しても成功する", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
-    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture1" } as never)
     vi.mocked(prisma.userFurniture.upsert).mockResolvedValue({
-      furnitureId: "furniture-1",
+      furnitureId: "furniture1",
       userId: "user-1",
     } as never)
 
@@ -104,9 +112,9 @@ describe("ownFurniture", () => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.post("/furnitures/:furnitureId/own", ownFurniture)
+    app.openapi(ownFurnitureRoute, ownFurniture)
 
-    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const res = await app.request("/api/furnitures/own/furniture1", { method: "POST" })
     const json = await res.json()
 
     expect(res.status).toBe(200)
@@ -114,23 +122,23 @@ describe("ownFurniture", () => {
     expect(prisma.userFurniture.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: {},
-        where: { userId_furnitureId: { furnitureId: "furniture-1", userId: "user-1" } },
+        where: { userId_furnitureId: { furnitureId: "furniture1", userId: "user-1" } },
       })
     )
   })
 
   it("upsertでエラーが発生した場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
-    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture-1" } as never)
+    vi.mocked(prisma.furniture.findUnique).mockResolvedValue({ id: "furniture1" } as never)
     vi.mocked(prisma.userFurniture.upsert).mockRejectedValue(new Error("Upsert failed"))
 
     app.use("/furnitures/:furnitureId/own", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.post("/furnitures/:furnitureId/own", ownFurniture)
+    app.openapi(ownFurnitureRoute, ownFurniture)
 
-    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const res = await app.request("/api/furnitures/own/furniture1", { method: "POST" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
@@ -145,9 +153,9 @@ describe("ownFurniture", () => {
       c.set("discordId", "discord-123")
       await next()
     })
-    app.post("/furnitures/:furnitureId/own", ownFurniture)
+    app.openapi(ownFurnitureRoute, ownFurniture)
 
-    const res = await app.request("/furnitures/furniture-1/own", { method: "POST" })
+    const res = await app.request("/api/furnitures/own/furniture1", { method: "POST" })
     const json = await res.json()
 
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)

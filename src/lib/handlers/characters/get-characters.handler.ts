@@ -1,14 +1,28 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, jsonResponse } from "@/lib/hono/openapi-helpers"
 import { prisma } from "@/lib/prisma"
 import {
   CharacterListItem,
   CharacterListResponse,
   CharacterUnitListItem,
+  characterListResponseSchema,
 } from "@/lib/schemas/response/character.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
-export const getCharacters: Handler = async (c) => {
+export const getCharactersRoute = createRoute({
+  description: "全キャラクターの情報をユニット情報と共に取得する",
+  method: "get",
+  path: "/api/characters",
+  responses: {
+    ...jsonResponse(HTTP_STATUS.OK, characterListResponseSchema, "キャラクター情報を取得しました"),
+    ...commonResponses.internalServerError,
+  },
+  summary: "キャラクター一覧取得",
+  tags: [Tags.CHARACTERS.name],
+})
+
+export const getCharacters: RouteHandler<typeof getCharactersRoute> = async (c) => {
   try {
     const characters = await prisma.character.findMany({
       orderBy: {
@@ -68,7 +82,7 @@ export const getCharacters: Handler = async (c) => {
       success: true,
     }
 
-    return c.json(response)
+    return c.json(response, HTTP_STATUS.OK)
   } catch {
     return c.json(
       { message: "キャラクター情報の取得に失敗しました", success: false },

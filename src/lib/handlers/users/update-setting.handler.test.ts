@@ -1,16 +1,11 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
 import { validateCsvUrl } from "@/lib/utils/csv-validator"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import type { Setting, User } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { updateSetting } from "./update-setting.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { updateSetting, updateSettingRoute } from "./update-setting.handler"
 
 // CSV検証のモック
 vi.mock("@/lib/utils/csv-validator", () => ({
@@ -30,16 +25,28 @@ vi.mock("@/lib/prisma", () => ({
 }))
 
 describe("updateSetting", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success) {
+          return c.json(
+            {
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+        }
+      },
+    })
     // 認証済み前提: discordIdが常にセットされている状態でテスト
     app.use("*", async (c, next) => {
       c.set("discordId", "123456789")
       await next()
     })
-    app.patch("/settings", updateSetting)
+    app.openapi(updateSettingRoute, updateSetting)
     vi.clearAllMocks()
   })
 
@@ -51,7 +58,7 @@ describe("updateSetting", () => {
     vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
     vi.mocked(prisma.setting.update).mockResolvedValue({} as Setting)
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: "https://example.com/updated.csv" }),
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +84,7 @@ describe("updateSetting", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(prisma.setting.update).mockResolvedValue({} as Setting)
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: null }),
       headers: {
         "Content-Type": "application/json",
@@ -107,7 +114,7 @@ describe("updateSetting", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(validateCsvUrl).mockResolvedValue(mockValidation)
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: "https://example.com/invalid.csv" }),
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +129,7 @@ describe("updateSetting", () => {
   })
 
   it("DTOバリデーションエラーの場合は400を返す", async () => {
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: "invalid-url" }), // URL形式ではない
       headers: {
         "Content-Type": "application/json",
@@ -139,7 +146,7 @@ describe("updateSetting", () => {
   it("ユーザーが存在しない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: null }),
       headers: {
         "Content-Type": "application/json",
@@ -157,7 +164,7 @@ describe("updateSetting", () => {
     const mockUser = { id: "1", setting: null } as unknown as User
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: null }),
       headers: {
         "Content-Type": "application/json",
@@ -176,7 +183,7 @@ describe("updateSetting", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(validateCsvUrl).mockResolvedValue({ success: false }) // errorがundefined
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: "https://example.com/invalid" }),
       headers: {
         "Content-Type": "application/json",
@@ -195,7 +202,7 @@ describe("updateSetting", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
     vi.mocked(prisma.setting.update).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/settings", {
+    const res = await app.request("/api/users/settings", {
       body: JSON.stringify({ leaderSheetUrl: null }),
       headers: {
         "Content-Type": "application/json",

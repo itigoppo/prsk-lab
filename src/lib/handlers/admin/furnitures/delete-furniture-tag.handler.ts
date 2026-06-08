@@ -1,9 +1,34 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import { Tags, commonResponses, cookieAuth, jsonResponse } from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import { prisma } from "@/lib/prisma"
+import { furnitureTagParamDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
 import type { DeleteFurnitureTagResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
-import type { Handler } from "hono"
+import { deleteFurnitureTagResponseSchema } from "@/lib/schemas/response/admin/furniture-tag.response"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 
-export const deleteFurnitureTag: Handler = async (c) => {
+export const deleteFurnitureTagRoute = createRoute({
+  description: "家具タグとそのタグに紐づくすべての家具を削除する（カスケード削除）",
+  method: "delete",
+  path: "/api/admin/furniture-tags/{tagId}",
+  request: {
+    params: furnitureTagParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, deleteFurnitureTagResponseSchema, "家具タグを削除しました"),
+    ...commonResponses.notFound,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具タグ削除",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const deleteFurnitureTag: RouteHandler<typeof deleteFurnitureTagRoute, AppEnv> = async (
+  c
+) => {
   try {
     const tagId = c.req.param("tagId")
 

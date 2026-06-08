@@ -1,13 +1,9 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { prisma } from "@/lib/prisma"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { uncheckReaction } from "./uncheck-reaction.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { uncheckReaction, uncheckReactionRoute } from "./uncheck-reaction.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -24,13 +20,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-
 describe("uncheckReaction", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>()
     app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
@@ -40,12 +34,14 @@ describe("uncheckReaction", () => {
 
   it("リアクションのチェックを解除できる", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
-    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "tz4a98xxat96iwsdz6os",
+    } as never)
     vi.mocked(prisma.userReactionCheck.deleteMany).mockResolvedValue({ count: 1 } as never)
 
-    app.delete("/reactions/:reactionId/check", uncheckReaction)
+    app.openapi(uncheckReactionRoute, uncheckReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "DELETE",
     })
     const json = await res.json()
@@ -53,18 +49,20 @@ describe("uncheckReaction", () => {
     expect(res.status).toBe(HTTP_STATUS.OK)
     expect(json.success).toBe(true)
     expect(json.message).toBe("リアクションのチェックを解除しました")
-    expect(json.data.reactionId).toBe("reaction-1")
+    expect(json.data.reactionId).toBe("tz4a98xxat96iwsdz6os")
     expect(json.data.checked).toBe(false)
   })
 
   it("チェックが存在しなくても成功を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
-    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "tz4a98xxat96iwsdz6os",
+    } as never)
     vi.mocked(prisma.userReactionCheck.deleteMany).mockResolvedValue({ count: 0 } as never)
 
-    app.delete("/reactions/:reactionId/check", uncheckReaction)
+    app.openapi(uncheckReactionRoute, uncheckReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "DELETE",
     })
     const json = await res.json()
@@ -75,11 +73,13 @@ describe("uncheckReaction", () => {
 
   it("ユーザーが見つからない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
-    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "tz4a98xxat96iwsdz6os",
+    } as never)
 
-    app.delete("/reactions/:reactionId/check", uncheckReaction)
+    app.openapi(uncheckReactionRoute, uncheckReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "DELETE",
     })
     const json = await res.json()
@@ -93,9 +93,9 @@ describe("uncheckReaction", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue(null)
 
-    app.delete("/reactions/:reactionId/check", uncheckReaction)
+    app.openapi(uncheckReactionRoute, uncheckReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "DELETE",
     })
     const json = await res.json()
@@ -107,12 +107,14 @@ describe("uncheckReaction", () => {
 
   it("deleteManyでエラーが発生した場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
-    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "tz4a98xxat96iwsdz6os",
+    } as never)
     vi.mocked(prisma.userReactionCheck.deleteMany).mockRejectedValue(new Error("Database error"))
 
-    app.delete("/reactions/:reactionId/check", uncheckReaction)
+    app.openapi(uncheckReactionRoute, uncheckReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "DELETE",
     })
     const json = await res.json()
@@ -124,11 +126,13 @@ describe("uncheckReaction", () => {
 
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
-    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({ id: "reaction-1" } as never)
+    vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
+      id: "tz4a98xxat96iwsdz6os",
+    } as never)
 
-    app.delete("/reactions/:reactionId/check", uncheckReaction)
+    app.openapi(uncheckReactionRoute, uncheckReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "DELETE",
     })
     const json = await res.json()

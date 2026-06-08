@@ -1,14 +1,10 @@
 import { HTTP_STATUS } from "@/constants/http-status"
+import type { AppEnv } from "@/lib/hono/types"
+import { formatZodErrors } from "@/lib/utils/zod"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { Prisma } from "@prisma/client"
-import { Hono } from "hono"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { createFurnitureTag } from "./create-furniture-tag.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { createFurnitureTag, createFurnitureTagRoute } from "./create-furniture-tag.handler"
 
 const mockTx = {
   furniture: { create: vi.fn(), createMany: vi.fn() },
@@ -40,11 +36,23 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma"
 
 describe("createFurnitureTag", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
-    app.post("/admin/furniture-tags", createFurnitureTag)
+    app = new OpenAPIHono<AppEnv>({
+      defaultHook: (result, c) => {
+        if (!result.success)
+          return c.json(
+            {
+              errors: formatZodErrors(result.error),
+              message: "入力内容に誤りがあります",
+              success: false,
+            },
+            HTTP_STATUS.BAD_REQUEST
+          )
+      },
+    })
+    app.openapi(createFurnitureTagRoute, createFurnitureTag)
     vi.clearAllMocks()
   })
 
@@ -54,7 +62,7 @@ describe("createFurnitureTag", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({ furnitures: [], name: "新タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -76,7 +84,7 @@ describe("createFurnitureTag", () => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({
         furnitures: [
           {
@@ -103,16 +111,16 @@ describe("createFurnitureTag", () => {
       { code: "leoneed_ichika", id: "char-1", priority: 1 },
       { code: "leoneed_saki", id: "char-2", priority: 2 },
     ] as never)
-    vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([{ id: "group-1" }] as never)
+    vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([{ id: "group1" }] as never)
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({
         furnitures: [
           {
-            groupId: "group-1",
+            groupId: "group1",
             id: null,
             name: "家具1",
             reactions: [
@@ -138,20 +146,20 @@ describe("createFurnitureTag", () => {
       { code: "leoneed_ichika", id: "char-1", priority: 1 },
       { code: "leoneed_saki", id: "char-2", priority: 2 },
     ] as never)
-    vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([{ id: "group-1" }] as never)
+    vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([{ id: "group1" }] as never)
     mockTx.furnitureGroupExcludedCharacter.findMany.mockResolvedValue([
-      { characterId: "char-1", combinationId: "comb-existing", groupId: "group-1" },
-      { characterId: "char-2", combinationId: "comb-existing", groupId: "group-1" },
+      { characterId: "char-1", combinationId: "comb-existing", groupId: "group1" },
+      { characterId: "char-2", combinationId: "comb-existing", groupId: "group1" },
     ])
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn(mockTx as never)
     })
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({
         furnitures: [
           {
-            groupId: "group-1",
+            groupId: "group1",
             id: null,
             name: "家具1",
             reactions: [{ characters: ["char-1", "char-2"], excludeFromGroup: true, id: null }],
@@ -171,7 +179,7 @@ describe("createFurnitureTag", () => {
   })
 
   it("タグ名が空の場合は400を返す", async () => {
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({ furnitures: [], name: "" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -185,7 +193,7 @@ describe("createFurnitureTag", () => {
   it("不明なキャラクターIDの場合は400を返す", async () => {
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({
         furnitures: [
           {
@@ -213,11 +221,11 @@ describe("createFurnitureTag", () => {
     ] as never)
     vi.mocked(prisma.furnitureGroup.findMany).mockResolvedValue([] as never)
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({
         furnitures: [
           {
-            groupId: "unknown-group",
+            groupId: "unknowngroup",
             id: null,
             name: "家具1",
             reactions: [{ characters: ["char-1"], excludeFromGroup: false, id: null }],
@@ -241,7 +249,7 @@ describe("createFurnitureTag", () => {
       { code: "miku", id: "char-2", priority: 1, unitId: "unit-2" },
     ] as never)
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({
         furnitures: [
           {
@@ -272,7 +280,7 @@ describe("createFurnitureTag", () => {
       })
     )
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({ furnitures: [], name: "既存タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -288,7 +296,7 @@ describe("createFurnitureTag", () => {
     vi.mocked(prisma.character.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.$transaction).mockRejectedValue(new Error("Database error"))
 
-    const res = await app.request("/admin/furniture-tags", {
+    const res = await app.request("/api/admin/furniture-tags", {
       body: JSON.stringify({ furnitures: [], name: "新タグ" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",

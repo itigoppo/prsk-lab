@@ -1,13 +1,9 @@
 import { HTTP_STATUS } from "@/constants/http-status"
-import { Hono } from "hono"
+import type { AppEnv } from "@/lib/hono/types"
+import { prisma } from "@/lib/prisma"
+import { OpenAPIHono } from "@hono/zod-openapi"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { checkReaction } from "./check-reaction.handler"
-
-type Env = {
-  Variables: {
-    discordId: string
-  }
-}
+import { checkReaction, checkReactionRoute } from "./check-reaction.handler"
 
 // Prismaのモック
 vi.mock("@/lib/prisma", () => ({
@@ -24,13 +20,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { prisma } from "@/lib/prisma"
-
 describe("checkReaction", () => {
-  let app: Hono<Env>
+  let app: OpenAPIHono<AppEnv>
 
   beforeEach(() => {
-    app = new Hono<Env>()
+    app = new OpenAPIHono<AppEnv>()
     app.use("*", async (c, next) => {
       c.set("discordId", "discord-123")
       await next()
@@ -41,17 +35,17 @@ describe("checkReaction", () => {
   it("リアクションをチェックできる", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
-      id: "reaction-1",
+      id: "tz4a98xxat96iwsdz6os",
     } as never)
     vi.mocked(prisma.userReactionCheck.upsert).mockResolvedValue({
       id: "check-1",
-      reactionId: "reaction-1",
+      reactionId: "tz4a98xxat96iwsdz6os",
       userId: "user-1",
     } as never)
 
-    app.post("/reactions/:reactionId/check", checkReaction)
+    app.openapi(checkReactionRoute, checkReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "POST",
     })
     const json = await res.json()
@@ -59,16 +53,16 @@ describe("checkReaction", () => {
     expect(res.status).toBe(HTTP_STATUS.OK)
     expect(json.success).toBe(true)
     expect(json.message).toBe("リアクションをチェックしました")
-    expect(json.data.reactionId).toBe("reaction-1")
+    expect(json.data.reactionId).toBe("tz4a98xxat96iwsdz6os")
     expect(json.data.checked).toBe(true)
   })
 
   it("ユーザーが見つからない場合は401を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
 
-    app.post("/reactions/:reactionId/check", checkReaction)
+    app.openapi(checkReactionRoute, checkReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "POST",
     })
     const json = await res.json()
@@ -82,9 +76,9 @@ describe("checkReaction", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue(null)
 
-    app.post("/reactions/:reactionId/check", checkReaction)
+    app.openapi(checkReactionRoute, checkReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "POST",
     })
     const json = await res.json()
@@ -97,17 +91,17 @@ describe("checkReaction", () => {
   it("既にチェック済みのリアクションを再チェックしても成功する", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
-      id: "reaction-1",
+      id: "tz4a98xxat96iwsdz6os",
     } as never)
     vi.mocked(prisma.userReactionCheck.upsert).mockResolvedValue({
       id: "check-1",
-      reactionId: "reaction-1",
+      reactionId: "tz4a98xxat96iwsdz6os",
       userId: "user-1",
     } as never)
 
-    app.post("/reactions/:reactionId/check", checkReaction)
+    app.openapi(checkReactionRoute, checkReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "POST",
     })
     const json = await res.json()
@@ -117,7 +111,7 @@ describe("checkReaction", () => {
     expect(prisma.userReactionCheck.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: {},
-        where: { userId_reactionId: { reactionId: "reaction-1", userId: "user-1" } },
+        where: { userId_reactionId: { reactionId: "tz4a98xxat96iwsdz6os", userId: "user-1" } },
       })
     )
   })
@@ -125,13 +119,13 @@ describe("checkReaction", () => {
   it("upsertでエラーが発生した場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(prisma.furnitureReaction.findUnique).mockResolvedValue({
-      id: "reaction-1",
+      id: "tz4a98xxat96iwsdz6os",
     } as never)
     vi.mocked(prisma.userReactionCheck.upsert).mockRejectedValue(new Error("Upsert failed"))
 
-    app.post("/reactions/:reactionId/check", checkReaction)
+    app.openapi(checkReactionRoute, checkReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "POST",
     })
     const json = await res.json()
@@ -144,9 +138,9 @@ describe("checkReaction", () => {
   it("データベースエラーの場合は500を返す", async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error("Database error"))
 
-    app.post("/reactions/:reactionId/check", checkReaction)
+    app.openapi(checkReactionRoute, checkReaction)
 
-    const res = await app.request("/reactions/reaction-1/check", {
+    const res = await app.request("/api/reactions/tz4a98xxat96iwsdz6os/check", {
       method: "POST",
     })
     const json = await res.json()

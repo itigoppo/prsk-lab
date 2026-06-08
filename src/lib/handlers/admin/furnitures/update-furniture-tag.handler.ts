@@ -1,11 +1,23 @@
 import { HTTP_STATUS } from "@/constants/http-status"
 import { prisma } from "@/lib/prisma"
-import { updateFurnitureTagDtoSchema } from "@/lib/schemas/dto/admin/furniture-tag.dto"
+import {
+  furnitureTagParamDtoSchema,
+  updateFurnitureTagDtoSchema,
+} from "@/lib/schemas/dto/admin/furniture-tag.dto"
+import { updateFurnitureTagResponseSchema } from "@/lib/schemas/response/admin/furniture-tag.response"
+
+import {
+  Tags,
+  commonResponses,
+  cookieAuth,
+  jsonRequest,
+  jsonResponse,
+} from "@/lib/hono/openapi-helpers"
+import type { AppEnv } from "@/lib/hono/types"
 import type { UpdateFurnitureTagResponse } from "@/lib/schemas/response/admin/furniture-tag.response"
-import { formatZodErrors } from "@/lib/utils/zod"
+import { createRoute, type RouteHandler } from "@hono/zod-openapi"
 import { createId } from "@paralleldrive/cuid2"
 import { Prisma } from "@prisma/client"
-import type { Handler } from "hono"
 
 import {
   getCharacterSorter,
@@ -16,24 +28,34 @@ import {
   validateSameUnitReactions,
 } from "./furniture-tag.helper"
 
-export const updateFurnitureTag: Handler = async (c) => {
+export const updateFurnitureTagRoute = createRoute({
+  description: "家具タグとそれに紐づく家具およびリアクションを更新する",
+  method: "patch",
+  path: "/api/admin/furniture-tags/{tagId}",
+  request: {
+    ...jsonRequest(updateFurnitureTagDtoSchema),
+    params: furnitureTagParamDtoSchema,
+  },
+  responses: {
+    ...jsonResponse(200, updateFurnitureTagResponseSchema, "家具タグを更新しました"),
+    ...commonResponses.badRequest,
+    ...commonResponses.notFound,
+    ...commonResponses.conflict,
+    ...commonResponses.unauthorized,
+    ...commonResponses.forbidden,
+    ...commonResponses.internalServerError,
+  },
+  security: [cookieAuth],
+  summary: "家具タグ更新",
+  tags: [Tags.ADMIN_FURNITURES.name],
+})
+
+export const updateFurnitureTag: RouteHandler<typeof updateFurnitureTagRoute, AppEnv> = async (
+  c
+) => {
   try {
     const tagId = c.req.param("tagId")
-    const body = await c.req.json()
-    const parsed = updateFurnitureTagDtoSchema.safeParse(body)
-
-    if (!parsed.success) {
-      return c.json(
-        {
-          errors: formatZodErrors(parsed.error),
-          message: "入力内容に誤りがあります",
-          success: false,
-        },
-        HTTP_STATUS.BAD_REQUEST
-      )
-    }
-
-    const { furnitures, name } = parsed.data
+    const { furnitures, name } = c.req.valid("json")
 
     // タグの存在確認
     const existingTag = await prisma.furnitureTag.findUnique({

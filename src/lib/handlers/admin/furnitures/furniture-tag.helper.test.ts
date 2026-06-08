@@ -31,7 +31,7 @@ describe("furniture-tag.helper", () => {
     it("既存IDのセットがない場合、全て新規作成用の配列に入る", () => {
       const furnitures: FurnitureWithReactionsDto[] = [
         {
-          groupId: "group-1",
+          groupId: "group1",
           id: null,
           name: "家具A",
           reactions: [
@@ -51,7 +51,7 @@ describe("furniture-tag.helper", () => {
         furnitures,
         now,
         sortCharacterIds,
-        tagId: "tag-1",
+        tagId: "tag1",
       })
 
       expect(result.furnituresData).toHaveLength(1)
@@ -96,7 +96,7 @@ describe("furniture-tag.helper", () => {
         furnitures,
         now,
         sortCharacterIds,
-        tagId: "tag-1",
+        tagId: "tag1",
       })
 
       expect(result.furnituresData).toHaveLength(0)

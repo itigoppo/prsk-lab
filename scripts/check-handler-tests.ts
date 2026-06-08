@@ -177,10 +177,11 @@ function checkHandlerTests() {
       for (const testFile of testFiles) {
         const testContent = readFileSync(testFile, "utf-8")
         // import文またはテスト内でハンドラー名が使用されているか
+        const importRegex = new RegExp(`import\\s*\\{[^}]*\\b${handlerName}\\b`)
         if (
-          testContent.includes(`import { ${handlerName}`) ||
-          testContent.includes(`import {${handlerName}`) ||
-          testContent.includes(`${handlerName}(`)
+          importRegex.test(testContent) ||
+          testContent.includes(`${handlerName}(`) ||
+          testContent.includes(`${handlerName},`)
         ) {
           matchedTestFile = testFile
           break
