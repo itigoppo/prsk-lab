@@ -61,7 +61,7 @@ jobs:
         run: pnpm exec tsc --noEmit
 
       - name: Check test coverage
-        run: pnpm test:check-coverage
+        run: pnpm test:coverage
 
       - name: Run tests
         run: pnpm test:all
