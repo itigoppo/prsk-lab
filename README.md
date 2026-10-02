@@ -79,6 +79,32 @@ make run
 
 Open [http://localhost:30000](http://localhost:30000) with your browser to see the result.
 
+## Orca Worktree
+
+Orca の repo 設定に以下を登録しています。
+
+- Setup script: `bash .orca/setup.sh`
+- Archive script: `bash .orca/archive.sh`
+
+`setup.sh` は main チェックアウトから `.env` / `.env.local` をコピーし、依存関係のインストールと Prisma Client / API クライアントの生成をします。何度実行しても大丈夫です。
+
+DB はワークツリーごとに分けています。コンテナは増やさず、main の `prsk-postgres` の中に専用の DB を作ります（main で `make docker-up` しておいてください）。
+
+| 用途   | DB 名                               | 設定ファイル                              |
+| ------ | ----------------------------------- | ----------------------------------------- |
+| 開発   | `prsk_lab_wt_<ワークツリー名>`      | `.env` / `.env.local` を書き換え          |
+| テスト | `prsk_lab_wt_<ワークツリー名>_test` | `.env.test.local`（`.env.test` より優先） |
+
+開発用 DB にはマイグレーションとシードまで流します。`make prisma-migrate` などもこの DB に対して実行されるので、main の DB には影響しません。ワークツリーを消すと `archive.sh` が DB を削除します。
+
+`orca worktree rm` は `--run-hooks` を付けないと archive フックを実行しないため、DB が残った場合はワークツリーで `bash .orca/archive.sh` を実行するか、以下で削除してください。
+
+```bash
+docker exec prsk-postgres dropdb -U devuser --if-exists --force prsk_lab_wt_<ワークツリー名>
+```
+
+開発サーバーのポート (30000) は固定なので、main や他のワークツリーと同時には起動できません。
+
 ## Tech Stack
 
 - Next.js
